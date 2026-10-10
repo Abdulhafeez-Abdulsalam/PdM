@@ -35,7 +35,7 @@ export function SideNav({ mobileOpen, onCloseMobile }: { mobileOpen: boolean; on
             <X aria-hidden className="size-5" />
           </button>
         </div>
-        <div className="flex-1 overflow-y-auto py-3">
+        <div className="relative flex-1 overflow-y-auto py-3">
           {NAV_GROUPS.map((group) => {
             const visible = MODULES.filter((m) => m.group === group && canSee(role, m.id));
             if (visible.length === 0) return null;

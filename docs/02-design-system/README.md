@@ -30,7 +30,9 @@ Tokens come in three layers. Components only ever use layers 2 and 3.
 | **2. Semantic** | `--color-text-primary`, `--color-severity-critical` | A *purpose*. Each theme maps it to a primitive. | Components |
 | **3. Component** | `--button-primary-bg` | A specific part, pointing at a semantic token | One component |
 
-Themes are switched by an attribute on the page: `<html data-theme="light | dark | control-room">`. Tailwind reads the same CSS variables, so `bg-surface` or `text-severity-critical` follow the theme automatically.
+Themes are switched by an attribute on the page: `<html data-theme="light | dark | control-room">`. Tailwind reads the same CSS variables, so `bg-surface` or `text-health-critical` follow the theme automatically.
+
+**Naming in code** (see [`packages/ui/src/tokens.css`](../../packages/ui/src/tokens.css) and [`theme.css`](../../packages/ui/src/theme.css)): raw tokens are written `--pdm-…` (e.g. `--pdm-bg-surface`, `--pdm-health-critical`) and change per theme. `theme.css` exposes them to Tailwind under short names (`bg-surface`, `text-fg-muted`, `border-line`, `text-health-critical`, `bg-alarm-p1`). The `--color-…` names used in the tables below are the conceptual names.
 
 ---
 

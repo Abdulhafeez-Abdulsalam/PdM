@@ -1,11 +1,12 @@
 import { useConnectionState } from "@pdm/api-client";
 import { RoleId } from "@pdm/contracts";
 import { Select, cx } from "@pdm/ui";
-import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { Link } from "@tanstack/react-router";
 import { Menu, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { THEMES, TIME_ZONE_MODES, UNIT_SYSTEMS, usePreferences } from "../../shared/preferences";
-import { DEFAULT_TIME_RANGE, TIME_RANGES, type TimeRange } from "../../shared/time-range";
+import { ScopeSelector } from "../../features/hierarchy/ScopeSelector";
+import { TIME_RANGES, useGlobalSearch, useSetGlobalSearch } from "../../shared/time-range";
 
 export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   const { t } = useTranslation();
@@ -38,12 +39,9 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         <span>{t("app.name")}</span>
       </Link>
 
-      {/* Placeholder for the hierarchy selector (Phase 1, chunk 2). */}
-      <nav aria-label={t("topBar.scope")} className="hidden text-sm text-fg-muted lg:block">
-        <span aria-current="page">{t("topBar.enterprise")}</span>
-      </nav>
+      <ScopeSelector />
 
-      <div className="ml-auto flex items-center gap-2">
+      <div className="ml-auto flex shrink-0 items-center gap-2">
         <TimeRangeSelect />
         <span className="hidden sm:inline-flex">
           <Select
@@ -62,16 +60,15 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
 
 function TimeRangeSelect() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
-  const search = useSearch({ strict: false }) as { range?: TimeRange };
+  const { range } = useGlobalSearch();
+  const setSearch = useSetGlobalSearch();
   return (
     <Select
       label={t("topBar.timeRange")}
       hideLabel
-      value={search.range ?? DEFAULT_TIME_RANGE}
+      value={range}
       options={TIME_RANGES.map((r) => ({ value: r, label: t(`timeRange.${r}`) }))}
-      // Keep the current page; only change ?range=…
-      onChange={(range) => void navigate({ to: ".", search: (prev: Record<string, unknown>) => ({ ...prev, range }) })}
+      onChange={(next) => setSearch({ range: next })} // stays on this page; only ?range= changes
     />
   );
 }

@@ -4,7 +4,7 @@ The web frontend of a Predictive Maintenance & Asset Performance platform for an
 
 It helps people spot equipment that is about to fail, before it fails, and organise the maintenance to fix it.
 
-> **Status:** Steps 1–5 done. Phase 1, chunk 1 done: the app shell runs in the browser on demo data. Next: chunk 2 — hierarchy selector and Command Center.
+> **Status:** Steps 1–5 done. Phase 1 chunks 1–2 done: app shell, hierarchy picker and Command Center (KPIs, top risks, daily briefing, site map) on demo data. Next: chunk 3 — Asset 360.
 
 ## Getting started
 

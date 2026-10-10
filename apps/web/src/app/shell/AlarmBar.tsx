@@ -3,17 +3,19 @@
  * live alarm_summary messages. Clicking a count opens the alarm list.
  */
 import { useAlarmSummary } from "@pdm/api-client";
-import { AlarmPriority, ENTERPRISE_SCOPE } from "@pdm/contracts";
+import { AlarmPriority } from "@pdm/contracts";
 import { PriorityIcon, Skeleton, cx } from "@pdm/ui";
 import { Link } from "@tanstack/react-router";
 import { useTranslation } from "react-i18next";
+import { useGlobalSearch } from "../../shared/time-range";
 
 // Written out in full: Tailwind only generates classes it can find as complete words in the code.
 const DOT = { p1: "bg-alarm-p1", p2: "bg-alarm-p2", p3: "bg-alarm-p3", p4: "bg-alarm-p4" } as const;
 
 export function AlarmBar() {
   const { t } = useTranslation();
-  const { data: summary, isPending } = useAlarmSummary(ENTERPRISE_SCOPE);
+  const { scopeId } = useGlobalSearch();
+  const { data: summary, isPending } = useAlarmSummary(scopeId);
 
   return (
     <section aria-label={t("alarms.barLabel")} className="flex h-10 shrink-0 items-center gap-1 overflow-x-auto border-b border-line bg-surface px-3 text-sm">

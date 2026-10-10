@@ -5,6 +5,27 @@
 /* Tailwind only generates classes it finds in these files. Include the shared UI package. */
 @source "../../../packages/ui/src";
 
+/* MapLibre's own controls default to white; make them follow the theme (low glare in control rooms).
+   `:root` adds specificity because MapLibre's stylesheet loads later (with the lazy map) and would win a tie. */
+:root .maplibregl-ctrl-group,
+:root .maplibregl-ctrl-attrib.maplibregl-compact,
+:root .maplibregl-ctrl.maplibregl-ctrl-attrib {
+  background: var(--pdm-bg-raised);
+  color: var(--pdm-text-secondary);
+}
+:root .maplibregl-ctrl-attrib a {
+  color: var(--pdm-text-secondary);
+}
+:root .maplibregl-ctrl-group button + button {
+  border-top-color: var(--pdm-border);
+}
+[data-theme="dark"] .maplibregl-ctrl-icon,
+[data-theme="control-room"] .maplibregl-ctrl-icon,
+[data-theme="dark"] .maplibregl-ctrl-attrib-button,
+[data-theme="control-room"] .maplibregl-ctrl-attrib-button {
+  filter: invert(0.85);
+}
+
 @layer base {
   html,
   body,

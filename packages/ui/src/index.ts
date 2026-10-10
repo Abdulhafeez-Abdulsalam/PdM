@@ -4,3 +4,7 @@ export { Select, type SelectOption, type SelectProps } from "./Select";
 export { HealthBadge, type Health, type HealthBadgeProps } from "./HealthBadge";
 export { PriorityIcon, type Priority } from "./PriorityIcon";
 export { Skeleton, Banner, EmptyState } from "./feedback";
+export { Popover, PopoverClose, type PopoverProps } from "./Popover";
+export { ErrorBoundary } from "./ErrorBoundary";
+export { Sparkline } from "./Sparkline";
+export { KpiCard, type KpiCardProps } from "./KpiCard";

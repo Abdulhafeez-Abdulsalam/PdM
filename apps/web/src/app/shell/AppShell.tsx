@@ -35,7 +35,8 @@ export function AppShell() {
       )}
       <div className="flex min-h-0 flex-1">
         <SideNav mobileOpen={mobileNavOpen} onCloseMobile={() => setMobileNavOpen(false)} />
-        <main id="main" tabIndex={-1} className="min-w-0 flex-1 overflow-auto p-4 md:p-6">
+        {/* `relative` keeps absolutely-positioned helpers (e.g. screen-reader-only text) inside this scroll area. */}
+        <main id="main" tabIndex={-1} className="relative min-w-0 flex-1 overflow-auto p-4 md:p-6">
           <Outlet />
         </main>
       </div>
