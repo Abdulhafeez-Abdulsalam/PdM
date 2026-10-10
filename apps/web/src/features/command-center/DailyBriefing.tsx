@@ -5,6 +5,7 @@
 import { useApiQuery } from "@pdm/api-client";
 import type { Citation } from "@pdm/contracts";
 import { HealthBadge, Skeleton } from "@pdm/ui";
+import { keepPreviousData } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -12,7 +13,7 @@ import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
 
 export function DailyBriefing({ scopeId, className }: { scopeId: string; className?: string }) {
   const { t } = useTranslation();
-  const briefing = useApiQuery("briefing.daily", { scopeId }, { refetchInterval: 5 * 60_000 });
+  const briefing = useApiQuery("briefing.daily", { scopeId }, { refetchInterval: 5 * 60_000, placeholderData: keepPreviousData });
 
   return (
     <DashboardWidget

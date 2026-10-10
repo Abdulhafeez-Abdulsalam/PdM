@@ -30,6 +30,11 @@
   --pdm-health-offline: #6b7280;
   --pdm-health-maintenance: #6d28d9;
 
+  /* Chart series (identity, not status). Validated for colour-blind separation and 3:1 contrast on this surface. */
+  --pdm-series-1: #2a78d6;
+  --pdm-series-2: #eb6834;
+  --pdm-grid: #e5e7eb;
+
   --pdm-shadow-1: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08);
   --pdm-shadow-2: 0 4px 8px rgb(16 24 40 / 0.08), 0 2px 4px rgb(16 24 40 / 0.06);
 }
@@ -54,6 +59,10 @@
   --pdm-health-critical: #f87171;
   --pdm-health-offline: #9ca3af;
   --pdm-health-maintenance: #a78bfa;
+
+  --pdm-series-1: #3987e5;
+  --pdm-series-2: #d95926;
+  --pdm-grid: #1f2833;
 
   --pdm-shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
   --pdm-shadow-2: 0 4px 12px rgb(0 0 0 / 0.5);
@@ -80,6 +89,11 @@
   --pdm-health-critical: #e5484d;
   --pdm-health-offline: #6e7378;
   --pdm-health-maintenance: #9d8fc7;
+
+  /* Muted for ISA-101, still passing the colour-blind and contrast checks on this surface. */
+  --pdm-series-1: #4f8ad6;
+  --pdm-series-2: #c7803f;
+  --pdm-grid: #3f4448;
 
   /* Control room uses borders, not shadows. */
   --pdm-shadow-1: 0 0 0 1px var(--pdm-border);

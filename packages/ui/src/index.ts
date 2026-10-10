@@ -8,3 +8,4 @@ export { Popover, PopoverClose, type PopoverProps } from "./Popover";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { Sparkline } from "./Sparkline";
 export { KpiCard, type KpiCardProps } from "./KpiCard";
+export { Sheet, type SheetProps } from "./Sheet";

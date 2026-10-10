@@ -16,6 +16,8 @@ export const globalSearchSchema = z.object({
   range: z.enum(TIME_RANGES).optional().catch(undefined),
   /** Hierarchy node the page is scoped to. Omitted = the whole enterprise. */
   scope: z.string().min(1).max(64).optional().catch(undefined),
+  /** Prediction shown in the side panel, on any page — so the panel can be linked to. */
+  prediction: z.string().min(1).max(64).optional().catch(undefined),
 });
 export type GlobalSearch = z.infer<typeof globalSearchSchema>;
 

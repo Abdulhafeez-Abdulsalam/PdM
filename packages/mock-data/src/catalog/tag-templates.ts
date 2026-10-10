@@ -49,7 +49,7 @@ export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
     { name: "POWER", description: "Gross active power", quantity: "power", base: 165_000, load: 1, noise: 0.004, scaled: true },
     { name: "SPEED", description: "Shaft speed", quantity: "rotational_speed", base: 3000, noise: 0.0005 },
     { name: "EXH_TEMP", description: "Exhaust temperature (average)", quantity: "temperature", base: 585, idle: "ambient", ambient: 0.015, noise: 0.003, bad: "high", limits: [0.04, 0.06, 0.09] },
-    { name: "EXH_SPREAD", description: "Exhaust temperature spread", quantity: "temperature", base: 22, noise: 0.04, bad: "high", limits: [0.5, 0.9, 1.4] },
+    { name: "EXH_SPREAD", description: "Exhaust temperature spread", quantity: "temperature_difference", base: 22, noise: 0.04, bad: "high", limits: [0.5, 0.9, 1.4] },
     { name: "CDP", description: "Compressor discharge pressure", quantity: "pressure", base: 17.5, load: 0.05, noise: 0.004, bad: "low", limits: [0.07, 0.11, 0.16] },
     { name: "CDT", description: "Compressor discharge temperature", quantity: "temperature", base: 410, idle: "ambient", ambient: 0.02, noise: 0.003, bad: "high", limits: [0.05, 0.08, 0.12] },
     { name: "COMP_EFF", description: "Compressor isentropic efficiency", quantity: "percent", base: 88.5, noise: 0.002, bad: "low", limits: [0.03, 0.05, 0.08] },

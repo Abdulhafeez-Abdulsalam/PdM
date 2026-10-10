@@ -4,7 +4,7 @@
  */
 import { LiveClient, WorkerTransport, createApiClient, type WorkerLike } from "@pdm/api-client";
 import type { FromWorker } from "@pdm/contracts";
-import { createMockBackend } from "@pdm/mock-data";
+import { ApiFailure, createMockBackend } from "@pdm/mock-data";
 import { RouterProvider, createMemoryHistory } from "@tanstack/react-router";
 import { render } from "@testing-library/react";
 import { Providers } from "../app/providers";
@@ -28,7 +28,9 @@ export function renderApp(url: string) {
           else if (msg.kind === "control") emit({ kind: "response", id: msg.id, ok: true, data: backend.control(msg.control) });
           else live.handle(msg.message);
         } catch (e) {
-          if (msg.kind !== "live") emit({ kind: "response", id: msg.id, ok: false, error: { code: "internal", message: String(e) } });
+          // Pass the real error code through, exactly as the worker does.
+          const error = e instanceof ApiFailure ? e.toApiError() : { code: "internal" as const, message: String(e) };
+          if (msg.kind !== "live") emit({ kind: "response", id: msg.id, ok: false, error });
         }
       });
     },

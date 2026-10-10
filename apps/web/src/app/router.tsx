@@ -2,8 +2,21 @@
  * URLs → pages (information architecture §2). Routes are written out in code so you can
  * read the whole map in one file.
  */
-import { createBrowserHistory, createRootRoute, createRoute, createRouter, redirect, type RouterHistory } from "@tanstack/react-router";
+import {
+  createBrowserHistory,
+  createRootRoute,
+  createRoute,
+  createRouter,
+  lazyRouteComponent,
+  redirect,
+  type RouteComponent,
+  type RouterHistory,
+} from "@tanstack/react-router";
 import { CommandCenterPage } from "../features/command-center/CommandCenterPage";
+
+// Pages other than the home page load their code only when first visited (code-splitting).
+const AssetPage = lazyRouteComponent(() => import("../features/assets/AssetPage"), "AssetPage");
+const AssetRegistryPage = lazyRouteComponent(() => import("../features/assets/AssetRegistryPage"), "AssetRegistryPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
 import { NotFoundPage } from "../features/module-page/NotFoundPage";
@@ -32,8 +45,9 @@ const indexRoute = createRoute({
 });
 
 /** Pages that are built. Every other module shows its placeholder. */
-const BUILT: Partial<Record<ModuleId, () => React.JSX.Element>> = {
+const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   "command-center": CommandCenterPage,
+  assets: AssetRegistryPage,
 };
 
 const moduleRoutes = MODULES.map((m) =>
@@ -44,13 +58,23 @@ const moduleRoutes = MODULES.map((m) =>
   }),
 );
 
+/** /assets/GT-101 → /assets/GT-101/overview */
 const assetRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/assets/$assetId",
-  component: () => <ModulePage moduleId="assets" />,
+  beforeLoad: ({ params, search }) => {
+    throw redirect({ to: "/assets/$assetId/$tab", params: { ...params, tab: "overview" }, search });
+  },
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, ...moduleRoutes, assetRoute]);
+/** Asset 360, one URL per tab. */
+const assetTabRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/assets/$assetId/$tab",
+  component: AssetPage,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, ...moduleRoutes, assetRoute, assetTabRoute]);
 
 /** Tests pass an in-memory history; the app uses the browser's address bar. */
 export function createAppRouter(history: RouterHistory = createBrowserHistory()) {

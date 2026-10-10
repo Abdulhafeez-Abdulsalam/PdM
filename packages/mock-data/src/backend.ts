@@ -35,7 +35,7 @@ import { computeKpis } from "./kpis";
 import { LiveHub } from "./live";
 import type { AssetRecord } from "./model";
 import { ChaosWindows, tagHistory, tagValue } from "./signals";
-import { buildSnapshot, toAsset, type PredictionOverlay, type Snapshot } from "./snapshot";
+import { buildSnapshot, emptyCounts, toAsset, type PredictionOverlay, type Snapshot } from "./snapshot";
 import { Storyline } from "./storyline";
 import { WorkOrderStore } from "./work-orders";
 import { buildWorld, type World } from "./world";
@@ -152,7 +152,8 @@ export class MockBackend {
   private node(id: string) {
     const record = this.world.nodes.get(id);
     if (!record) throw new ApiFailure("not_found", `Hierarchy node ${id} not found`);
-    return { ...record.node, health: this.snapshot().nodeHealth.get(id) ?? "healthy" };
+    const snap = this.snapshot();
+    return { ...record.node, health: snap.nodeHealth.get(id) ?? "healthy", healthCounts: snap.nodeCounts.get(id) ?? emptyCounts() };
   }
 
   private readonly handlers: Handlers = {
@@ -182,7 +183,11 @@ export class MockBackend {
     },
 
     "sites.list": () => ({
-      items: [...this.world.sites.values()].map((s) => ({ ...s.site, health: this.snapshot().nodeHealth.get(s.site.id) ?? "healthy" })),
+      items: [...this.world.sites.values()].map((s) => ({
+        ...s.site,
+        health: this.snapshot().nodeHealth.get(s.site.id) ?? "healthy",
+        healthCounts: this.snapshot().nodeCounts.get(s.site.id) ?? emptyCounts(),
+      })),
     }),
 
     "assets.list": (p) => {

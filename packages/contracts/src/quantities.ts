@@ -6,6 +6,11 @@ import { z } from "zod";
  */
 export const Quantity = z.enum([
   "temperature",
+  /**
+   * A temperature DIFFERENCE (e.g. exhaust spread). Converts ×1.8 to °F with no +32 offset —
+   * a 22 °C spread is a 39.6 °F spread, not 71.6 °F.
+   */
+  "temperature_difference",
   "pressure",
   "liquid_flow",
   "gas_flow",
@@ -29,6 +34,7 @@ export type Quantity = z.infer<typeof Quantity>;
 /** The unit every value of a quantity is sent in. The frontend never receives anything else. */
 export const CANONICAL_UNIT = {
   temperature: "degC",
+  temperature_difference: "K", // a difference of 1 K equals a difference of 1 °C
   pressure: "bar",
   liquid_flow: "m3/h",
   gas_flow: "Sm3/d",

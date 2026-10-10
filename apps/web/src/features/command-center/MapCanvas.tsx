@@ -9,6 +9,7 @@ import "maplibre-gl/dist/maplibre-gl.css";
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
+import { groupHealthLabel } from "../../shared/health";
 import { usePreferences } from "../../shared/preferences";
 import { buildMapStyle } from "./map-style";
 
@@ -81,8 +82,8 @@ export default function MapCanvas({ sites, onSelectSite }: Props) {
           <button
             type="button"
             onClick={() => onSelectSite(site.id)}
-            title={`${site.name} — ${t(`health.${site.health}`)}`}
-            aria-label={t("commandCenter.siteMarker", { site: site.name, health: t(`health.${site.health}`) })}
+            title={`${site.name} — ${groupHealthLabel(t, site.health, site.healthCounts)}`}
+            aria-label={t("commandCenter.siteMarker", { site: site.name, health: groupHealthLabel(t, site.health, site.healthCounts) })}
             className="grid size-7 place-items-center rounded-full border border-line bg-raised shadow-1 hover:scale-110 focus-visible:scale-110"
           >
             <HealthBadge compact state={site.health} label="" />

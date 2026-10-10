@@ -24,6 +24,9 @@
   --color-health-offline: var(--pdm-health-offline);
   --color-health-maintenance: var(--pdm-health-maintenance);
 
+  --color-series-1: var(--pdm-series-1);
+  --color-series-2: var(--pdm-series-2);
+
   --color-alarm-p1: var(--pdm-alarm-p1);
   --color-alarm-p2: var(--pdm-alarm-p2);
   --color-alarm-p3: var(--pdm-alarm-p3);

@@ -44,6 +44,16 @@ export function formatAgo(then: number, now: number): string {
   return relative.format(Math.round(seconds / 86400), "day");
 }
 
+/**
+ * Date-time formatter honouring the user's time-zone choice (design system §7):
+ * "site" = the asset's site zone, "utc", or "user" = the browser's zone.
+ */
+export function makeTimeFormatter(mode: "site" | "utc" | "user", siteTimeZone?: string) {
+  const timeZone = mode === "utc" ? "UTC" : mode === "site" ? (siteTimeZone ?? "UTC") : undefined;
+  const f = new Intl.DateTimeFormat("en-GB", { timeZone, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+  return (ms: number) => f.format(new Date(ms));
+}
+
 /** "12 Oct 2026" */
 export function formatDate(iso: string): string {
   return new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(iso));

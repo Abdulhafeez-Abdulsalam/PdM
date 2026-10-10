@@ -4,6 +4,7 @@ import { Button, HealthBadge, Skeleton } from "@pdm/ui";
 import { List, Map as MapIcon } from "lucide-react";
 import { Suspense, lazy, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { groupHealthLabel } from "../../shared/health";
 import { useSetGlobalSearch } from "../../shared/time-range";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
 import { webglAvailable } from "./map-style";
@@ -51,7 +52,7 @@ export function SiteMapWidget({ scopeId, className }: { scopeId: string; classNa
                   aria-current={site.id === scopeId ? "true" : undefined}
                   className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-sunken aria-[current]:bg-sunken"
                 >
-                  <HealthBadge compact state={site.health} label={t(`health.${site.health}`)} />
+                  <HealthBadge compact state={site.health} label={groupHealthLabel(t, site.health, site.healthCounts)} />
                   <span className="min-w-0 flex-1 truncate">{site.name}</span>
                   <span className="text-xs text-fg-muted">{t(`businessLine.${site.businessLine}`)}</span>
                 </button>

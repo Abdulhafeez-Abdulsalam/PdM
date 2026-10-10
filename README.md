@@ -4,7 +4,7 @@ The web frontend of a Predictive Maintenance & Asset Performance platform for an
 
 It helps people spot equipment that is about to fail, before it fails, and organise the maintenance to fix it.
 
-> **Status:** Steps 1–5 done. Phase 1 chunks 1–2 done: app shell, hierarchy picker and Command Center (KPIs, top risks, daily briefing, site map) on demo data. Next: chunk 3 — Asset 360.
+> **Status:** Steps 1–5 done. Phase 1 chunks 1–3 done: app shell, hierarchy picker, Command Center, asset registry, Asset 360 (live values, charts, health, predictions) and the prediction panel. Next: chunk 4 — Alarms.
 
 ## Getting started
 
@@ -27,6 +27,7 @@ The app runs entirely in your browser on simulated data — no server or account
 | `packages/api-client` | How the app requests data and receives live updates |
 | `packages/mock-data` | The simulated backend (runs in a Web Worker) |
 | `packages/ui` | Design tokens, themes and shared components |
+| `packages/charts` | Chart components (ECharts), coloured from the design tokens |
 
 ## Where to start reading
 

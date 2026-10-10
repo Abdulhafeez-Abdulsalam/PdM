@@ -1,0 +1,17 @@
+{
+  "name": "@pdm/charts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chart components (ECharts underneath). Colours come from the design tokens; no domain knowledge.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "echarts": "^6.1.0",
+    "react": "^19.3.0"
+  }
+}

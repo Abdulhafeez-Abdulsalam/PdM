@@ -15,6 +15,8 @@ export interface WidgetQueryState {
   /** When the data was fetched (ms). TanStack Query gives this as dataUpdatedAt. */
   dataUpdatedAt: number;
   refetch: () => unknown;
+  /** True while showing the previous answer as a placeholder (keepPreviousData). */
+  isPlaceholderData?: boolean;
 }
 
 interface Props {
@@ -79,7 +81,8 @@ export function DashboardWidget({ title, lineage, query, isEmpty, emptyText, sta
           {actions}
         </span>
       </header>
-      <div className="min-h-0 flex-1 p-4">
+      {/* Refetching for a new scope: dim the old content rather than flash a skeleton. */}
+      <div className={cx("min-h-0 flex-1 p-4 transition-opacity", query?.isPlaceholderData && "opacity-60")}>
         <ErrorBoundary fallback={(_error, reset) => errorView(reset)}>{body}</ErrorBoundary>
       </div>
     </section>

@@ -12,5 +12,7 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    // Whole-journey tests compile lazily-loaded pages on first use; allow time for that.
+    testTimeout: 20_000,
   },
 });

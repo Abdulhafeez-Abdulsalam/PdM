@@ -66,6 +66,6 @@ export interface Fault {
 }
 
 export interface NodeRecord {
-  node: Omit<HierarchyNode, "health">;
+  node: Omit<HierarchyNode, "health" | "healthCounts">;
   childIds: string[];
 }

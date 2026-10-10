@@ -6,6 +6,7 @@ import { useApiQuery } from "@pdm/api-client";
 import { HealthBadge, Skeleton } from "@pdm/ui";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { groupHealthLabel } from "../../shared/health";
 import { usePreferences } from "../../shared/preferences";
 import { useGlobalSearch } from "../../shared/time-range";
 import { DailyBriefing } from "./DailyBriefing";
@@ -31,7 +32,7 @@ export function CommandCenterPage() {
         {node.data ? (
           <span className="flex items-center gap-2 text-fg-muted">
             {node.data.name}
-            <HealthBadge state={node.data.health} label={t(`health.${node.data.health}`)} />
+            <HealthBadge state={node.data.health} label={groupHealthLabel(t, node.data.health, node.data.healthCounts)} />
           </span>
         ) : (
           <Skeleton className="h-5 w-48" />

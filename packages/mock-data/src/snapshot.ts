@@ -7,6 +7,7 @@ import {
   ENTERPRISE_SCOPE,
   type Asset,
   type AssetHealth,
+  type HealthCounts,
   type HealthState,
   type OperatingStatus,
   type Prediction,
@@ -44,6 +45,12 @@ export interface Snapshot {
   predictions: Prediction[];
   predictionById: Map<string, Prediction>;
   nodeHealth: Map<string, HealthState>;
+  /** Assets per health state under each node. */
+  nodeCounts: Map<string, HealthCounts>;
+}
+
+export function emptyCounts(): HealthCounts {
+  return { healthy: 0, watch: 0, degraded: 0, warning: 0, critical: 0, offline: 0, maintenance: 0 };
 }
 
 const SEVERITY: Record<HealthState, number> = {
@@ -174,11 +181,15 @@ export function buildSnapshot(world: World, t: number, overlays: ReadonlyMap<str
   const conditions = new Map<string, Condition>();
   const worst = new Map<string, number>();
   const anyOffline = new Set<string>();
+  const nodeCounts = new Map<string, HealthCounts>();
   for (const asset of world.assets.values()) {
     const c = condition(world, asset, t, byAsset.get(asset.data.id) ?? []);
     conditions.set(asset.data.id, c);
     const severity = SEVERITY[c.health.state];
     for (const scopeId of asset.scopeIds) {
+      let counts = nodeCounts.get(scopeId);
+      if (!counts) nodeCounts.set(scopeId, (counts = emptyCounts()));
+      counts[c.health.state]++;
       if (severity < 0) anyOffline.add(scopeId);
       else worst.set(scopeId, Math.max(worst.get(scopeId) ?? 0, severity));
     }
@@ -202,6 +213,7 @@ export function buildSnapshot(world: World, t: number, overlays: ReadonlyMap<str
     predictions,
     predictionById: new Map(predictions.map((p) => [p.id, p])),
     nodeHealth,
+    nodeCounts,
   };
 }
 

@@ -142,7 +142,9 @@ function buildHierarchy(world: World, now: number): void {
         businessLine: def.businessLine,
         timezone: def.timezone,
         location: { lat: def.lat, lon: def.lon },
-        health: "healthy", // replaced per moment by the snapshot
+        // Both replaced per moment by the snapshot:
+        health: "healthy",
+        healthCounts: { healthy: 0, watch: 0, degraded: 0, warning: 0, critical: 0, offline: 0, maintenance: 0 },
       },
     };
     world.sites.set(def.code, siteRecord);

@@ -30,7 +30,8 @@ export function KpiCard({ label, value, unit, change, changeTone = "neutral", ch
     <div className="flex min-w-0 flex-col gap-1 rounded-lg border border-line bg-surface p-3" title={lineage}>
       <p className="truncate text-xs font-medium text-fg-muted">{label}</p>
       <div className="flex items-end justify-between gap-2">
-        <p className="text-2xl font-semibold leading-none tabular-nums">
+        {/* Big standalone numbers read better with proportional digits; tabular is for columns. */}
+        <p className="text-2xl font-semibold leading-none proportional-nums">
           {value}
           {unit && <span className="ml-1 text-sm font-normal text-fg-muted">{unit}</span>}
         </p>

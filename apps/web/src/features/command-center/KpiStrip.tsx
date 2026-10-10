@@ -2,6 +2,7 @@
 import { useApiQuery } from "@pdm/api-client";
 import type { Kpi, RoleId } from "@pdm/contracts";
 import { KpiCard, Skeleton } from "@pdm/ui";
+import { keepPreviousData } from "@tanstack/react-query";
 import type { TFunction } from "i18next";
 import { useTranslation } from "react-i18next";
 import { formatCompact, formatCurrency, formatNumber } from "../../shared/format";
@@ -38,10 +39,15 @@ export function kpiChange(kpi: Kpi, t: TFunction) {
 export function KpiStrip({ scopeId, role }: { scopeId: string; role: RoleId }) {
   const { t } = useTranslation();
   const keys = KPI_PRESETS[role];
-  const kpis = useApiQuery("kpis.get", { scopeId, keys: [...keys] }, { refetchInterval: 30_000 });
+  const kpis = useApiQuery("kpis.get", { scopeId, keys: [...keys] }, { refetchInterval: 30_000, placeholderData: keepPreviousData });
 
   return (
-    <section aria-label={t("commandCenter.kpis")} className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-6">
+    <section
+      aria-label={t("commandCenter.kpis")}
+      aria-busy={kpis.isPlaceholderData}
+      // While a new scope loads, keep the old numbers dimmed instead of flashing placeholders.
+      className={`grid grid-cols-2 gap-3 transition-opacity sm:grid-cols-3 xl:grid-cols-6 ${kpis.isPlaceholderData ? "opacity-60" : ""}`}
+    >
       {kpis.isPending
         ? keys.map((k) => <Skeleton key={k} className="h-[104px]" />)
         : kpis.data?.kpis.map((kpi) => {

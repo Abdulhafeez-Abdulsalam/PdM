@@ -1,15 +1,19 @@
 /** App-wide wiring: data cache, API, theme, and keeping the backend's demo role in sync. */
-import { ApiProvider, useApiContext, type ApiContextValue } from "@pdm/api-client";
+import { ApiProvider, ApiRequestError, useApiContext, type ApiContextValue } from "@pdm/api-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePreferences } from "../shared/preferences";
+
+/** Errors that won't change if we ask again. */
+const DEFINITE = new Set<string>(["not_found", "bad_request", "conflict", "too_many_tags"]);
 
 function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
         staleTime: 15_000, // data younger than this is shown without refetching
-        retry: 1,
+        // Retry once for temporary problems; never for definite answers like "not found".
+        retry: (failures, error) => failures < 1 && !(error instanceof ApiRequestError && DEFINITE.has(error.code)),
         refetchOnWindowFocus: false,
       },
     },

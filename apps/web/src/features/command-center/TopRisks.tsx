@@ -4,7 +4,9 @@
  */
 import { useApiQuery } from "@pdm/api-client";
 import { HealthBadge, Skeleton } from "@pdm/ui";
+import { keepPreviousData } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
+import { useSetGlobalSearch } from "../../shared/time-range";
 import { useTranslation } from "react-i18next";
 import { formatNumber, formatProbability } from "../../shared/format";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
@@ -13,7 +15,8 @@ const MAX_RISK = 5; // probability (≤ 1) × consequence (≤ 5)
 
 export function TopRisks({ scopeId, className }: { scopeId: string; className?: string }) {
   const { t } = useTranslation();
-  const risks = useApiQuery("risks.top", { scopeId, limit: 5 }, { refetchInterval: 30_000 });
+  const setSearch = useSetGlobalSearch();
+  const risks = useApiQuery("risks.top", { scopeId, limit: 5 }, { refetchInterval: 30_000, placeholderData: keepPreviousData });
   const items = risks.data?.items ?? [];
 
   return (
@@ -52,11 +55,12 @@ export function TopRisks({ scopeId, className }: { scopeId: string; className?: 
                   <HealthBadge state={r.health.state} label={`${t(`health.${r.health.state}`)} · ${formatNumber(r.health.score)}`} />
                 </td>
                 <td className="py-2 pr-3">
-                  {r.failureModeLabel ? (
-                    <>
+                  {r.failureModeLabel && r.predictionId ? (
+                    // One click → the full prediction: evidence, explanation, confidence, action (criterion B).
+                    <button type="button" onClick={() => setSearch({ prediction: r.predictionId ?? undefined })} className="text-left hover:underline" aria-label={t("commandCenter.openPrediction", { mode: r.failureModeLabel, asset: r.assetId })}>
                       {r.failureModeLabel}
                       <span className="block text-xs text-fg-muted">{t("commandCenter.withinDays", { count: r.horizonDays ?? 0 })}</span>
-                    </>
+                    </button>
                   ) : (
                     <span className="text-fg-muted">—</span>
                   )}

@@ -12,7 +12,18 @@ import { Link } from "@tanstack/react-router";
 import { ChevronDown, ChevronRight, ExternalLink } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { groupHealthLabel } from "../../shared/health";
 import { useGlobalSearch, useSetGlobalSearch } from "../../shared/time-range";
+
+const HEALTH_TEXT = {
+  healthy: "text-health-healthy",
+  watch: "text-health-watch",
+  degraded: "text-health-degraded",
+  warning: "text-health-warning",
+  critical: "text-health-critical",
+  offline: "text-health-offline",
+  maintenance: "text-health-maintenance",
+} as const;
 
 export function ScopeSelector() {
   const { t } = useTranslation();
@@ -56,7 +67,7 @@ export function ScopeSelector() {
             aria-label={t("hierarchy.change", { current: current?.name ?? t("topBar.enterprise") })}
             className="flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 font-medium hover:bg-sunken"
           >
-            {current && <HealthBadge compact state={current.health} label={t(`health.${current.health}`)} />}
+            {current && <HealthBadge compact state={current.health} label={groupHealthLabel(t, current.health, current.healthCounts)} />}
             <span aria-current="page" className="truncate">
               {current?.name ?? t("topBar.enterprise")}
             </span>
@@ -119,8 +130,11 @@ function ScopeBrowser({ path, onSelect, onNavigateAway }: { path: HierarchyNode[
                   onClick={() => onSelect(n)}
                   className={cx("flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-left text-sm hover:bg-sunken")}
                 >
-                  <HealthBadge compact state={n.health} label={t(`health.${n.health}`)} />
+                  <HealthBadge compact state={n.health} label={groupHealthLabel(t, n.health, n.healthCounts)} />
                   <span className="min-w-0 flex-1 truncate">{n.name}</span>
+                  {n.health !== "healthy" && n.childCount > 0 && n.healthCounts[n.health] > 0 && (
+                    <span className={cx("text-xs tabular-nums", HEALTH_TEXT[n.health])}>{n.healthCounts[n.health]}</span>
+                  )}
                   {n.childCount > 0 && (
                     <span className="flex items-center text-xs text-fg-muted">
                       {n.childCount}

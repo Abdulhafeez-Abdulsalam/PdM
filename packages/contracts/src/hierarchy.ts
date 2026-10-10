@@ -17,6 +17,13 @@ export const HierarchyLevel = z.enum([
 ]);
 export type HierarchyLevel = z.infer<typeof HierarchyLevel>;
 
+/**
+ * How many assets underneath are in each health state. Shown next to the worst state
+ * ("Critical · 12") so a large scope isn't reduced to one alarming word.
+ */
+export const HealthCounts = z.record(HealthState, z.number().int().min(0));
+export type HealthCounts = z.infer<typeof HealthCounts>;
+
 /** One box in the hierarchy tree. */
 export const HierarchyNode = z.object({
   id: Id,
@@ -26,6 +33,7 @@ export const HierarchyNode = z.object({
   parentId: Id.nullable(),
   /** Worst health of anything underneath, so problems are visible from the top. */
   health: HealthState,
+  healthCounts: HealthCounts,
   childCount: z.number().int().min(0),
   /** Set for equipment and component nodes — links to the Asset record. */
   assetId: Id.nullable(),
@@ -41,5 +49,6 @@ export const Site = z.object({
   timezone: z.string().min(1),
   location: GeoPoint,
   health: HealthState,
+  healthCounts: HealthCounts,
 });
 export type Site = z.infer<typeof Site>;
