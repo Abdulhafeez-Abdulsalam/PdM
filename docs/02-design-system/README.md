@@ -157,7 +157,7 @@ All data is stored and transferred in **SI base units**. Conversion happens only
 | Quantity | SI | Imperial | Oilfield |
 |---|---|---|---|
 | Temperature | °C | °F | °F |
-| Pressure | bar (or kPa) | psi | psi |
+| Pressure | bar | psi | psi |
 | Liquid flow | m³/h | gal/min | bbl/d (barrels per day) |
 | Gas flow | Sm³/d | scf/d | **MMscfd** (million standard cubic feet per day) |
 | Length / wall thickness | mm | in | in |
