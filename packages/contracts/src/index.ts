@@ -14,3 +14,4 @@ export * from "./kpis";
 export * from "./briefing";
 export * from "./realtime";
 export * from "./endpoints";
+export * from "./worker-protocol";

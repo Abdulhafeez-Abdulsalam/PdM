@@ -4,7 +4,7 @@ The web frontend of a Predictive Maintenance & Asset Performance platform for an
 
 It helps people spot equipment that is about to fail, before it fails, and organise the maintenance to fix it.
 
-> **Status:** Deliverables 1–4 done (architecture, design system, information architecture, data contracts). Next: the mock data engine.
+> **Status:** Steps 1–5 done (architecture, design system, information architecture, data contracts, mock data engine). Next: Phase 1 — the app itself.
 
 ## Getting started
 
@@ -25,4 +25,5 @@ npm run check    # type-check and test every package
 | See colours, themes, and components | [docs/02-design-system/README.md](docs/02-design-system/README.md) |
 | See the pages, menus, and who sees what | [docs/03-information-architecture/README.md](docs/03-information-architecture/README.md) |
 | See the data shapes and API endpoints | [docs/04-data-contracts/README.md](docs/04-data-contracts/README.md) |
+| See how the fake backend simulates the company | [docs/05-mock-data/README.md](docs/05-mock-data/README.md) — or run `npm run inspect -w @pdm/mock-data` |
 | Learn the concepts behind all of it | [docs/learning/](docs/learning/) |

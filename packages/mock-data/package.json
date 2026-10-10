@@ -1,0 +1,21 @@
+{
+  "name": "@pdm/mock-data",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Seeded fake backend for demo mode. Runs in a Web Worker and answers the same requests as a real backend.",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./worker": "./src/worker.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --exclude src/inspect.test.ts",
+    "test:watch": "vitest --exclude src/inspect.test.ts",
+    "inspect": "vitest run src/inspect.test.ts --silent=false"
+  },
+  "dependencies": {
+    "@pdm/contracts": "*",
+    "zod": "^4.6.5"
+  }
+}

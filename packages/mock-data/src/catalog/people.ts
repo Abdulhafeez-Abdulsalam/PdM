@@ -1,0 +1,27 @@
+/** Fictional people. 4 per role, spread over the 3 regions. */
+import type { RoleId } from "@pdm/contracts";
+
+export const ROLE_TITLES: Record<RoleId, string> = {
+  executive: "VP Operations",
+  plant_manager: "Plant Manager",
+  reliability_engineer: "Reliability Engineer",
+  condition_analyst: "Condition Monitoring Analyst",
+  control_room_operator: "Control Room Operator",
+  maintenance_planner: "Maintenance Planner",
+  field_technician: "Field Technician",
+  hse_officer: "HSE Officer",
+  procurement: "Inventory & Procurement Manager",
+  esg_lead: "Sustainability Lead",
+  system_admin: "Platform Administrator",
+};
+
+export const FIRST_NAMES = [
+  "Amara", "Daniel", "Fatima", "Kwame", "Sofia", "Omar", "Grace", "Hiroshi", "Leila", "Mateo",
+  "Ngozi", "Priya", "Samuel", "Yara", "Chidi", "Elena", "Hassan", "Ines", "Jamal", "Mei",
+  "Tunde", "Zainab", "Lucas", "Aisha", "Rafael", "Nadia", "Kofi", "Hana", "Victor", "Salma",
+];
+
+export const LAST_NAMES = [
+  "Okafor", "Haddad", "Mensah", "Rivera", "Al-Mansouri", "Nakamura", "Adeyemi", "Fernandes", "Khan", "Osei",
+  "Delgado", "Bello", "Chen", "Nasser", "Walker", "Ibrahim", "Santos", "Eze", "Moreau", "Patel",
+];

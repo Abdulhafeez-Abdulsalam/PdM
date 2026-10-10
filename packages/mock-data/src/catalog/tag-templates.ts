@@ -1,0 +1,268 @@
+/**
+ * Sensor templates per asset class: what each kind of equipment measures, its normal value,
+ * and which direction is "bad". Values are typical for the industry, in canonical SI units.
+ *
+ * How a value is produced (see signals.ts):
+ *   running value = base × (1 − load + load × L)       L = the asset's load right now, 0–1
+ *   value         = blend from `idle` to running value by how much the asset is running
+ *                 + ambient effect + noise + slow wander + fault effect
+ */
+import type { AssetClass, Quantity } from "@pdm/contracts";
+
+export interface TagTemplate {
+  name: string;
+  description: string;
+  quantity: Quantity;
+  /** Typical value at full load, healthy. */
+  base: number;
+  /** Value when stopped: a number, "ambient" (cools to air temperature), or "hold" (stays at base). Default 0. */
+  idle?: number | "ambient" | "hold";
+  /** 0 = ignores load, 1 = proportional to load. Default 0. */
+  load?: number;
+  /** Swing with air temperature, as a fraction of base (hot afternoon → +, cold night → −). Default 0. */
+  ambient?: number;
+  /** Random noise standard deviation as a fraction of base. Default 0.01. */
+  noise?: number;
+  /** Slow drift over hours, as a fraction of base. Default 0.3 × noise. */
+  wander?: number;
+  /** Which direction is bad. Sets the limits and which faults affect it. */
+  bad?: "high" | "low";
+  /** Alert / alarm / trip distances from base, as fractions. Default [0.08, 0.15, 0.25]. */
+  limits?: readonly [alert: number, alarm: number, trip: number];
+  /** Scales with the asset's size (power, current, flow). Default false. */
+  scaled?: boolean;
+  /** Special signal sources. "ambient" = the site's air temperature. */
+  source?: "ambient";
+}
+
+const vib = (name: string, base: number, description = "Bearing vibration velocity"): TagTemplate => ({
+  name, description, quantity: "vibration_velocity", base, noise: 0.04, bad: "high", limits: [0.6, 1.1, 1.8],
+});
+const brgTemp = (name: string, base: number): TagTemplate => ({
+  name, description: "Bearing metal temperature", quantity: "temperature", base, idle: "ambient",
+  ambient: 0.02, noise: 0.006, bad: "high", limits: [0.1, 0.16, 0.24],
+});
+
+export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
+  // ─── Gas-to-power ───────────────────────────────────────────────────────────
+  gas_turbine: [
+    { name: "POWER", description: "Gross active power", quantity: "power", base: 165_000, load: 1, noise: 0.004, scaled: true },
+    { name: "SPEED", description: "Shaft speed", quantity: "rotational_speed", base: 3000, noise: 0.0005 },
+    { name: "EXH_TEMP", description: "Exhaust temperature (average)", quantity: "temperature", base: 585, idle: "ambient", ambient: 0.015, noise: 0.003, bad: "high", limits: [0.04, 0.06, 0.09] },
+    { name: "EXH_SPREAD", description: "Exhaust temperature spread", quantity: "temperature", base: 22, noise: 0.04, bad: "high", limits: [0.5, 0.9, 1.4] },
+    { name: "CDP", description: "Compressor discharge pressure", quantity: "pressure", base: 17.5, load: 0.05, noise: 0.004, bad: "low", limits: [0.07, 0.11, 0.16] },
+    { name: "CDT", description: "Compressor discharge temperature", quantity: "temperature", base: 410, idle: "ambient", ambient: 0.02, noise: 0.003, bad: "high", limits: [0.05, 0.08, 0.12] },
+    { name: "COMP_EFF", description: "Compressor isentropic efficiency", quantity: "percent", base: 88.5, noise: 0.002, bad: "low", limits: [0.03, 0.05, 0.08] },
+    { name: "HEAT_RATE", description: "Net heat rate", quantity: "heat_rate", base: 9750, noise: 0.003, bad: "high", limits: [0.03, 0.05, 0.08] },
+    { name: "FILTER_DP", description: "Inlet filter differential pressure", quantity: "pressure", base: 0.011, noise: 0.02, bad: "high", limits: [0.4, 0.8, 1.2] },
+    vib("BRG1_VIB", 3.1, "Bearing 1 vibration velocity"),
+    vib("BRG2_VIB", 2.7, "Bearing 2 vibration velocity"),
+    brgTemp("BRG1_TEMP", 88),
+    brgTemp("BRG2_TEMP", 84),
+    { name: "LUBE_P", description: "Lube oil header pressure", quantity: "pressure", base: 2.5, idle: 0, bad: "low", limits: [0.1, 0.18, 0.28] },
+    { name: "LUBE_T", description: "Lube oil temperature", quantity: "temperature", base: 54, idle: "ambient", ambient: 0.03, noise: 0.008, bad: "high", limits: [0.12, 0.2, 0.3] },
+    { name: "FUEL_FLOW", description: "Fuel gas flow", quantity: "gas_flow", base: 1_050_000, load: 1, noise: 0.005, scaled: true },
+    { name: "NOX", description: "NOx emissions (15% O₂)", quantity: "concentration", base: 14, noise: 0.04, bad: "high", limits: [0.3, 0.55, 0.9] },
+    { name: "CO", description: "CO emissions (15% O₂)", quantity: "concentration", base: 7, noise: 0.06, bad: "high", limits: [0.5, 0.9, 1.4] },
+  ],
+  steam_turbine: [
+    { name: "POWER", description: "Gross active power", quantity: "power", base: 95_000, load: 1, noise: 0.004, scaled: true },
+    { name: "SPEED", description: "Shaft speed", quantity: "rotational_speed", base: 3000, noise: 0.0005 },
+    { name: "STEAM_P", description: "Main steam pressure", quantity: "pressure", base: 125, load: 0.3, noise: 0.004 },
+    { name: "STEAM_T", description: "Main steam temperature", quantity: "temperature", base: 565, idle: "ambient", noise: 0.003, bad: "high", limits: [0.03, 0.05, 0.07] },
+    { name: "COND_P", description: "Condenser pressure (absolute)", quantity: "pressure", base: 0.08, ambient: 0.1, noise: 0.02, bad: "high", limits: [0.3, 0.55, 0.85] },
+    vib("BRG1_VIB", 2.4),
+    vib("BRG2_VIB", 2.2),
+    brgTemp("BRG1_TEMP", 80),
+    brgTemp("BRG2_TEMP", 78),
+    { name: "LUBE_P", description: "Lube oil header pressure", quantity: "pressure", base: 2.3, idle: 0, bad: "low", limits: [0.1, 0.18, 0.28] },
+  ],
+  hrsg: [
+    { name: "HP_DRUM_P", description: "HP drum pressure", quantity: "pressure", base: 128, load: 0.3, noise: 0.005 },
+    { name: "HP_DRUM_LVL", description: "HP drum level", quantity: "percent", base: 50, idle: "hold", noise: 0.03 },
+    { name: "HP_STEAM_T", description: "HP superheated steam temperature", quantity: "temperature", base: 560, idle: "ambient", noise: 0.003, bad: "high", limits: [0.03, 0.05, 0.07] },
+    { name: "STACK_T", description: "Stack gas temperature", quantity: "temperature", base: 95, idle: "ambient", ambient: 0.05, noise: 0.01, bad: "high", limits: [0.15, 0.25, 0.35] },
+    { name: "ECON_DP", description: "Economiser gas-side differential pressure", quantity: "pressure", base: 0.04, noise: 0.02, bad: "high", limits: [0.3, 0.6, 1.0] },
+    { name: "FW_FLOW", description: "Feedwater flow", quantity: "liquid_flow", base: 260, load: 1, noise: 0.006, scaled: true },
+  ],
+  generator: [
+    { name: "POWER", description: "Active power output", quantity: "power", base: 165_000, load: 1, noise: 0.004, scaled: true },
+    { name: "VOLTAGE", description: "Stator terminal voltage", quantity: "voltage", base: 15_750, noise: 0.003 },
+    { name: "CURRENT", description: "Stator current", quantity: "current", base: 6500, load: 1, noise: 0.005, scaled: true },
+    { name: "FREQ", description: "Frequency", quantity: "frequency", base: 50, noise: 0.0004 },
+    { name: "STATOR_T", description: "Stator winding temperature (hottest RTD)", quantity: "temperature", base: 95, idle: "ambient", load: 0.3, ambient: 0.02, noise: 0.006, bad: "high", limits: [0.12, 0.2, 0.28] },
+    { name: "PD_ACTIVITY", description: "Partial discharge activity (pulses/s)", quantity: "count", base: 120, noise: 0.1, bad: "high", limits: [0.8, 1.5, 2.5] },
+    vib("BRG1_VIB", 2.2),
+    brgTemp("BRG1_TEMP", 75),
+    { name: "H2_PURITY", description: "Hydrogen coolant purity", quantity: "percent", base: 97.5, idle: "hold", noise: 0.001, bad: "low", limits: [0.02, 0.035, 0.05] },
+  ],
+  transformer: [
+    { name: "OIL_TEMP", description: "Top oil temperature", quantity: "temperature", base: 62, idle: "ambient", load: 0.15, ambient: 0.04, noise: 0.006, bad: "high", limits: [0.15, 0.25, 0.35] },
+    { name: "WINDING_T", description: "Winding hot-spot temperature", quantity: "temperature", base: 78, idle: "ambient", load: 0.2, ambient: 0.04, noise: 0.006, bad: "high", limits: [0.15, 0.25, 0.35] },
+    { name: "LOADING", description: "Loading (% of nameplate)", quantity: "percent", base: 70, load: 1, noise: 0.005 },
+    { name: "H2", description: "Dissolved hydrogen (DGA)", quantity: "concentration", base: 45, idle: "hold", noise: 0.03, bad: "high", limits: [1.2, 2.5, 4] },
+    { name: "C2H2", description: "Dissolved acetylene (DGA)", quantity: "concentration", base: 0.5, idle: "hold", noise: 0.1, bad: "high", limits: [2, 5, 10] },
+    { name: "CO", description: "Dissolved carbon monoxide (DGA)", quantity: "concentration", base: 300, idle: "hold", noise: 0.03, bad: "high", limits: [0.6, 1.2, 2] },
+    { name: "TAP_POS", description: "On-load tap changer position", quantity: "count", base: 9, idle: "hold", noise: 0, wander: 0 },
+  ],
+  switchgear: [
+    { name: "BUS_V", description: "Busbar voltage", quantity: "voltage", base: 33_000, idle: "hold", noise: 0.002 },
+    { name: "CURRENT", description: "Feeder current", quantity: "current", base: 1200, load: 1, noise: 0.006, scaled: true },
+    { name: "CONTACT_T", description: "Busbar joint temperature", quantity: "temperature", base: 45, idle: "ambient", load: 0.2, ambient: 0.05, noise: 0.008, bad: "high", limits: [0.25, 0.4, 0.6] },
+    { name: "PD_ACTIVITY", description: "Partial discharge activity (pulses/s)", quantity: "count", base: 20, idle: "hold", noise: 0.15, bad: "high", limits: [1.5, 3, 5] },
+  ],
+  recip_engine: [
+    { name: "POWER", description: "Engine output", quantity: "power", base: 18_000, load: 1, noise: 0.005, scaled: true },
+    { name: "SPEED", description: "Crankshaft speed", quantity: "rotational_speed", base: 750, noise: 0.001 },
+    { name: "EXH_T", description: "Exhaust temperature after turbocharger", quantity: "temperature", base: 420, idle: "ambient", ambient: 0.01, noise: 0.005, bad: "high", limits: [0.06, 0.1, 0.15] },
+    { name: "JW_TEMP", description: "Jacket water outlet temperature", quantity: "temperature", base: 88, idle: "ambient", ambient: 0.02, noise: 0.005, bad: "high", limits: [0.06, 0.1, 0.14] },
+    { name: "LUBE_P", description: "Lube oil pressure", quantity: "pressure", base: 4.5, idle: 0, bad: "low", limits: [0.1, 0.18, 0.28] },
+    vib("BRG1_VIB", 6),
+    brgTemp("BRG1_TEMP", 80),
+  ],
+
+  // ─── Oil & gas ──────────────────────────────────────────────────────────────
+  compressor: [
+    { name: "SUCTION_P", description: "Suction pressure", quantity: "pressure", base: 35, idle: "hold", noise: 0.006 },
+    { name: "DISCHARGE_P", description: "Discharge pressure", quantity: "pressure", base: 70, idle: 35, noise: 0.005 },
+    { name: "FLOW", description: "Gas flow", quantity: "gas_flow", base: 4_500_000, load: 0.6, noise: 0.006, scaled: true },
+    { name: "SPEED", description: "Shaft speed", quantity: "rotational_speed", base: 9500, load: 0.2, noise: 0.002 },
+    { name: "SURGE_MARGIN", description: "Surge margin", quantity: "percent", base: 22, idle: "hold", noise: 0.02, bad: "low", limits: [0.25, 0.4, 0.6] },
+    { name: "POLY_EFF", description: "Polytropic efficiency", quantity: "percent", base: 82, idle: "hold", noise: 0.003, bad: "low", limits: [0.03, 0.05, 0.08] },
+    vib("BRG1_VIB", 3.5),
+    vib("BRG2_VIB", 3.2),
+    brgTemp("BRG1_TEMP", 82),
+    { name: "SEAL_GAS_DP", description: "Dry gas seal differential pressure", quantity: "pressure", base: 3.2, idle: "hold", noise: 0.01, bad: "low", limits: [0.15, 0.25, 0.4] },
+    { name: "DISCH_T", description: "Discharge temperature", quantity: "temperature", base: 125, idle: "ambient", ambient: 0.02, noise: 0.005, bad: "high", limits: [0.08, 0.14, 0.2] },
+  ],
+  pump: [
+    { name: "FLOW", description: "Flow", quantity: "liquid_flow", base: 220, load: 0.5, noise: 0.008, scaled: true },
+    { name: "SUCTION_P", description: "Suction pressure", quantity: "pressure", base: 3.5, idle: "hold", noise: 0.01 },
+    { name: "DISCHARGE_P", description: "Discharge pressure", quantity: "pressure", base: 18, idle: 3.5, load: 0.1, noise: 0.006 },
+    { name: "MOTOR_CURRENT", description: "Motor current", quantity: "current", base: 145, load: 0.5, noise: 0.008, scaled: true },
+    vib("BRG1_VIB", 2.8),
+    { name: "BRG1_TEMP", description: "Bearing temperature", quantity: "temperature", base: 68, idle: "ambient", ambient: 0.03, noise: 0.006, bad: "high", limits: [0.12, 0.2, 0.3] },
+    { name: "EFFICIENCY", description: "Hydraulic efficiency", quantity: "percent", base: 74, idle: "hold", noise: 0.004, bad: "low", limits: [0.04, 0.07, 0.1] },
+  ],
+  esp: [
+    { name: "MOTOR_AMPS", description: "Motor current", quantity: "current", base: 62, load: 0.2, noise: 0.008, bad: "high", limits: [0.12, 0.2, 0.3] },
+    { name: "MOTOR_TEMP", description: "Downhole motor winding temperature", quantity: "temperature", base: 135, idle: 95, noise: 0.004, bad: "high", limits: [0.06, 0.1, 0.14] },
+    { name: "INTAKE_P", description: "Pump intake pressure", quantity: "pressure", base: 85, idle: "hold", noise: 0.006, bad: "low", limits: [0.1, 0.18, 0.28] },
+    { name: "DISCHARGE_P", description: "Pump discharge pressure", quantity: "pressure", base: 210, idle: 85, noise: 0.005 },
+    { name: "FREQ", description: "Drive frequency", quantity: "frequency", base: 55, noise: 0.001 },
+    vib("BRG1_VIB", 1.5, "Pump vibration"),
+    { name: "FLOW", description: "Liquid rate", quantity: "liquid_flow", base: 45, load: 0.5, noise: 0.01 },
+  ],
+  rod_pump: [
+    { name: "SPM", description: "Strokes per minute", quantity: "count", base: 8, noise: 0.01 },
+    { name: "LOAD_MAX", description: "Peak polished-rod load", quantity: "mass", base: 9500, noise: 0.01, bad: "high", limits: [0.1, 0.18, 0.28] },
+    { name: "FILLAGE", description: "Pump fillage", quantity: "percent", base: 88, idle: "hold", noise: 0.02, bad: "low", limits: [0.1, 0.2, 0.3] },
+    { name: "MOTOR_CURRENT", description: "Motor current", quantity: "current", base: 40, load: 0.3, noise: 0.01 },
+  ],
+  wellhead: [
+    { name: "THP", description: "Tubing head pressure", quantity: "pressure", base: 42, idle: "hold", noise: 0.008 },
+    { name: "CHP", description: "Casing head pressure", quantity: "pressure", base: 18, idle: "hold", noise: 0.008 },
+    { name: "WHT", description: "Wellhead temperature", quantity: "temperature", base: 68, idle: "ambient", ambient: 0.02, noise: 0.005 },
+    { name: "CHOKE", description: "Choke opening", quantity: "percent", base: 45, idle: "hold", noise: 0, wander: 0 },
+    { name: "OIL_RATE", description: "Oil rate", quantity: "liquid_flow", base: 18, load: 0.3, noise: 0.02, scaled: true },
+    { name: "GAS_RATE", description: "Gas rate", quantity: "gas_flow", base: 85_000, load: 0.3, noise: 0.02, scaled: true },
+    { name: "WATER_CUT", description: "Water cut", quantity: "percent", base: 35, idle: "hold", noise: 0.01 },
+  ],
+  separator: [
+    { name: "PRESSURE", description: "Vessel pressure", quantity: "pressure", base: 12, idle: "hold", noise: 0.005, bad: "high", limits: [0.1, 0.18, 0.25] },
+    { name: "LEVEL", description: "Liquid level", quantity: "percent", base: 50, idle: "hold", noise: 0.03 },
+    { name: "TEMP", description: "Operating temperature", quantity: "temperature", base: 55, idle: "ambient", ambient: 0.02, noise: 0.006 },
+    { name: "GAS_OUT", description: "Gas outlet flow", quantity: "gas_flow", base: 900_000, load: 0.6, noise: 0.01, scaled: true },
+    { name: "OIL_OUT", description: "Oil outlet flow", quantity: "liquid_flow", base: 120, load: 0.6, noise: 0.01, scaled: true },
+    { name: "WATER_OUT", description: "Water outlet flow", quantity: "liquid_flow", base: 60, load: 0.6, noise: 0.015, scaled: true },
+    { name: "INTERNALS_DP", description: "Demister differential pressure", quantity: "pressure", base: 0.3, idle: "hold", noise: 0.02, bad: "high", limits: [0.4, 0.8, 1.2] },
+  ],
+  pipeline_segment: [
+    { name: "INLET_P", description: "Inlet pressure", quantity: "pressure", base: 72, idle: "hold", noise: 0.004 },
+    { name: "OUTLET_P", description: "Outlet pressure", quantity: "pressure", base: 66, idle: "hold", noise: 0.004 },
+    { name: "FLOW", description: "Gas flow", quantity: "gas_flow", base: 12_000_000, load: 0.3, noise: 0.004, scaled: true },
+    { name: "WALL_THK", description: "Minimum wall thickness (latest ILI / UT)", quantity: "length", base: 12.7, idle: "hold", noise: 0.0005, wander: 0, bad: "low", limits: [0.15, 0.25, 0.35] },
+    { name: "CP_POTENTIAL", description: "Cathodic protection pipe-to-soil potential (magnitude, −V vs CSE)", quantity: "voltage", base: 1.05, idle: "hold", noise: 0.01, bad: "low", limits: [0.12, 0.18, 0.25] },
+    { name: "CORR_RATE", description: "Internal corrosion rate (mm per year)", quantity: "length", base: 0.08, idle: "hold", noise: 0.05, bad: "high", limits: [0.8, 1.5, 2.5] },
+    { name: "LEAK_INDEX", description: "Leak detection index (mass balance)", quantity: "percent", base: 2, idle: "hold", noise: 0.2, bad: "high", limits: [3, 6, 10] },
+  ],
+  heat_exchanger: [
+    { name: "TS_IN_T", description: "Tube-side inlet temperature", quantity: "temperature", base: 180, idle: "ambient", noise: 0.004 },
+    { name: "TS_OUT_T", description: "Tube-side outlet temperature", quantity: "temperature", base: 120, idle: "ambient", noise: 0.004 },
+    { name: "SS_IN_T", description: "Shell-side inlet temperature", quantity: "temperature", base: 40, idle: "ambient", ambient: 0.05, noise: 0.006 },
+    { name: "SS_OUT_T", description: "Shell-side outlet temperature", quantity: "temperature", base: 95, idle: "ambient", noise: 0.005 },
+    { name: "THERMAL_EFF", description: "Thermal effectiveness (vs clean design)", quantity: "percent", base: 92, idle: "hold", noise: 0.003, bad: "low", limits: [0.04, 0.07, 0.1] },
+    { name: "TS_DP", description: "Tube-side differential pressure", quantity: "pressure", base: 0.8, noise: 0.01, bad: "high", limits: [0.25, 0.5, 0.8] },
+    { name: "DUTY", description: "Heat duty", quantity: "power", base: 4500, load: 0.8, noise: 0.008, scaled: true },
+  ],
+  fired_heater: [
+    { name: "TMT_MAX", description: "Maximum tube metal temperature", quantity: "temperature", base: 560, idle: "ambient", noise: 0.004, bad: "high", limits: [0.04, 0.07, 0.1] },
+    { name: "FLUE_T", description: "Flue gas temperature (bridgewall)", quantity: "temperature", base: 380, idle: "ambient", ambient: 0.01, noise: 0.005, bad: "high", limits: [0.08, 0.14, 0.2] },
+    { name: "O2", description: "Excess oxygen", quantity: "percent", base: 3.2, idle: "hold", noise: 0.03, bad: "low", limits: [0.25, 0.4, 0.55] },
+    { name: "FUEL", description: "Fuel gas flow", quantity: "gas_flow", base: 95_000, load: 0.7, noise: 0.006, scaled: true },
+    { name: "OUTLET_T", description: "Process outlet temperature", quantity: "temperature", base: 360, idle: "ambient", noise: 0.002 },
+  ],
+  pressure_vessel: [
+    { name: "PRESSURE", description: "Operating pressure", quantity: "pressure", base: 25, idle: "hold", noise: 0.004, bad: "high", limits: [0.08, 0.14, 0.2] },
+    { name: "LEVEL", description: "Liquid level", quantity: "percent", base: 50, idle: "hold", noise: 0.03 },
+    { name: "TEMP", description: "Operating temperature", quantity: "temperature", base: 70, idle: "ambient", ambient: 0.02, noise: 0.005 },
+    { name: "WALL_THK", description: "Minimum wall thickness (latest UT)", quantity: "length", base: 22, idle: "hold", noise: 0.0004, wander: 0, bad: "low", limits: [0.12, 0.2, 0.3] },
+  ],
+  storage_tank: [
+    { name: "LEVEL", description: "Product level", quantity: "percent", base: 62, idle: "hold", noise: 0.002, wander: 0.25 },
+    { name: "TEMP", description: "Product temperature", quantity: "temperature", base: 35, idle: "hold", ambient: 0.08, noise: 0.004 },
+    { name: "WALL_THK", description: "Shell course 1 minimum thickness (API 653)", quantity: "length", base: 9.5, idle: "hold", noise: 0.0005, wander: 0, bad: "low", limits: [0.12, 0.2, 0.3] },
+  ],
+  control_valve: [
+    { name: "POSITION", description: "Valve position", quantity: "percent", base: 55, idle: "hold", noise: 0.01, wander: 0.1 },
+    { name: "POS_DEV", description: "Position deviation from demand", quantity: "percent", base: 0.8, idle: "hold", noise: 0.1, bad: "high", limits: [1.5, 3, 5] },
+    { name: "AIR_P", description: "Actuator supply air pressure", quantity: "pressure", base: 4.1, idle: "hold", noise: 0.005, bad: "low", limits: [0.1, 0.18, 0.25] },
+  ],
+  psv: [
+    { name: "INLET_P", description: "Inlet pressure", quantity: "pressure", base: 20, idle: "hold", noise: 0.005 },
+    { name: "SET_P", description: "Set pressure", quantity: "pressure", base: 24, idle: "hold", noise: 0, wander: 0 },
+    { name: "SEAT_LEAK", description: "Acoustic seat leakage indicator", quantity: "percent", base: 0.3, idle: "hold", noise: 0.2, bad: "high", limits: [2, 4, 7] },
+  ],
+
+  // ─── Solar ──────────────────────────────────────────────────────────────────
+  inverter: [
+    { name: "AC_POWER", description: "AC active power", quantity: "power", base: 3500, load: 1, noise: 0.004, scaled: true },
+    { name: "DC_POWER", description: "DC input power", quantity: "power", base: 3570, load: 1, noise: 0.004, scaled: true },
+    { name: "DC_V", description: "DC input voltage", quantity: "voltage", base: 1150, load: 0.15, noise: 0.004 },
+    { name: "AC_V", description: "AC output voltage", quantity: "voltage", base: 690, idle: "hold", noise: 0.003 },
+    { name: "EFFICIENCY", description: "Conversion efficiency", quantity: "percent", base: 98.2, idle: "hold", noise: 0.001, bad: "low", limits: [0.015, 0.03, 0.05] },
+    { name: "IGBT_T", description: "IGBT module temperature", quantity: "temperature", base: 55, idle: "ambient", load: 0.4, ambient: 0.05, noise: 0.008, bad: "high", limits: [0.15, 0.25, 0.35] },
+    { name: "CAB_T", description: "Cabinet internal temperature", quantity: "temperature", base: 40, idle: "ambient", load: 0.2, ambient: 0.08, noise: 0.008, bad: "high", limits: [0.2, 0.32, 0.45] },
+    { name: "FAN_SPEED", description: "Cooling fan speed", quantity: "rotational_speed", base: 2800, load: 0.6, noise: 0.01 },
+    { name: "ISO_RES", description: "DC insulation resistance (kΩ)", quantity: "count", base: 1500, idle: "hold", noise: 0.05, bad: "low", limits: [0.4, 0.6, 0.8] },
+    { name: "POWER_LIMIT", description: "Active power limit (derating)", quantity: "percent", base: 100, idle: "hold", noise: 0, wander: 0, bad: "low", limits: [0.05, 0.15, 0.3] },
+  ],
+  pv_string: [
+    { name: "CURRENT", description: "String current", quantity: "current", base: 9.8, load: 1, noise: 0.01 },
+    { name: "VOLTAGE", description: "String voltage", quantity: "voltage", base: 1150, load: 0.1, noise: 0.004 },
+    { name: "POWER", description: "String DC power", quantity: "power", base: 11.3, load: 1, noise: 0.01 },
+    { name: "PERF_INDEX", description: "Performance vs. peer strings", quantity: "percent", base: 99, idle: "hold", noise: 0.006, bad: "low", limits: [0.06, 0.12, 0.2] },
+    { name: "MODULE_T", description: "Back-of-module temperature", quantity: "temperature", base: 45, idle: "ambient", load: 0.5, ambient: 0.1, noise: 0.01 },
+  ],
+  combiner_box: [
+    { name: "CURRENT", description: "Combined output current", quantity: "current", base: 115, load: 1, noise: 0.008 },
+    { name: "VOLTAGE", description: "Output voltage", quantity: "voltage", base: 1150, load: 0.1, noise: 0.004 },
+    { name: "TEMP", description: "Enclosure temperature", quantity: "temperature", base: 42, idle: "ambient", load: 0.3, ambient: 0.1, noise: 0.01, bad: "high", limits: [0.3, 0.5, 0.7] },
+  ],
+  tracker: [
+    { name: "TRACK_ERR", description: "Tracking error (% of range)", quantity: "percent", base: 0.5, idle: "hold", noise: 0.2, bad: "high", limits: [3, 6, 10] },
+    { name: "MOTOR_CURRENT", description: "Actuator motor current", quantity: "current", base: 2.1, load: 0.3, noise: 0.05, bad: "high", limits: [0.4, 0.8, 1.3] },
+  ],
+  bess: [
+    { name: "SOC", description: "State of charge", quantity: "percent", base: 100, load: 1, noise: 0.002 },
+    { name: "SOH", description: "State of health", quantity: "percent", base: 95, idle: "hold", noise: 0.0005, wander: 0, bad: "low", limits: [0.04, 0.07, 0.1] },
+    { name: "CELL_DV", description: "Max cell voltage imbalance", quantity: "voltage", base: 0.012, idle: "hold", noise: 0.05, bad: "high", limits: [0.8, 1.5, 2.5] },
+    { name: "CELL_T_MAX", description: "Hottest cell temperature", quantity: "temperature", base: 31, idle: "hold", load: 0.1, ambient: 0.06, noise: 0.008, bad: "high", limits: [0.2, 0.3, 0.45] },
+  ],
+  weather_station: [
+    { name: "GHI", description: "Global horizontal irradiance", quantity: "irradiance", base: 1000, load: 1, noise: 0.01 },
+    { name: "POA", description: "Plane-of-array irradiance", quantity: "irradiance", base: 1080, load: 1, noise: 0.01 },
+    { name: "AMB_T", description: "Ambient air temperature", quantity: "temperature", base: 0, source: "ambient", noise: 0 },
+    { name: "SOILING", description: "Soiling loss", quantity: "percent", base: 2, idle: "hold", noise: 0.05, wander: 0.3 },
+  ],
+};
