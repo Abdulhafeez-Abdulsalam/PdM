@@ -1,0 +1,31 @@
+# Dependencies (re-created by `npm install`)
+node_modules/
+
+# Build output
+dist/
+build/
+*.tsbuildinfo
+.turbo/
+
+# Test and tool output
+coverage/
+playwright-report/
+test-results/
+storybook-static/
+
+# Local environment files (may contain secrets — never commit)
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# Editor and OS clutter
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+Thumbs.db

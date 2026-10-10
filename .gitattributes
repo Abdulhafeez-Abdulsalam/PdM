@@ -1,0 +1,9 @@
+# Store text files with LF line endings in the repo, whatever OS edits them.
+# Prevents "every line changed" diffs between Windows and Mac/Linux.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
+*.glb binary
