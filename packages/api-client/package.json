@@ -1,0 +1,23 @@
+{
+  "name": "@pdm/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Typed API client: request functions, live data, React hooks. Talks to a Transport (mock worker or real HTTP).",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@pdm/contracts": "*",
+    "@tanstack/react-query": "^5.104.1",
+    "react": "^19.3.0",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@pdm/mock-data": "*"
+  }
+}

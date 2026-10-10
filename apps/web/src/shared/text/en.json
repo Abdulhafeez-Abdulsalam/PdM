@@ -1,0 +1,145 @@
+{
+  "app": {
+    "name": "PdM",
+    "fullName": "Predictive Maintenance",
+    "skipToContent": "Skip to main content"
+  },
+  "nav": {
+    "label": "Main navigation",
+    "collapse": "Collapse navigation",
+    "expand": "Expand navigation",
+    "open": "Open navigation",
+    "close": "Close navigation",
+    "plannedPhase": "Phase {{phase}}",
+    "groups": {
+      "monitor": "Monitor",
+      "predict": "Predict & improve",
+      "act": "Act",
+      "govern": "Govern",
+      "system": "System"
+    }
+  },
+  "modules": {
+    "command-center": { "name": "Command Center", "description": "Enterprise health, KPIs, top risks, the map and the daily briefing." },
+    "assets": { "name": "Assets", "description": "The asset registry and the Asset 360 page for every piece of equipment." },
+    "alarms": { "name": "Alarms & Events", "description": "Live alarms, acknowledgement, shelving and the event timeline." },
+    "operations": { "name": "Operations", "description": "Dashboards for oil & gas, gas-to-power and solar operations." },
+    "twin": { "name": "Digital Twin", "description": "P&IDs, 3D models, solar layouts and pipeline routes with live values." },
+    "predictive": { "name": "Predictive & AI", "description": "Predictions, anomalies, explanations and the model registry." },
+    "reliability": { "name": "Reliability", "description": "Weibull, FMEA, root-cause analysis and bad-actor programmes." },
+    "maintenance": { "name": "Maintenance", "description": "Work orders, scheduling, PM programmes and turnarounds." },
+    "field": { "name": "Field", "description": "Mobile task execution for field technicians." },
+    "inventory": { "name": "Inventory", "description": "Spare parts, stock levels, reservations and vendors." },
+    "hse": { "name": "HSE & Compliance", "description": "Safety-critical elements, permits, incidents and audits." },
+    "esg": { "name": "Energy & ESG", "description": "Emissions, flaring, methane and sustainability reporting." },
+    "financials": { "name": "Financials", "description": "Value realised, cost of downtime and budgets." },
+    "reports": { "name": "Reports", "description": "Report builder, scheduled reports and shift handover." },
+    "data": { "name": "Data & Integrations", "description": "Data sources, tag management and data quality." },
+    "admin": { "name": "Administration", "description": "Users, roles, hierarchy, thresholds and the audit log." }
+  },
+  "roles": {
+    "executive": "Executive / VP Ops",
+    "plant_manager": "Plant / Asset Manager",
+    "reliability_engineer": "Reliability Engineer",
+    "condition_analyst": "Condition Monitoring Analyst",
+    "control_room_operator": "Control Room Operator",
+    "maintenance_planner": "Maintenance Planner",
+    "field_technician": "Field Technician",
+    "hse_officer": "HSE Officer",
+    "procurement": "Procurement / Inventory",
+    "esg_lead": "ESG / Sustainability Lead",
+    "system_admin": "System Admin"
+  },
+  "health": {
+    "healthy": "Healthy",
+    "watch": "Watch",
+    "degraded": "Degraded",
+    "warning": "Warning",
+    "critical": "Critical",
+    "offline": "Offline / no data",
+    "maintenance": "Maintenance"
+  },
+  "alarms": {
+    "barLabel": "Alarm summary",
+    "priority": {
+      "p1": "P1 Urgent",
+      "p2": "P2 High",
+      "p3": "P3 Medium",
+      "p4": "P4 Low"
+    },
+    "countLabel": "{{priority}}: {{active}} active, {{unacked}} unacknowledged",
+    "shelved": "Shelved {{count}}",
+    "suppressed": "Suppressed {{count}}",
+    "loading": "Loading alarm counts"
+  },
+  "topBar": {
+    "scope": "Scope",
+    "enterprise": "Enterprise",
+    "timeRange": "Time range",
+    "role": "Viewing as",
+    "display": "Display",
+    "theme": "Theme",
+    "units": "Units",
+    "timeZone": "Time zone"
+  },
+  "timeRange": {
+    "live": "Live",
+    "1h": "Last hour",
+    "24h": "Last 24 hours",
+    "7d": "Last 7 days",
+    "30d": "Last 30 days"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark",
+    "control-room": "Control room"
+  },
+  "units": {
+    "si": "SI",
+    "imperial": "Imperial",
+    "oilfield": "Oilfield"
+  },
+  "timeZone": {
+    "site": "Site local",
+    "utc": "UTC",
+    "user": "My time zone"
+  },
+  "connection": {
+    "connecting": "Connecting…",
+    "live": "Live",
+    "offline": "Offline",
+    "offlineBanner": "No connection. Live values are paused and shown as stale. Anything you type is kept — submit again once you're back online."
+  },
+  "simulation": {
+    "title": "Simulation",
+    "demoMode": "Demo data",
+    "simTime": "Simulated time",
+    "speed": "Speed",
+    "speedValue": "{{speed}}×",
+    "chaos": "Chaos mode",
+    "chaosHint": "Data gaps, bad quality, alarm floods",
+    "startStoryline": "Start demo storyline",
+    "storyline": "Storyline: {{asset}}",
+    "phases": {
+      "started": "Fouling begins",
+      "anomaly_detected": "Anomaly detected",
+      "prediction_raised": "Prediction raised",
+      "alarm_raised": "Alarm raised",
+      "work_order_created": "Work order created",
+      "repaired": "Water wash done",
+      "verified": "Recovery verified"
+    }
+  },
+  "placeholder": {
+    "comingInChunk": "This page arrives in a later chunk of Phase 1.",
+    "plannedFor": "Planned for Phase {{phase}}.",
+    "viewOnly": "View only for your role — action buttons will be hidden.",
+    "noAccessTitle": "Not part of your role's view",
+    "noAccess": "{{role}} doesn't use {{module}}. Switch role in the top bar to explore it."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "There's no page at this address.",
+    "home": "Go to your home page"
+  }
+}

@@ -1,0 +1,37 @@
+/*
+ * Exposes the design tokens to Tailwind. `inline` makes each utility reference the
+ * CSS variable directly, so switching data-theme repaints everything with no rebuild.
+ * Import this from a stylesheet that also does `@import "tailwindcss"`.
+ */
+@theme inline {
+  --color-canvas: var(--pdm-bg-canvas);
+  --color-surface: var(--pdm-bg-surface);
+  --color-raised: var(--pdm-bg-raised);
+  --color-sunken: var(--pdm-bg-sunken);
+  --color-line: var(--pdm-border);
+  --color-fg: var(--pdm-text-primary);
+  --color-fg-muted: var(--pdm-text-secondary);
+  --color-accent: var(--pdm-accent);
+  --color-accent-fg: var(--pdm-accent-text);
+  --color-focus: var(--pdm-focus-ring);
+  --color-scrim: var(--pdm-scrim);
+
+  --color-health-healthy: var(--pdm-health-healthy);
+  --color-health-watch: var(--pdm-health-watch);
+  --color-health-degraded: var(--pdm-health-degraded);
+  --color-health-warning: var(--pdm-health-warning);
+  --color-health-critical: var(--pdm-health-critical);
+  --color-health-offline: var(--pdm-health-offline);
+  --color-health-maintenance: var(--pdm-health-maintenance);
+
+  --color-alarm-p1: var(--pdm-alarm-p1);
+  --color-alarm-p2: var(--pdm-alarm-p2);
+  --color-alarm-p3: var(--pdm-alarm-p3);
+  --color-alarm-p4: var(--pdm-alarm-p4);
+
+  --shadow-1: var(--pdm-shadow-1);
+  --shadow-2: var(--pdm-shadow-2);
+
+  --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono Variable", ui-monospace, monospace;
+}

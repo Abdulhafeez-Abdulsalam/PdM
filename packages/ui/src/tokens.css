@@ -1,0 +1,96 @@
+/*
+ * Design tokens (design system §2–§5).
+ *
+ * Raw tokens are named --pdm-*. Each theme block gives them different values.
+ * theme.css then exposes them to Tailwind as --color-* so you can write `bg-surface`,
+ * `text-health-critical`, etc. Components never use raw colour values.
+ *
+ * The theme is chosen by <html data-theme="light | dark | control-room">.
+ */
+
+:root,
+[data-theme="light"] {
+  color-scheme: light;
+  --pdm-bg-canvas: #f7f8fa;
+  --pdm-bg-surface: #ffffff;
+  --pdm-bg-raised: #ffffff;
+  --pdm-bg-sunken: #eef0f3;
+  --pdm-border: #d1d5db;
+  --pdm-text-primary: #111827;
+  --pdm-text-secondary: #4b5563;
+  --pdm-accent: #1d4ed8;
+  --pdm-accent-text: #ffffff;
+  --pdm-focus-ring: #1d4ed8;
+
+  --pdm-health-healthy: #15803d;
+  --pdm-health-watch: #0e7490;
+  --pdm-health-degraded: #a16207;
+  --pdm-health-warning: #c2410c;
+  --pdm-health-critical: #b91c1c;
+  --pdm-health-offline: #6b7280;
+  --pdm-health-maintenance: #6d28d9;
+
+  --pdm-shadow-1: 0 1px 2px rgb(16 24 40 / 0.06), 0 1px 3px rgb(16 24 40 / 0.08);
+  --pdm-shadow-2: 0 4px 8px rgb(16 24 40 / 0.08), 0 2px 4px rgb(16 24 40 / 0.06);
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+  --pdm-bg-canvas: #0b0f14;
+  --pdm-bg-surface: #131a22;
+  --pdm-bg-raised: #1a2330;
+  --pdm-bg-sunken: #0f141a;
+  --pdm-border: #2a3441;
+  --pdm-text-primary: #e5e7eb;
+  --pdm-text-secondary: #9ca3af;
+  --pdm-accent: #60a5fa;
+  --pdm-accent-text: #0b0f14;
+  --pdm-focus-ring: #93c5fd;
+
+  --pdm-health-healthy: #4ade80;
+  --pdm-health-watch: #22d3ee;
+  --pdm-health-degraded: #facc15;
+  --pdm-health-warning: #fb923c;
+  --pdm-health-critical: #f87171;
+  --pdm-health-offline: #9ca3af;
+  --pdm-health-maintenance: #a78bfa;
+
+  --pdm-shadow-1: 0 1px 2px rgb(0 0 0 / 0.4);
+  --pdm-shadow-2: 0 4px 12px rgb(0 0 0 / 0.5);
+}
+
+/* ISA-101 high-performance HMI: grey for normal, colour only for abnormal, low blue, no glare. */
+[data-theme="control-room"] {
+  color-scheme: dark;
+  --pdm-bg-canvas: #2b2e31;
+  --pdm-bg-surface: #34383c;
+  --pdm-bg-raised: #3d4246;
+  --pdm-bg-sunken: #26292c;
+  --pdm-border: #4a4f54;
+  --pdm-text-primary: #d9dcdf;
+  --pdm-text-secondary: #a3a8ad;
+  --pdm-accent: #c8c2b4;
+  --pdm-accent-text: #2b2e31;
+  --pdm-focus-ring: #f2e8c9;
+
+  --pdm-health-healthy: #a3a8ad; /* normal is grey */
+  --pdm-health-watch: #8fb3bf;
+  --pdm-health-degraded: #d4b254;
+  --pdm-health-warning: #e8913a;
+  --pdm-health-critical: #e5484d;
+  --pdm-health-offline: #6e7378;
+  --pdm-health-maintenance: #9d8fc7;
+
+  /* Control room uses borders, not shadows. */
+  --pdm-shadow-1: 0 0 0 1px var(--pdm-border);
+  --pdm-shadow-2: 0 0 0 1px var(--pdm-border);
+}
+
+/* Alarm priorities map onto the health scale (ISA-18.2, design system §3). */
+:root {
+  --pdm-scrim: rgb(0 0 0 / 0.45); /* dims the page behind drawers and dialogs, every theme */
+  --pdm-alarm-p1: var(--pdm-health-critical);
+  --pdm-alarm-p2: var(--pdm-health-warning);
+  --pdm-alarm-p3: var(--pdm-health-degraded);
+  --pdm-alarm-p4: var(--pdm-health-watch);
+}

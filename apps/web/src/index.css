@@ -1,0 +1,39 @@
+@import "tailwindcss";
+@import "../../../packages/ui/src/tokens.css";
+@import "../../../packages/ui/src/theme.css";
+
+/* Tailwind only generates classes it finds in these files. Include the shared UI package. */
+@source "../../../packages/ui/src";
+
+@layer base {
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    background: var(--pdm-bg-canvas);
+    color: var(--pdm-text-primary);
+    font-family: var(--font-sans);
+    font-size: 14px; /* dense industrial UI (design system §4) */
+    -webkit-font-smoothing: antialiased;
+    /* Digits all the same width so changing values don't jiggle. */
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* One clearly visible focus ring for keyboard users, in every theme. */
+  :focus-visible {
+    outline: 2px solid var(--pdm-focus-ring);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
