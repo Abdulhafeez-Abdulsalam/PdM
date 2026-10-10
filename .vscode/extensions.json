@@ -1,0 +1,8 @@
+{
+  // VS Code offers to install these when the project is opened.
+  "recommendations": [
+    "bierner.markdown-mermaid",
+    "vitest.explorer",
+    "editorconfig.editorconfig"
+  ]
+}

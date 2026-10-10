@@ -13,6 +13,7 @@
   "scripts": {
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "check": "npm run typecheck && npm run test"
+    "check": "npm run typecheck && npm run test",
+    "test:watch": "npm run test:watch -w @pdm/contracts"
   }
 }
