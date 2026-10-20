@@ -18,6 +18,8 @@ import { CommandCenterPage } from "../features/command-center/CommandCenterPage"
 const AssetPage = lazyRouteComponent(() => import("../features/assets/AssetPage"), "AssetPage");
 const AssetRegistryPage = lazyRouteComponent(() => import("../features/assets/AssetRegistryPage"), "AssetRegistryPage");
 const AlarmsPage = lazyRouteComponent(() => import("../features/alarms/AlarmsPage"), "AlarmsPage");
+const PredictionConsolePage = lazyRouteComponent(() => import("../features/predictions/PredictionConsolePage"), "PredictionConsolePage");
+const PredictionPage = lazyRouteComponent(() => import("../features/predictions/PredictionPage"), "PredictionPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
 import { NotFoundPage } from "../features/module-page/NotFoundPage";
@@ -50,6 +52,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   "command-center": CommandCenterPage,
   assets: AssetRegistryPage,
   alarms: AlarmsPage,
+  predictive: PredictionConsolePage,
 };
 
 const moduleRoutes = MODULES.map((m) =>
@@ -76,7 +79,14 @@ const assetTabRoute = createRoute({
   component: AssetPage,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, ...moduleRoutes, assetRoute, assetTabRoute]);
+/** One prediction, full page. */
+const predictionRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/predictive/$predictionId",
+  component: PredictionPage,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, ...moduleRoutes, assetRoute, assetTabRoute, predictionRoute]);
 
 /** Tests pass an in-memory history; the app uses the browser's address bar. */
 export function createAppRouter(history: RouterHistory = createBrowserHistory()) {

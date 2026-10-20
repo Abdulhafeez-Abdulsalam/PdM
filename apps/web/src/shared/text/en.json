@@ -509,6 +509,7 @@
   "createWo": {
     "title": "Create work order",
     "fromAlarm": "Pre-filled from alarm {{id}} — check and create.",
+    "fromPrediction": "Pre-filled from prediction {{id}} — check and create.",
     "titleField": "Title",
     "description": "Description",
     "priority": "Priority",
@@ -593,6 +594,87 @@
       "process": "Process",
       "prediction": "Predictions"
     }
+  },
+  "console": {
+    "intro": "Every prediction in the current scope, ranked by money at risk. Open one to decide what to do.",
+    "stat": {
+      "active": "Needing attention",
+      "likely": "Likely (≥ 70%)",
+      "likelyHint": "Probability of failure within the horizon",
+      "soon": "Within 7 days",
+      "soonHint": "Median remaining life",
+      "exposure": "Money at risk",
+      "exposureHint": "Σ probability × cost if it fails",
+      "precision": "Model precision",
+      "precisionHint": "{{tp}} confirmed, {{fp}} false alarms (12 months)"
+    },
+    "show": "Show",
+    "showOption": {
+      "active": "Needing attention",
+      "open": "Open (not yet looked at)",
+      "dismissed": "Dismissed",
+      "closed": "Closed",
+      "all": "All"
+    },
+    "minProbability": "Probability",
+    "within": "Within",
+    "any": "Any",
+    "sortBy": "Sort by",
+    "sort": {
+      "exposure": "Money at risk",
+      "probability": "Probability",
+      "soonest": "Soonest failure",
+      "newest": "Newest"
+    },
+    "count_one": "{{count}} prediction",
+    "count_other": "{{count}} predictions",
+    "empty": "No predictions match these filters.",
+    "dataIssues": "Data-quality issues lower this prediction's confidence",
+    "col": {
+      "prediction": "Prediction",
+      "rul": "Median remaining life",
+      "exposure": "Money at risk",
+      "status": "Status"
+    }
+  },
+  "predictionPage": {
+    "back": "All predictions",
+    "openFull": "Open full page with anomaly history and feedback"
+  },
+  "anomaly": {
+    "title": "Anomaly score · last 30 days",
+    "score": "Anomaly score",
+    "threshold": "Threshold",
+    "summary": "Now {{latest}} (threshold {{threshold}}). First crossed the threshold: {{crossed}}.",
+    "never": "not in the last 30 days"
+  },
+  "triage": {
+    "acknowledge": "Acknowledge",
+    "dismiss": "Dismiss",
+    "reopen": "Reopen",
+    "dismissTitle": "Dismiss prediction",
+    "dismissHint": "Recorded in the audit trail. Say why this prediction doesn't need action.",
+    "done": "Prediction is now: {{status}}."
+  },
+  "feedback": {
+    "title": "Was the model right?",
+    "intro": "After checking the equipment, record what you found. It's how the models get better.",
+    "none": "No feedback yet.",
+    "saved": "Feedback saved: {{label}}.",
+    "option": {
+      "true_positive": "Yes — the problem was real",
+      "false_positive": "No — false alarm",
+      "found_something_else": "Found a different problem"
+    },
+    "short": {
+      "true_positive": "confirmed",
+      "false_positive": "false alarm",
+      "found_something_else": "different problem"
+    }
+  },
+  "similar": {
+    "title": "Similar past cases",
+    "none": "No past cases of this failure mode yet."
   },
   "errorPage": {
     "title": "This page ran into a problem",

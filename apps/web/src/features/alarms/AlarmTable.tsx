@@ -286,7 +286,7 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
         </table>
       </div>
       <ShelveDialog alarm={shelveTarget} onClose={() => setShelveTarget(null)} />
-      <CreateWorkOrderDialog alarm={woTarget} onClose={() => setWoTarget(null)} />
+      <CreateWorkOrderDialog target={woTarget && { kind: "alarm", alarm: woTarget }} onClose={() => setWoTarget(null)} />
     </>
   );
 }

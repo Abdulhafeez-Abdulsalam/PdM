@@ -15,6 +15,8 @@ import {
   type EndpointName,
   type EndpointOutput,
   type Endpoints,
+  type Prediction,
+  type PredictionSort,
   type RiskItem,
   type RoleId,
   type ServerMessage,
@@ -26,11 +28,13 @@ import {
 } from "@pdm/contracts";
 import { z } from "zod";
 import { AlarmEngine } from "./alarms";
+import { ANOMALY_THRESHOLD, anomalyHistory } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
 import { SimClock, iso } from "./clock";
 import { ApiFailure } from "./errors";
 import { listEvents } from "./events";
+import { feedbackSummary } from "./feedback";
 import { computeKpis } from "./kpis";
 import { LiveHub } from "./live";
 import type { AssetRecord } from "./model";
@@ -129,6 +133,12 @@ export class MockBackend {
     const user = this.world.usersWithRole(this.role)[0];
     if (!user) throw new ApiFailure("internal", `No user with role ${this.role}`);
     return user;
+  }
+
+  private prediction(id: string): Prediction {
+    const prediction = this.snapshot().predictionById.get(id);
+    if (!prediction) throw new ApiFailure("not_found", `Prediction ${id} not found`);
+    return prediction;
   }
 
   private asset(id: string): AssetRecord {
@@ -267,17 +277,74 @@ export class MockBackend {
         })),
       };
     },
-    "predictions.list": ({ scopeId, assetId, status, offset, limit }) => {
-      const inScope = this.inScope(scopeId);
-      const items = this.snapshot().predictions.filter(
-        (p) => inScope(p.assetId) && (!assetId || p.assetId === assetId) && (!status || status.includes(p.status)),
-      );
-      return paginate(items, offset, limit);
+    "predictions.list": (p) => {
+      const inScope = this.inScope(p.scopeId);
+      const items = this.snapshot()
+        .predictions.filter(
+          (x) => inScope(x.assetId) && (!p.assetId || x.assetId === p.assetId) && (!p.status || p.status.includes(x.status)),
+        )
+        .filter((x) => !p.assetClass || p.assetClass.includes(this.asset(x.assetId).data.assetClass))
+        .filter((x) => p.minProbability === undefined || x.probability >= p.minProbability)
+        .filter((x) => p.maxRulDays === undefined || (x.rul?.p50Days ?? Infinity) <= p.maxRulDays);
+      const exposure = (x: Prediction) => x.probability * x.recommendedAction.failureCost.amount;
+      const sorters: Record<PredictionSort, (a: Prediction, b: Prediction) => number> = {
+        exposure: (a, b) => exposure(b) - exposure(a),
+        probability: (a, b) => b.probability - a.probability,
+        soonest: (a, b) => (a.rul?.p50Days ?? Infinity) - (b.rul?.p50Days ?? Infinity),
+        newest: (a, b) => b.detectedAt.localeCompare(a.detectedAt),
+      };
+      return paginate([...items].sort(sorters[p.sort]), p.offset, p.limit);
     },
-    "predictions.get": ({ predictionId }) => {
-      const prediction = this.snapshot().predictionById.get(predictionId);
-      if (!prediction) throw new ApiFailure("not_found", `Prediction ${predictionId} not found`);
-      return prediction;
+    "predictions.get": ({ predictionId }) => this.prediction(predictionId),
+    "predictions.feedback": ({ predictionId, feedback, comment }) => {
+      const before = this.prediction(predictionId);
+      this.overlays.set(predictionId, { ...this.overlays.get(predictionId), feedback });
+      this.addLog({
+        kind: "operator_action",
+        t: iso(this.now()),
+        assetId: before.assetId,
+        title: `Prediction feedback: ${feedback.replace(/_/g, " ")}`,
+        detail: comment ?? null,
+        severity: null,
+        refId: predictionId,
+      });
+      this.invalidate();
+      return this.prediction(predictionId);
+    },
+    "predictions.triage": ({ predictionId, action, reason }) => {
+      const before = this.prediction(predictionId);
+      if (before.status === "closed") throw new ApiFailure("conflict", "A closed prediction can't be changed");
+      const status =
+        action === "acknowledge" ? "acknowledged" : action === "dismiss" ? "dismissed" : before.workOrderId ? "actioned" : "open";
+      if (action === "acknowledge" && before.status !== "open")
+        throw new ApiFailure("conflict", `Can't acknowledge a prediction that is ${before.status}`);
+      if (action === "reopen" && before.status !== "dismissed" && before.status !== "acknowledged") {
+        throw new ApiFailure("conflict", `Can't reopen a prediction that is ${before.status}`);
+      }
+      this.overlays.set(predictionId, { ...this.overlays.get(predictionId), status });
+      this.addLog({
+        kind: "operator_action",
+        t: iso(this.now()),
+        assetId: before.assetId,
+        title: `Prediction ${action === "dismiss" ? "dismissed" : action === "acknowledge" ? "acknowledged" : "reopened"}: ${before.failureMode.label}`,
+        detail: reason ?? null,
+        severity: null,
+        refId: predictionId,
+      });
+      this.invalidate();
+      return this.prediction(predictionId);
+    },
+    "predictions.feedbackSummary": ({ scopeId }) => feedbackSummary(scopeId ?? ENTERPRISE_SCOPE, this.scope(scopeId), this.snapshot()),
+    "anomalies.history": ({ assetId, from, to, maxPoints }) => {
+      const asset = this.asset(assetId);
+      const fromMs = Date.parse(from);
+      const intervalSeconds = pickIntervalSeconds((Date.parse(to) - fromMs) / 1000, maxPoints);
+      return {
+        assetId,
+        threshold: ANOMALY_THRESHOLD,
+        intervalSeconds,
+        points: anomalyHistory(this.world, asset, fromMs, Date.parse(to), intervalSeconds, this.now()),
+      };
     },
 
     "alarms.list": (p) => {

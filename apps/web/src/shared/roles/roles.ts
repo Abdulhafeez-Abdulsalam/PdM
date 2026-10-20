@@ -7,7 +7,7 @@
  * one letter per role in this column order:
  */
 import { RoleId } from "@pdm/contracts";
-import { CURRENT_PHASE, MODULES, moduleById, type ModuleId } from "../modules";
+import { BUILT_MODULES, MODULES, type ModuleId } from "../modules";
 
 const COLUMNS: readonly RoleId[] = [
   "executive",
@@ -63,6 +63,8 @@ export const ACTIONS = {
   "alarm.shelve": ["control_room_operator"],
   "alarm.createWorkOrder": ["control_room_operator", "plant_manager", "maintenance_planner", "reliability_engineer"],
   "prediction.feedback": ["reliability_engineer", "condition_analyst", "field_technician"],
+  "prediction.triage": ["reliability_engineer", "condition_analyst"],
+  "prediction.createWorkOrder": ["reliability_engineer", "condition_analyst", "maintenance_planner", "plant_manager"],
   "workOrder.approve": ["plant_manager"],
   "workOrder.schedule": ["maintenance_planner"],
   "workOrder.execute": ["field_technician"],
@@ -100,7 +102,7 @@ const FINAL_HOME: Record<RoleId, ModuleId> = {
 /** Where a role lands after login. Until its own module is built, everyone lands on the Command Center. */
 export function homeFor(role: RoleId): ModuleId {
   const home = FINAL_HOME[role];
-  return moduleById(home).phase <= CURRENT_PHASE ? home : "command-center";
+  return BUILT_MODULES.has(home) ? home : "command-center";
 }
 
 export const ALL_ROLES = RoleId.options;

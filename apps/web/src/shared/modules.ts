@@ -56,7 +56,10 @@ export type Module = (typeof MODULES)[number];
 export type ModuleId = Module["id"];
 
 /** The phase currently being built. Modules from later phases show as "planned" in demo mode. */
-export const CURRENT_PHASE = 1;
+export const CURRENT_PHASE = 2;
+
+/** Modules with a real screen (the rest show a placeholder). */
+export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>(["command-center", "assets", "alarms", "predictive"]);
 
 export function moduleById(id: ModuleId): Module {
   const found = MODULES.find((m) => m.id === id);

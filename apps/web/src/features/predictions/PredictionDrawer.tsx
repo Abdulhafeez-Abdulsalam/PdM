@@ -4,7 +4,7 @@
  */
 import { useApiQuery } from "@pdm/api-client";
 import { Sheet, Skeleton } from "@pdm/ui";
-import { useSearch } from "@tanstack/react-router";
+import { Link, useSearch } from "@tanstack/react-router";
 import { Suspense, lazy } from "react";
 import { useTranslation } from "react-i18next";
 import { useSetGlobalSearch, type GlobalSearch } from "../../shared/time-range";
@@ -27,9 +27,19 @@ export function PredictionDrawer() {
       description={prediction.data ? t("prediction.subtitle", { asset: prediction.data.assetId, id: prediction.data.id }) : undefined}
     >
       {predictionId && (
-        <Suspense fallback={<Skeleton className="h-64" />}>
-          <PredictionDetail predictionId={predictionId} />
-        </Suspense>
+        <>
+          <Link
+            to="/predictive/$predictionId"
+            params={{ predictionId }}
+            search={(prev) => ({ ...prev, prediction: undefined })}
+            className="mb-4 inline-block text-sm text-accent hover:underline"
+          >
+            {t("predictionPage.openFull")} →
+          </Link>
+          <Suspense fallback={<Skeleton className="h-64" />}>
+            <PredictionDetail predictionId={predictionId} />
+          </Suspense>
+        </>
       )}
     </Sheet>
   );

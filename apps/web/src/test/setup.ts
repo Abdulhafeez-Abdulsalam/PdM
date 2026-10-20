@@ -11,6 +11,8 @@ await Promise.all([
   import("../features/assets/AssetRegistryPage"),
   import("../features/alarms/AlarmsPage"),
   import("../features/predictions/PredictionDetail"),
+  import("../features/predictions/PredictionConsolePage"),
+  import("../features/predictions/PredictionPage"),
 ]);
 configure({ asyncUtilTimeout: 10_000 });
 

@@ -72,12 +72,58 @@ export const Prediction = z.object({
 });
 export type Prediction = z.infer<typeof Prediction>;
 
+/**
+ * exposure = probability × cost if it fails (the money at risk) · probability · soonest = shortest
+ * median remaining life · newest = most recently detected.
+ */
+export const PredictionSort = z.enum(["exposure", "probability", "soonest", "newest"]);
+export type PredictionSort = z.infer<typeof PredictionSort>;
+
 export const PredictionListParams = PageParams.extend({
   scopeId: ScopeId.optional(),
   assetId: Id.optional(),
   status: z.array(PredictionStatus).optional(),
+  assetClass: z.array(AssetClass).optional(),
+  minProbability: Probability.optional(),
+  /** Only predictions whose median remaining life is within this many days. */
+  maxRulDays: z.number().positive().optional(),
+  sort: PredictionSort.default("exposure"),
 });
 export type PredictionListParams = z.infer<typeof PredictionListParams>;
+
+/** The feedback loop (spec §6.4): what a person found when they checked. Feeds model quality. */
+export const PredictionFeedbackRequest = z.object({
+  predictionId: Id,
+  feedback: PredictionFeedback,
+  comment: z.string().trim().max(1000).optional(),
+});
+export type PredictionFeedbackRequest = z.infer<typeof PredictionFeedbackRequest>;
+
+/** Triage: acknowledge ("seen, looking at it"), dismiss (reason required — it's audited), or reopen. */
+export const PredictionTriageRequest = z
+  .object({
+    predictionId: Id,
+    action: z.enum(["acknowledge", "dismiss", "reopen"]),
+    reason: z.string().trim().max(500).optional(),
+  })
+  .refine((r) => r.action !== "dismiss" || (r.reason?.length ?? 0) >= 5, {
+    error: "A reason of at least 5 characters is required to dismiss a prediction",
+    path: ["reason"],
+  });
+export type PredictionTriageRequest = z.infer<typeof PredictionTriageRequest>;
+
+/**
+ * How often the models were right, from people's feedback (trailing 12 months).
+ * precision = true positives ÷ (true positives + false positives); null when there's no feedback yet.
+ */
+export const PredictionFeedbackSummary = z.object({
+  scopeId: ScopeId,
+  truePositive: z.number().int().min(0),
+  falsePositive: z.number().int().min(0),
+  foundSomethingElse: z.number().int().min(0),
+  precision: Probability.nullable(),
+});
+export type PredictionFeedbackSummary = z.infer<typeof PredictionFeedbackSummary>;
 
 /**
  * One row of the "Top risks" list. Risk = probability × consequence,

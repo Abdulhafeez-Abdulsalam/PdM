@@ -1,13 +1,21 @@
 /**
- * Alarm → work order (acceptance criterion C: under 30 seconds). Everything is pre-filled —
- * title, description, priority, due date, a technician from the asset's site, and a snapshot
- * of the readings at this moment — so the usual path is: open, check, Create.
+ * Alarm or prediction → work order (acceptance criterion C: under 30 seconds). Everything is
+ * pre-filled — title, description, priority, due date, a technician from the asset's site, and
+ * a snapshot of the readings at this moment — so the usual path is: open, check, Create.
  *
  * Two parts: WorkOrderLoader fetches what the form needs; WorkOrderFields is rendered only
  * once everything has arrived, so it can start with the right values (no "fill in later").
  */
 import { useApiMutation, useApiQuery } from "@pdm/api-client";
-import { WorkOrderPriority, type Alarm, type EvidenceSnapshot, type LiveValue, type User } from "@pdm/contracts";
+import {
+  WorkOrderPriority,
+  type Alarm,
+  type EvidenceSnapshot,
+  type LiveValue,
+  type Prediction,
+  type User,
+  type WorkOrderType,
+} from "@pdm/contracts";
 import { Button, Field, Modal, Skeleton, inputClass } from "@pdm/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { useMemo } from "react";
@@ -20,7 +28,8 @@ import { toIso, useSimNow } from "../../shared/sim-time";
 import { useToasts } from "../../shared/toast";
 import { formatMeasurement, toDisplay } from "../../shared/units";
 import { keyTags } from "../assets/OverviewTab";
-import { draftFromAlarm, suggestAssignees } from "./work-order-draft";
+import { formatCurrency } from "../../shared/format";
+import { draftFromAlarm, draftFromPrediction, suggestAssignees } from "./work-order-draft";
 
 const schema = z.object({
   title: z.string().trim().min(3, { error: "forms.titleTooShort" }).max(120, { error: "forms.tooLong" }),
@@ -32,29 +41,36 @@ const schema = z.object({
 });
 type Values = z.infer<typeof schema>;
 
-export function CreateWorkOrderDialog({ alarm, onClose }: { alarm: Alarm | null; onClose: () => void }) {
+/** What the work order is raised from. */
+export type WorkOrderTarget = { kind: "alarm"; alarm: Alarm } | { kind: "prediction"; prediction: Prediction };
+
+const assetOf = (target: WorkOrderTarget) => (target.kind === "alarm" ? target.alarm.assetId : target.prediction.assetId);
+const idOf = (target: WorkOrderTarget) => (target.kind === "alarm" ? target.alarm.id : target.prediction.id);
+
+export function CreateWorkOrderDialog({ target, onClose }: { target: WorkOrderTarget | null; onClose: () => void }) {
   const { t } = useTranslation();
   return (
     <Modal
-      open={alarm !== null}
+      open={target !== null}
       onOpenChange={(open) => !open && onClose()}
       title={t("createWo.title")}
-      description={alarm ? t("createWo.fromAlarm", { id: alarm.id }) : undefined}
+      description={target ? t(target.kind === "alarm" ? "createWo.fromAlarm" : "createWo.fromPrediction", { id: idOf(target) }) : undefined}
       closeLabel={t("common.close")}
       className="max-w-xl"
     >
-      {alarm && <WorkOrderLoader alarm={alarm} onDone={onClose} />}
+      {target && <WorkOrderLoader target={target} onDone={onClose} />}
     </Modal>
   );
 }
 
-function WorkOrderLoader({ alarm, onDone }: { alarm: Alarm; onDone: () => void }) {
+function WorkOrderLoader({ target, onDone }: { target: WorkOrderTarget; onDone: () => void }) {
   const { t } = useTranslation();
   const units = usePreferences((p) => p.units);
   const { now } = useSimNow();
+  const assetId = assetOf(target);
 
-  const asset = useApiQuery("assets.get", { assetId: alarm.assetId });
-  const tags = useApiQuery("assets.tags", { assetId: alarm.assetId });
+  const asset = useApiQuery("assets.get", { assetId });
+  const tags = useApiQuery("assets.tags", { assetId });
   const technicians = useApiQuery("users.list", { role: "field_technician", limit: 100 });
   const snapshotTags = useMemo(() => keyTags(tags.data?.items ?? [], 8), [tags.data]);
   const latest = useApiQuery("timeseries.latest", { tagIds: snapshotTags.map((tg) => tg.id) }, { enabled: snapshotTags.length > 0 });
@@ -73,16 +89,25 @@ function WorkOrderLoader({ alarm, onDone }: { alarm: Alarm; onDone: () => void }
   }
 
   const assignees = suggestAssignees(technicians.data.items, asset.data.siteId);
-  let valueText: string | null = null;
-  if (alarm.value !== null && alarm.quantity) {
-    const v = toDisplay(alarm.value, alarm.quantity, units);
-    valueText = `${formatMeasurement(v.value)} ${t(`unitSymbol.${v.unit}`)}`.trim();
+  let draft;
+  if (target.kind === "alarm") {
+    const { alarm } = target;
+    let valueText: string | null = null;
+    if (alarm.value !== null && alarm.quantity) {
+      const v = toDisplay(alarm.value, alarm.quantity, units);
+      valueText = `${formatMeasurement(v.value)} ${t(`unitSymbol.${v.unit}`)}`.trim();
+    }
+    draft = draftFromAlarm(alarm, now, valueText);
+  } else {
+    draft = draftFromPrediction(target.prediction, now, (amount) => formatCurrency(amount, "USD"));
   }
-  const defaults: Values = { ...draftFromAlarm(alarm, now, valueText), assigneeId: assignees[0]?.id ?? "", attachSnapshot: true };
+  const { type, ...fields } = draft;
+  const defaults: Values = { ...fields, assigneeId: assignees[0]?.id ?? "", attachSnapshot: true };
 
   return (
     <WorkOrderFields
-      alarm={alarm}
+      target={target}
+      type={type}
       defaults={defaults}
       assignees={assignees}
       snapshot={latest.data?.values ?? []}
@@ -93,14 +118,15 @@ function WorkOrderLoader({ alarm, onDone }: { alarm: Alarm; onDone: () => void }
 }
 
 function WorkOrderFields(props: {
-  alarm: Alarm;
+  target: WorkOrderTarget;
+  type: WorkOrderType;
   defaults: Values;
   assignees: User[];
   snapshot: LiveValue[];
   now: number;
   onDone: () => void;
 }) {
-  const { alarm, defaults, assignees, snapshot, now, onDone } = props;
+  const { target, type, defaults, assignees, snapshot, now, onDone } = props;
   const { t } = useTranslation();
   const client = useQueryClient();
   const toast = useToasts((s) => s.show);
@@ -117,18 +143,19 @@ function WorkOrderFields(props: {
       const wo = await create.mutateAsync({
         title: values.title,
         description: values.description,
-        assetId: alarm.assetId,
-        type: alarm.kind === "prediction" ? "predictive" : "corrective",
+        assetId: assetOf(target),
+        type,
         priority: values.priority,
         assigneeId: values.assigneeId,
         dueAt: `${values.dueDate}T23:59:59Z`,
-        source: { kind: "alarm", refId: alarm.id },
+        source: { kind: target.kind, refId: idOf(target) },
         evidence,
       });
       const who = assignees.find((u) => u.id === values.assigneeId)?.name ?? "";
       toast("success", t("createWo.created", { number: wo.number, who }));
-      void client.invalidateQueries({ queryKey: ["workOrders.list"] });
-      void client.invalidateQueries({ queryKey: ["alarms.list"] });
+      for (const key of ["workOrders.list", "alarms.list", "predictions.list", "predictions.get", "risks.top"]) {
+        void client.invalidateQueries({ queryKey: [key] });
+      }
       onDone();
     } catch (error) {
       toast("error", t("createWo.failed", { reason: (error as Error).message }));

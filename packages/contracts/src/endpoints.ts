@@ -16,7 +16,16 @@ import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
 import { HierarchyNode, Site } from "./hierarchy";
 import { KpiParams, KpiResponse } from "./kpis";
-import { Prediction, PredictionListParams, RiskItem, TopRisksParams } from "./predictions";
+import { AnomalyHistory, AnomalyHistoryRequest } from "./anomalies";
+import {
+  Prediction,
+  PredictionFeedbackRequest,
+  PredictionFeedbackSummary,
+  PredictionListParams,
+  PredictionTriageRequest,
+  RiskItem,
+  TopRisksParams,
+} from "./predictions";
 import { Tag } from "./tags";
 import { HistoryRequest, HistoryResponse, LiveValue } from "./timeseries";
 import { MAX_SUBSCRIBED_TAGS } from "./realtime";
@@ -145,6 +154,35 @@ export const endpoints = {
     description: "One prediction with evidence, explanation, confidence and action (acceptance criterion B)",
     input: z.object({ predictionId: Id }),
     output: Prediction,
+  }),
+  "predictions.feedback": endpoint({
+    method: "POST",
+    path: "/predictions/:predictionId/feedback",
+    description: "Record what a person found when checking the prediction (true/false positive, something else)",
+    input: PredictionFeedbackRequest,
+    output: Prediction,
+  }),
+  "predictions.triage": endpoint({
+    method: "POST",
+    path: "/predictions/:predictionId/triage",
+    description: "Acknowledge, dismiss (with reason) or reopen a prediction",
+    input: PredictionTriageRequest,
+    output: Prediction,
+  }),
+  // Not under /predictions/… so it can't be mistaken for a prediction id by a real router.
+  "predictions.feedbackSummary": endpoint({
+    method: "GET",
+    path: "/prediction-feedback/summary",
+    description: "How often predictions were confirmed or rejected — the model-quality signal",
+    input: z.object({ scopeId: ScopeId.optional() }),
+    output: PredictionFeedbackSummary,
+  }),
+  "anomalies.history": endpoint({
+    method: "GET",
+    path: "/assets/:assetId/anomaly-score",
+    description: "Anomaly score over time for one asset, with the threshold that triggers predictions",
+    input: AnomalyHistoryRequest,
+    output: AnomalyHistory,
   }),
 
   // ── Alarms & events ──

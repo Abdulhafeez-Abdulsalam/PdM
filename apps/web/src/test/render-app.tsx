@@ -11,9 +11,10 @@ import { Providers } from "../app/providers";
 import { createAppRouter } from "../app/router";
 
 export const TEST_START = Date.UTC(2026, 9, 10, 8);
+export const TEST_SEED = 42;
 
 export function renderApp(url: string) {
-  const backend = createMockBackend({ seed: 42, startTime: TEST_START, realNow: () => TEST_START });
+  const backend = createMockBackend({ seed: TEST_SEED, startTime: TEST_START, realNow: () => TEST_START });
   let listener: ((e: MessageEvent<FromWorker>) => void) | null = null;
   const emit = (data: FromWorker) => listener?.({ data } as MessageEvent<FromWorker>);
   const live = backend.connect((message) => emit({ kind: "live", message }));

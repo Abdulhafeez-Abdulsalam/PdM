@@ -3,7 +3,7 @@
  * order in under 30 seconds). The more we fill in correctly, the fewer clicks it takes.
  * Pure functions — no React — so they're easy to test.
  */
-import type { Alarm, AlarmPriority, User, WorkOrderPriority, WorkOrderType } from "@pdm/contracts";
+import type { Alarm, AlarmPriority, Prediction, User, WorkOrderPriority, WorkOrderType } from "@pdm/contracts";
 
 /** ISA-18.2 alarm priority → how urgently the work is needed. */
 export const PRIORITY_FROM_ALARM: Record<AlarmPriority, WorkOrderPriority> = {
@@ -41,6 +41,30 @@ export function draftFromAlarm(alarm: Alarm, now: number, valueText: string | nu
     type: alarm.kind === "prediction" ? "predictive" : "corrective",
     priority,
     dueDate: new Date(now + DUE_DAYS[priority] * 86_400_000).toISOString().slice(0, 10),
+  };
+}
+
+/**
+ * From a prediction: the recommended action becomes the title; urgency comes from how likely
+ * and how soon; the due date is never later than the prediction's "act by" date.
+ */
+export function draftFromPrediction(p: Prediction, now: number, money: (amount: number) => string): WorkOrderDraft {
+  const days = p.rul?.p50Days ?? Infinity;
+  const priority: WorkOrderPriority = p.probability >= 0.8 && days <= 7 ? "urgent" : days <= 30 ? "high" : "normal";
+  const due = Math.min(now + DUE_DAYS[priority] * 86_400_000, Date.parse(p.recommendedAction.actBy));
+  const title = `${p.recommendedAction.summary} — ${p.assetId}`;
+  return {
+    title: title.length > MAX_TITLE ? `${title.slice(0, MAX_TITLE - 1)}…` : title,
+    description: [
+      `Raised from prediction ${p.id}: ${p.failureMode.label} (${Math.round(p.probability * 100)}% within ${p.horizonDays} days).`,
+      p.rul ? `Median remaining life ${Math.round(p.rul.p50Days)} days.` : null,
+      `Cost to act now ${money(p.recommendedAction.interventionCost.amount)} vs ${money(p.recommendedAction.failureCost.amount)} if it fails.`,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+    type: "predictive",
+    priority,
+    dueDate: new Date(due).toISOString().slice(0, 10),
   };
 }
 
