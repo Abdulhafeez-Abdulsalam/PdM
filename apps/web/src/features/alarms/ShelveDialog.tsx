@@ -23,7 +23,10 @@ export function ShelveDialog({ alarm, onClose }: { alarm: Alarm | null; onClose:
   const { t } = useTranslation();
   const { now } = useSimNow();
   const { shelve } = useAlarmActions();
-  const form = useForm<z.input<typeof schema>, unknown, Values>({ resolver: zodResolver(schema), defaultValues: { reason: "", hours: "4" } });
+  const form = useForm<z.input<typeof schema>, unknown, Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { reason: "", hours: "4" },
+  });
   const { errors, isSubmitting } = form.formState;
 
   const submit = form.handleSubmit(async (values) => {
@@ -53,14 +56,20 @@ export function ShelveDialog({ alarm, onClose }: { alarm: Alarm | null; onClose:
           {(p) => (
             <select {...p} {...form.register("hours")} className={inputClass}>
               {DURATIONS.map((h) => (
-                <option key={h} value={h}>{t("shelve.hours", { count: Number(h) })}</option>
+                <option key={h} value={h}>
+                  {t("shelve.hours", { count: Number(h) })}
+                </option>
               ))}
             </select>
           )}
         </Field>
         <div className="flex justify-end gap-2">
-          <Button variant="ghost" onClick={onClose}>{t("common.cancel")}</Button>
-          <Button type="submit" variant="primary" disabled={isSubmitting}>{t("shelve.submit")}</Button>
+          <Button variant="ghost" onClick={onClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button type="submit" variant="primary" disabled={isSubmitting}>
+            {t("shelve.submit")}
+          </Button>
         </div>
       </form>
     </Modal>

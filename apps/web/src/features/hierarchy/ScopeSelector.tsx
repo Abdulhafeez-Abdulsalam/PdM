@@ -49,7 +49,11 @@ export function ScopeSelector() {
         <ol className="hidden min-w-0 items-center gap-1 lg:flex">
           {nodes.slice(0, -1).map((n) => (
             <li key={n.id} className="flex min-w-0 items-center gap-1">
-              <button type="button" className="truncate text-fg-muted hover:text-fg hover:underline" onClick={() => setSearch({ scope: n.id })}>
+              <button
+                type="button"
+                className="truncate text-fg-muted hover:text-fg hover:underline"
+                onClick={() => setSearch({ scope: n.id })}
+              >
                 {n.name}
               </button>
               <ChevronRight aria-hidden className="size-3.5 shrink-0 text-fg-muted" />
@@ -89,7 +93,15 @@ export function ScopeSelector() {
 }
 
 /** Inside the panel: the current node's children, each with its health. Click to go deeper. */
-function ScopeBrowser({ path, onSelect, onNavigateAway }: { path: HierarchyNode[]; onSelect: (n: HierarchyNode) => void; onNavigateAway: () => void }) {
+function ScopeBrowser({
+  path,
+  onSelect,
+  onNavigateAway,
+}: {
+  path: HierarchyNode[];
+  onSelect: (n: HierarchyNode) => void;
+  onNavigateAway: () => void;
+}) {
   const { t } = useTranslation();
   const current = path.at(-1);
   const children = useApiQuery("hierarchy.children", { nodeId: current?.id ?? ENTERPRISE_SCOPE }, { placeholderData: keepPreviousData });
@@ -98,7 +110,7 @@ function ScopeBrowser({ path, onSelect, onNavigateAway }: { path: HierarchyNode[
   return (
     <div className="flex max-h-[70vh] flex-col">
       <div className="border-b border-line p-3">
-        <p className="text-xs uppercase tracking-wide text-fg-muted">{current ? t(`hierarchy.levels.${current.level}`) : ""}</p>
+        <p className="text-xs tracking-wide text-fg-muted uppercase">{current ? t(`hierarchy.levels.${current.level}`) : ""}</p>
         <p className="font-semibold">{current?.name}</p>
         <div className="mt-1 flex gap-3 text-xs">
           {parent && (
@@ -107,7 +119,13 @@ function ScopeBrowser({ path, onSelect, onNavigateAway }: { path: HierarchyNode[
             </button>
           )}
           {current?.assetId && (
-            <Link to="/assets/$assetId" params={{ assetId: current.assetId }} search={(prev) => prev} onClick={onNavigateAway} className="flex items-center gap-1 text-accent hover:underline">
+            <Link
+              to="/assets/$assetId"
+              params={{ assetId: current.assetId }}
+              search={(prev) => prev}
+              onClick={onNavigateAway}
+              className="flex items-center gap-1 text-accent hover:underline"
+            >
               <ExternalLink aria-hidden className="size-3" />
               {t("hierarchy.openAsset")}
             </Link>

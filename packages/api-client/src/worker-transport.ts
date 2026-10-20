@@ -60,7 +60,9 @@ export class WorkerTransport implements Transport {
     for (const h of this.connectionHandlers) h(state);
   }
 
-  private call(message: Omit<Extract<ToWorker, { kind: "request" }>, "id"> | Omit<Extract<ToWorker, { kind: "control" }>, "id">): Promise<unknown> {
+  private call(
+    message: Omit<Extract<ToWorker, { kind: "request" }>, "id"> | Omit<Extract<ToWorker, { kind: "control" }>, "id">,
+  ): Promise<unknown> {
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
       const timer = setTimeout(() => {

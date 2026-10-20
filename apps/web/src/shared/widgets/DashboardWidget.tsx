@@ -2,7 +2,7 @@
  * The widget contract (design system §10), built once so every dashboard tile gets it free:
  * title · freshness badge · lineage tooltip · loading / error / empty states · its own error boundary.
  */
-import { Button, ErrorBoundary, Skeleton, cx } from "@pdm/ui";
+import { Button, ErrorBoundary, Popover, Skeleton, cx } from "@pdm/ui";
 import { CircleAlert, Clock, Info } from "lucide-react";
 import type { ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -35,7 +35,18 @@ interface Props {
   children: ReactNode;
 }
 
-export function DashboardWidget({ title, lineage, query, isEmpty, emptyText, staleAfterMs = 120_000, actions, className, skeleton, children }: Props) {
+export function DashboardWidget({
+  title,
+  lineage,
+  query,
+  isEmpty,
+  emptyText,
+  staleAfterMs = 120_000,
+  actions,
+  className,
+  skeleton,
+  children,
+}: Props) {
   const { t } = useTranslation();
   const now = useNow();
   const headingId = `w-${title.replace(/\W+/g, "-").toLowerCase()}`;
@@ -61,15 +72,32 @@ export function DashboardWidget({ title, lineage, query, isEmpty, emptyText, sta
   else body = children;
 
   return (
-    <section aria-labelledby={headingId} aria-busy={query?.isPending} className={cx("flex min-w-0 flex-col rounded-lg border border-line bg-surface", className)}>
+    <section
+      aria-labelledby={headingId}
+      aria-busy={query?.isPending}
+      className={cx("flex min-w-0 flex-col rounded-lg border border-line bg-surface", className)}
+    >
       <header className="flex items-center gap-2 border-b border-line px-4 py-2.5">
         <h2 id={headingId} className="font-semibold">
           {title}
         </h2>
         {lineage && (
-          <span tabIndex={0} title={lineage} aria-label={lineage} className="text-fg-muted">
-            <Info aria-hidden className="size-3.5" />
-          </span>
+          // A real button, so it works by keyboard and touch — a hover-only tooltip wouldn't.
+          <Popover
+            align="start"
+            className="max-w-xs p-3 text-sm"
+            trigger={
+              <button
+                type="button"
+                aria-label={t("widget.lineage", { title })}
+                className="rounded p-0.5 text-fg-muted hover:bg-sunken hover:text-fg"
+              >
+                <Info aria-hidden className="size-3.5" />
+              </button>
+            }
+          >
+            {lineage}
+          </Popover>
         )}
         <span className="ml-auto flex items-center gap-2">
           {updated !== null && (

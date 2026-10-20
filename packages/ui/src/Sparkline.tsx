@@ -1,5 +1,15 @@
 /** A tiny trend line for KPI cards and tables. Purely decorative: the number beside it carries the meaning. */
-export function Sparkline({ values, className, width = 96, height = 28 }: { values: readonly number[]; className?: string; width?: number; height?: number }) {
+export function Sparkline({
+  values,
+  className,
+  width = 96,
+  height = 28,
+}: {
+  values: readonly number[];
+  className?: string;
+  width?: number;
+  height?: number;
+}) {
   if (values.length < 2) return null;
   const min = Math.min(...values);
   const max = Math.max(...values);

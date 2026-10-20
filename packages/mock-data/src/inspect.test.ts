@@ -21,22 +21,29 @@ it("prints a summary of the simulated world", () => {
   const lines: string[] = [];
   const say = (s = "") => lines.push(s);
   say(`Built in ${buildMs} ms — simulated time ${iso(now)}`);
-  say(`${w.sites.size} sites · ${w.assets.size} assets · ${w.tags.size} tags · ${w.users.length} people · ${w.faults.length} developing faults`);
+  say(
+    `${w.sites.size} sites · ${w.assets.size} assets · ${w.tags.size} tags · ${w.users.length} people · ${w.faults.length} developing faults`,
+  );
   say(`Assets by class: ${[...byClass].map(([k, v]) => `${k} ${v}`).join(", ")}`);
   say(`Health states: ${[...states].map(([k, v]) => `${k} ${v}`).join(", ")}`);
 
   const s = b.request("alarms.summary", {});
-  say(`Alarms active: P1 ${s.active.p1} · P2 ${s.active.p2} · P3 ${s.active.p3} · P4 ${s.active.p4} (unacked ${Object.values(s.unacknowledged).reduce((a, x) => a + x, 0)}) · shelved ${s.shelved} · suppressed ${s.suppressed}`);
+  say(
+    `Alarms active: P1 ${s.active.p1} · P2 ${s.active.p2} · P3 ${s.active.p3} · P4 ${s.active.p4} (unacked ${Object.values(s.unacknowledged).reduce((a, x) => a + x, 0)}) · shelved ${s.shelved} · suppressed ${s.suppressed}`,
+  );
 
   say();
   say("Top 5 risks:");
   for (const r of b.request("risks.top", { limit: 5 }).items) {
-    say(`  ${r.rank}. ${r.assetId.padEnd(14)} risk ${r.riskScore.toFixed(2)}  health ${r.health.score} (${r.health.state})  ${r.failureModeLabel ?? "—"}  in ${r.horizonDays ?? "—"} d`);
+    say(
+      `  ${r.rank}. ${r.assetId.padEnd(14)} risk ${r.riskScore.toFixed(2)}  health ${r.health.score} (${r.health.state})  ${r.failureModeLabel ?? "—"}  in ${r.horizonDays ?? "—"} d`,
+    );
   }
 
   say();
   say("KPIs (enterprise):");
-  for (const k of b.request("kpis.get", {}).kpis) say(`  ${k.key.padEnd(28)} ${k.value ?? "—"}${k.format === "percent" ? " %" : k.format === "hours" ? " h" : ""}`);
+  for (const k of b.request("kpis.get", {}).kpis)
+    say(`  ${k.key.padEnd(28)} ${k.value ?? "—"}${k.format === "percent" ? " %" : k.format === "hours" ? " h" : ""}`);
 
   say();
   say("CBC-GT-101 exhaust temperature, last 24 h (hourly samples):");
@@ -56,7 +63,9 @@ it("prints a summary of the simulated world", () => {
   }
 
   say();
-  say(`Work orders: ${b.request("workOrders.list", { limit: 1 }).total} total, newest: ${b.request("workOrders.list", { limit: 1 }).items[0]?.title}`);
+  say(
+    `Work orders: ${b.request("workOrders.list", { limit: 1 }).total} total, newest: ${b.request("workOrders.list", { limit: 1 }).items[0]?.title}`,
+  );
   say(`Events in last 6 h: ${b.request("events.list", { from: iso(now - 6 * HOUR), to: iso(now), limit: 500 }).items.length}`);
 
   console.log("\n" + lines.join("\n") + "\n");

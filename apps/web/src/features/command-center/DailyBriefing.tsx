@@ -22,12 +22,18 @@ export function DailyBriefing({ scopeId, className }: { scopeId: string; classNa
       query={briefing}
       staleAfterMs={15 * 60_000}
       className={className}
-      skeleton={<div className="flex flex-col gap-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-10" />)}</div>}
+      skeleton={
+        <div className="flex flex-col gap-3">
+          {[0, 1, 2, 3].map((i) => (
+            <Skeleton key={i} className="h-10" />
+          ))}
+        </div>
+      }
     >
       <div className="flex flex-col gap-4">
         {briefing.data?.sections.map((section) => (
           <section key={section.key}>
-            <h3 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-fg-muted">{t(`briefing.${section.key}`)}</h3>
+            <h3 className="mb-1.5 text-xs font-semibold tracking-wide text-fg-muted uppercase">{t(`briefing.${section.key}`)}</h3>
             <ul className="flex flex-col gap-2">
               {section.items.map((item, i) => (
                 <li key={i} className="flex gap-2 text-sm">
@@ -67,7 +73,13 @@ function CitationChip({ citation }: { citation: Citation }) {
   const label = t("briefing.citation", { kind: t(`briefing.kinds.${citation.kind}`), label: citation.label });
   if (citation.kind === "asset") {
     return (
-      <Link to="/assets/$assetId" params={{ assetId: citation.id }} search={(prev) => prev} aria-label={label} className={`${className} hover:text-fg hover:underline`}>
+      <Link
+        to="/assets/$assetId"
+        params={{ assetId: citation.id }}
+        search={(prev) => prev}
+        aria-label={label}
+        className={`${className} hover:text-fg hover:underline`}
+      >
         {citation.label}
       </Link>
     );

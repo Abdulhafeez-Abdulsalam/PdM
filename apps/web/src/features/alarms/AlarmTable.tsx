@@ -54,7 +54,21 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
   // Alarms don't carry their site's time zone, so "site local" falls back to UTC here.
   const absolute = useMemo(() => makeTimeFormatter(tz === "site" ? "utc" : tz), [tz]);
 
-  const rows = useMemo(() => (groupByAsset ? [...alarms].sort((a, b) => a.assetId.localeCompare(b.assetId)) : [...alarms]), [alarms, groupByAsset]);
+  const rows = useMemo(
+    () => (groupByAsset ? [...alarms].sort((a, b) => a.assetId.localeCompare(b.assetId)) : [...alarms]),
+    [alarms, groupByAsset],
+  );
+  // Group headings, worked out before drawing (React may draw more than once, so drawing
+  // must not change variables): which rows start a new asset, and how many alarms each has.
+  const groups = useMemo(() => {
+    const counts = new Map<string, number>();
+    const starts = new Set<string>();
+    rows.forEach((a, i) => {
+      counts.set(a.assetId, (counts.get(a.assetId) ?? 0) + 1);
+      if (rows[i - 1]?.assetId !== a.assetId) starts.add(a.id);
+    });
+    return { counts, starts };
+  }, [rows]);
   const ackable = rows.filter((a) => NEEDS_ACK.has(a.state));
   const selectedAckable = ackable.filter((a) => selected.has(a.id));
 
@@ -81,7 +95,6 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
   };
 
   const columns = (anyAction ? 1 : 0) + (showAsset ? 1 : 0) + 6;
-  let lastAsset: string | null = null;
 
   return (
     <>
@@ -111,12 +124,26 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                   )}
                 </th>
               )}
-              <th scope="col" className={cx("py-2 pr-3 font-medium", !anyAction && "px-4")}>{t("alarmList.priority")}</th>
-              {showAsset && <th scope="col" className="py-2 font-medium">{t("assets.col.asset")}</th>}
-              <th scope="col" className="py-2 font-medium">{t("alarmList.message")}</th>
-              <th scope="col" className="py-2 text-right font-medium">{t("alarmTable.value")}</th>
-              <th scope="col" className="py-2 pl-4 font-medium">{t("alarmList.state")}</th>
-              <th scope="col" className="py-2 font-medium">{t("alarmList.raised")}</th>
+              <th scope="col" className={cx("py-2 pr-3 font-medium", !anyAction && "px-4")}>
+                {t("alarmList.priority")}
+              </th>
+              {showAsset && (
+                <th scope="col" className="py-2 font-medium">
+                  {t("assets.col.asset")}
+                </th>
+              )}
+              <th scope="col" className="py-2 font-medium">
+                {t("alarmList.message")}
+              </th>
+              <th scope="col" className="py-2 text-right font-medium">
+                {t("alarmTable.value")}
+              </th>
+              <th scope="col" className="py-2 pl-4 font-medium">
+                {t("alarmList.state")}
+              </th>
+              <th scope="col" className="py-2 font-medium">
+                {t("alarmList.raised")}
+              </th>
               <th scope="col" className="px-4 py-2 text-right font-medium">
                 <span className="sr-only">{t("alarmTable.actions")}</span>
               </th>
@@ -125,14 +152,13 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
           <tbody>
             {rows.map((a, i) => {
               const groupHeader =
-                groupByAsset && a.assetId !== lastAsset ? (
+                groupByAsset && groups.starts.has(a.id) ? (
                   <tr key={`g-${a.assetId}`} className="bg-sunken">
                     <th colSpan={columns} scope="colgroup" className="px-4 py-1.5 text-left text-xs font-semibold">
-                      {a.assetId} · {t("alarmTable.groupCount", { count: rows.filter((r) => r.assetId === a.assetId).length })}
+                      {a.assetId} · {t("alarmTable.groupCount", { count: groups.counts.get(a.assetId) ?? 0 })}
                     </th>
                   </tr>
                 ) : null;
-              lastAsset = a.assetId;
               const raised = Date.parse(a.raisedAt);
               const standing = ACTIVE.has(a.state) && now - raised > STANDING_AFTER_MS;
               const value = a.value !== null && a.quantity ? toDisplay(a.value, a.quantity, units) : null;
@@ -148,7 +174,12 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                   }}
                   tabIndex={0}
                   onKeyDown={(e) => onRowKey(e, a, i)}
-                  aria-label={t("alarmTable.rowLabel", { priority: t(`alarms.priority.${a.priority}`), message: a.message, asset: a.assetId, state: t(`alarmList.states.${a.state}`) })}
+                  aria-label={t("alarmTable.rowLabel", {
+                    priority: t(`alarms.priority.${a.priority}`),
+                    message: a.message,
+                    asset: a.assetId,
+                    state: t(`alarmList.states.${a.state}`),
+                  })}
                   className={cx("border-b border-line last:border-0 hover:bg-sunken focus:bg-sunken", unacked && "font-semibold")}
                 >
                   {anyAction && (
@@ -175,8 +206,13 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                     </span>
                   </td>
                   {showAsset && (
-                    <td className="whitespace-nowrap py-2 pr-3">
-                      <Link to="/assets/$assetId/$tab" params={{ assetId: a.assetId, tab: "alarms" }} search={(prev) => prev} className="font-mono text-xs font-normal hover:underline">
+                    <td className="py-2 pr-3 whitespace-nowrap">
+                      <Link
+                        to="/assets/$assetId/$tab"
+                        params={{ assetId: a.assetId, tab: "alarms" }}
+                        search={(prev) => prev}
+                        className="font-mono text-xs font-normal hover:underline"
+                      >
                         {a.assetId}
                       </Link>
                     </td>
@@ -185,25 +221,34 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                     {a.message}
                     <span className="mt-0.5 flex flex-wrap gap-1 font-normal">
                       {a.occurrenceCount > CHATTERING_COUNT && (
-                        <Badge icon={<Repeat aria-hidden className="size-3" />}>{t("alarmTable.chattering", { count: a.occurrenceCount })}</Badge>
+                        <Badge icon={<Repeat aria-hidden className="size-3" />}>
+                          {t("alarmTable.chattering", { count: a.occurrenceCount })}
+                        </Badge>
                       )}
                       {standing && <Badge icon={<Timer aria-hidden className="size-3" />}>{t("alarmTable.standing")}</Badge>}
-                      {a.workOrderId && <Badge icon={<ClipboardPlus aria-hidden className="size-3" />}>{t("alarmTable.hasWorkOrder")}</Badge>}
-                      {a.state === "shelved" && a.shelve && <Badge icon={<Archive aria-hidden className="size-3" />}>{t("alarmTable.shelvedUntil", { ago: formatAgo(Date.parse(a.shelve.until), now) })}</Badge>}
+                      {a.workOrderId && (
+                        <Badge icon={<ClipboardPlus aria-hidden className="size-3" />}>{t("alarmTable.hasWorkOrder")}</Badge>
+                      )}
+                      {a.state === "shelved" && a.shelve && (
+                        <Badge icon={<Archive aria-hidden className="size-3" />}>
+                          {t("alarmTable.shelvedUntil", { ago: formatAgo(Date.parse(a.shelve.until), now) })}
+                        </Badge>
+                      )}
                     </span>
                   </td>
-                  <td className="whitespace-nowrap py-2 text-right font-normal tabular-nums">
+                  <td className="py-2 text-right font-normal whitespace-nowrap tabular-nums">
                     {value ? (
                       <>
                         {formatMeasurement(value.value)}
-                        {limit && <span className="text-fg-muted"> / {formatMeasurement(limit.value)}</span>} <span className="text-fg-muted">{t(`unitSymbol.${value.unit}`)}</span>
+                        {limit && <span className="text-fg-muted"> / {formatMeasurement(limit.value)}</span>}{" "}
+                        <span className="text-fg-muted">{t(`unitSymbol.${value.unit}`)}</span>
                       </>
                     ) : (
                       <span className="text-fg-muted">—</span>
                     )}
                   </td>
                   <td className="py-2 pl-4 font-normal">{t(`alarmList.states.${a.state}`)}</td>
-                  <td className="whitespace-nowrap py-2 font-normal" title={absolute(raised)}>
+                  <td className="py-2 font-normal whitespace-nowrap" title={absolute(raised)}>
                     {formatAgo(raised, now)}
                   </td>
                   <td className="px-4 py-2">
@@ -214,7 +259,11 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                         </Button>
                       )}
                       {may.shelve && a.state === "shelved" && (
-                        <Button size="sm" onClick={() => unshelve.mutate({ alarmId: a.id })} aria-label={t("alarmTable.unshelveOne", { id: a.id })}>
+                        <Button
+                          size="sm"
+                          onClick={() => unshelve.mutate({ alarmId: a.id })}
+                          aria-label={t("alarmTable.unshelveOne", { id: a.id })}
+                        >
                           <ArchiveRestore aria-hidden className="size-4" />
                         </Button>
                       )}

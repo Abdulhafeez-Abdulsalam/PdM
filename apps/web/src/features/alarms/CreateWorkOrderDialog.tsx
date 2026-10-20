@@ -2,12 +2,15 @@
  * Alarm → work order (acceptance criterion C: under 30 seconds). Everything is pre-filled —
  * title, description, priority, due date, a technician from the asset's site, and a snapshot
  * of the readings at this moment — so the usual path is: open, check, Create.
+ *
+ * Two parts: WorkOrderLoader fetches what the form needs; WorkOrderFields is rendered only
+ * once everything has arrived, so it can start with the right values (no "fill in later").
  */
 import { useApiMutation, useApiQuery } from "@pdm/api-client";
-import { WorkOrderPriority, type Alarm, type EvidenceSnapshot } from "@pdm/contracts";
+import { WorkOrderPriority, type Alarm, type EvidenceSnapshot, type LiveValue, type User } from "@pdm/contracts";
 import { Button, Field, Modal, Skeleton, inputClass } from "@pdm/ui";
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -40,15 +43,13 @@ export function CreateWorkOrderDialog({ alarm, onClose }: { alarm: Alarm | null;
       closeLabel={t("common.close")}
       className="max-w-xl"
     >
-      {alarm && <WorkOrderForm alarm={alarm} onDone={onClose} />}
+      {alarm && <WorkOrderLoader alarm={alarm} onDone={onClose} />}
     </Modal>
   );
 }
 
-function WorkOrderForm({ alarm, onDone }: { alarm: Alarm; onDone: () => void }) {
+function WorkOrderLoader({ alarm, onDone }: { alarm: Alarm; onDone: () => void }) {
   const { t } = useTranslation();
-  const client = useQueryClient();
-  const toast = useToasts((s) => s.show);
   const units = usePreferences((p) => p.units);
   const { now } = useSimNow();
 
@@ -58,38 +59,60 @@ function WorkOrderForm({ alarm, onDone }: { alarm: Alarm; onDone: () => void }) 
   const snapshotTags = useMemo(() => keyTags(tags.data?.items ?? [], 8), [tags.data]);
   const latest = useApiQuery("timeseries.latest", { tagIds: snapshotTags.map((tg) => tg.id) }, { enabled: snapshotTags.length > 0 });
 
-  const assignees = useMemo(
-    () => (technicians.data && asset.data ? suggestAssignees(technicians.data.items, asset.data.siteId) : []),
-    [technicians.data, asset.data],
-  );
-
-  const valueText = useMemo(() => {
-    if (alarm.value === null || !alarm.quantity) return null;
-    const v = toDisplay(alarm.value, alarm.quantity, units);
-    return `${formatMeasurement(v.value)} ${t(`unitSymbol.${v.unit}`)}`.trim();
-  }, [alarm, units, t]);
-
-  const form = useForm<z.input<typeof schema>, unknown, Values>({ resolver: zodResolver(schema) });
-  // Ready only once the readings snapshot has arrived too — otherwise a quick "Create" would
-  // attach no evidence (found by timing the flow in the browser).
+  // Wait for the readings snapshot too — otherwise a quick "Create" would attach no evidence
+  // (found by timing the flow in the browser).
   const snapshotReady = Boolean(tags.data) && (snapshotTags.length === 0 || Boolean(latest.data) || latest.isError);
-  const ready = Boolean(asset.data && technicians.data) && snapshotReady;
+  if (!asset.data || !technicians.data || !snapshotReady) {
+    return (
+      <div className="flex flex-col gap-3">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-10" />
+        ))}
+      </div>
+    );
+  }
 
-  // Fill the form once the asset and technician list have loaded.
-  useEffect(() => {
-    if (!ready) return;
-    const draft = draftFromAlarm(alarm, now, valueText);
-    form.reset({ ...draft, assigneeId: assignees[0]?.id ?? "", attachSnapshot: true });
-    // Deliberately runs only when the data first arrives (`ready`): later clock ticks must not
-    // overwrite what the user has typed.
-  }, [ready]);
+  const assignees = suggestAssignees(technicians.data.items, asset.data.siteId);
+  let valueText: string | null = null;
+  if (alarm.value !== null && alarm.quantity) {
+    const v = toDisplay(alarm.value, alarm.quantity, units);
+    valueText = `${formatMeasurement(v.value)} ${t(`unitSymbol.${v.unit}`)}`.trim();
+  }
+  const defaults: Values = { ...draftFromAlarm(alarm, now, valueText), assigneeId: assignees[0]?.id ?? "", attachSnapshot: true };
 
+  return (
+    <WorkOrderFields
+      alarm={alarm}
+      defaults={defaults}
+      assignees={assignees}
+      snapshot={latest.data?.values ?? []}
+      now={now}
+      onDone={onDone}
+    />
+  );
+}
+
+function WorkOrderFields(props: {
+  alarm: Alarm;
+  defaults: Values;
+  assignees: User[];
+  snapshot: LiveValue[];
+  now: number;
+  onDone: () => void;
+}) {
+  const { alarm, defaults, assignees, snapshot, now, onDone } = props;
+  const { t } = useTranslation();
+  const client = useQueryClient();
+  const toast = useToasts((s) => s.show);
+  // defaultValues are read once, when the form first appears — later re-renders (the clock
+  // ticks every second) never overwrite what the user has typed.
+  const form = useForm<z.input<typeof schema>, unknown, Values>({ resolver: zodResolver(schema), defaultValues: defaults });
   const create = useApiMutation("workOrders.create");
   const { errors, isSubmitting } = form.formState;
 
   const submit = form.handleSubmit(async (values) => {
     const evidence: EvidenceSnapshot | null =
-      values.attachSnapshot && latest.data ? { capturedAt: toIso(now), values: latest.data.values, note: null } : null;
+      values.attachSnapshot && snapshot.length > 0 ? { capturedAt: toIso(now), values: snapshot, note: null } : null;
     try {
       const wo = await create.mutateAsync({
         title: values.title,
@@ -112,14 +135,6 @@ function WorkOrderForm({ alarm, onDone }: { alarm: Alarm; onDone: () => void }) 
     }
   });
 
-  if (!ready) {
-    return (
-      <div className="flex flex-col gap-3">
-        {[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-10" />)}
-      </div>
-    );
-  }
-
   const err = (key?: string) => (key ? t(key) : undefined);
   return (
     <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
@@ -133,7 +148,11 @@ function WorkOrderForm({ alarm, onDone }: { alarm: Alarm; onDone: () => void }) 
         <Field label={t("createWo.priority")} required>
           {(p) => (
             <select {...p} {...form.register("priority")} className={inputClass}>
-              {WorkOrderPriority.options.map((v) => <option key={v} value={v}>{t(`workOrders.priorities.${v}`)}</option>)}
+              {WorkOrderPriority.options.map((v) => (
+                <option key={v} value={v}>
+                  {t(`workOrders.priorities.${v}`)}
+                </option>
+              ))}
             </select>
           )}
         </Field>
@@ -144,20 +163,28 @@ function WorkOrderForm({ alarm, onDone }: { alarm: Alarm; onDone: () => void }) 
       <Field label={t("createWo.assignee")} hint={t("createWo.assigneeHint")} error={err(errors.assigneeId?.message)} required>
         {(p) => (
           <select {...p} {...form.register("assigneeId")} className={inputClass}>
-            {assignees.map((u) => <option key={u.id} value={u.id}>{u.name}</option>)}
+            {assignees.map((u) => (
+              <option key={u.id} value={u.id}>
+                {u.name}
+              </option>
+            ))}
           </select>
         )}
       </Field>
       <label className="flex items-start gap-2 text-sm">
         <input type="checkbox" className="mt-1" {...form.register("attachSnapshot")} />
         <span>
-          {t("createWo.attachSnapshot", { count: latest.data?.values.length ?? 0 })}
+          {t("createWo.attachSnapshot", { count: snapshot.length })}
           <span className="block text-xs text-fg-muted">{t("createWo.snapshotHint")}</span>
         </span>
       </label>
       <div className="flex justify-end gap-2">
-        <Button variant="ghost" onClick={onDone}>{t("common.cancel")}</Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>{t("createWo.submit")}</Button>
+        <Button variant="ghost" onClick={onDone}>
+          {t("common.cancel")}
+        </Button>
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
+          {t("createWo.submit")}
+        </Button>
       </div>
     </form>
   );

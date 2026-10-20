@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run --exclude src/inspect.test.ts",
     "test:watch": "vitest --exclude src/inspect.test.ts",
-    "inspect": "vitest run src/inspect.test.ts --silent=false"
+    "inspect": "vitest run src/inspect.test.ts --silent=false",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@pdm/contracts": "*",

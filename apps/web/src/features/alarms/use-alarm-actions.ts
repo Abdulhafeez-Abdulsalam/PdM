@@ -24,13 +24,16 @@ export function useAlarmActions() {
     onMutate: async ({ alarmIds }) => {
       await client.cancelQueries({ queryKey: ["alarms.list"] });
       const previous = client.getQueriesData<AlarmPage>({ queryKey: ["alarms.list"] });
-      client.setQueriesData<AlarmPage>({ queryKey: ["alarms.list"] }, (old) =>
-        old && { ...old, items: old.items.map((a) => (alarmIds.includes(a.id) ? acknowledgedLocally(a) : a)) },
+      client.setQueriesData<AlarmPage>(
+        { queryKey: ["alarms.list"] },
+        (old) => old && { ...old, items: old.items.map((a) => (alarmIds.includes(a.id) ? acknowledgedLocally(a) : a)) },
       );
       return { previous };
     },
     onError: (_error, _input, context) => {
-      (context as { previous?: [QueryKey, AlarmPage | undefined][] } | undefined)?.previous?.forEach(([key, data]) => client.setQueryData(key, data));
+      (context as { previous?: [QueryKey, AlarmPage | undefined][] } | undefined)?.previous?.forEach(([key, data]) =>
+        client.setQueryData(key, data),
+      );
       toast("error", t("alarmActions.ackFailed"));
     },
     onSuccess: (data) => toast("success", t("alarmActions.acknowledged", { count: data.items.length })),

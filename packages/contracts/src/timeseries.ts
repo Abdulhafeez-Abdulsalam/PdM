@@ -10,9 +10,22 @@ export const MAX_HISTORY_RANGE_DAYS = 2000;
 
 /** The "nice" aggregation intervals, in seconds, smallest first (ADR-0006). */
 export const NICE_INTERVALS_SECONDS = [
-  1, 2, 5, 10, 15, 30, // seconds
-  60, 120, 300, 600, 900, 1800, // 1, 2, 5, 10, 15, 30 minutes
-  3600, 7200, 21600, 43200, // 1, 2, 6, 12 hours
+  1,
+  2,
+  5,
+  10,
+  15,
+  30, // seconds
+  60,
+  120,
+  300,
+  600,
+  900,
+  1800, // 1, 2, 5, 10, 15, 30 minutes
+  3600,
+  7200,
+  21600,
+  43200, // 1, 2, 6, 12 hours
   86400, // 1 day
 ] as const;
 const LONGEST_INTERVAL_SECONDS = 86400;

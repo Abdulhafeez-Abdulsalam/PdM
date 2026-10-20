@@ -42,8 +42,22 @@ export function TagCharts({ tags, range: rangeOverride, siteTimeZone, height = 2
   );
 
   if (shown.length === 0) return <p className="text-sm text-fg-muted">{t("telemetry.pickTags")}</p>;
-  if (history.isPending) return <div className="flex flex-col gap-3">{shown.map((tg) => <div key={tg.id} style={{ height }}><Skeleton className="h-full w-full" /></div>)}</div>;
-  if (history.isError || !history.data) return <p role="alert" className="text-sm text-health-warning">{t("widget.failed")}</p>;
+  if (history.isPending)
+    return (
+      <div className="flex flex-col gap-3">
+        {shown.map((tg) => (
+          <div key={tg.id} style={{ height }}>
+            <Skeleton className="h-full w-full" />
+          </div>
+        ))}
+      </div>
+    );
+  if (history.isError || !history.data)
+    return (
+      <p role="alert" className="text-sm text-health-warning">
+        {t("widget.failed")}
+      </p>
+    );
 
   const data = history.data;
   return (
@@ -156,7 +170,17 @@ function TagChart(props: {
 
 const MAX_TABLE_ROWS = 200;
 
-function DataTable({ series, formatTime, symbol, caption }: { series: SeriesPoint[]; formatTime: (t: number) => string; symbol: string; caption: string }) {
+function DataTable({
+  series,
+  formatTime,
+  symbol,
+  caption,
+}: {
+  series: SeriesPoint[];
+  formatTime: (t: number) => string;
+  symbol: string;
+  caption: string;
+}) {
   const { t } = useTranslation();
   const rows = series.slice(-MAX_TABLE_ROWS).reverse(); // newest first
   return (
@@ -165,11 +189,21 @@ function DataTable({ series, formatTime, symbol, caption }: { series: SeriesPoin
         <caption className="sr-only">{caption}</caption>
         <thead className="sticky top-0 bg-surface text-left text-xs text-fg-muted">
           <tr>
-            <th scope="col" className="px-3 py-1.5 font-medium">{t("telemetry.time")}</th>
-            <th scope="col" className="px-3 py-1.5 text-right font-medium">{t("telemetry.average")} {symbol && `(${symbol})`}</th>
-            <th scope="col" className="px-3 py-1.5 text-right font-medium">{t("telemetry.min")}</th>
-            <th scope="col" className="px-3 py-1.5 text-right font-medium">{t("telemetry.max")}</th>
-            <th scope="col" className="px-3 py-1.5 font-medium">{t("telemetry.qualityLabel")}</th>
+            <th scope="col" className="px-3 py-1.5 font-medium">
+              {t("telemetry.time")}
+            </th>
+            <th scope="col" className="px-3 py-1.5 text-right font-medium">
+              {t("telemetry.average")} {symbol && `(${symbol})`}
+            </th>
+            <th scope="col" className="px-3 py-1.5 text-right font-medium">
+              {t("telemetry.min")}
+            </th>
+            <th scope="col" className="px-3 py-1.5 text-right font-medium">
+              {t("telemetry.max")}
+            </th>
+            <th scope="col" className="px-3 py-1.5 font-medium">
+              {t("telemetry.qualityLabel")}
+            </th>
           </tr>
         </thead>
         <tbody className="tabular-nums">

@@ -6,15 +6,7 @@ import { BusinessLine, GeoPoint, HealthState, Id } from "./common";
  * Enterprise → Region → Business Unit → Site → Area/Unit → Equipment → Component.
  * Sensors are not hierarchy nodes; they are Tags attached to an asset (see tags.ts).
  */
-export const HierarchyLevel = z.enum([
-  "enterprise",
-  "region",
-  "business_unit",
-  "site",
-  "area",
-  "equipment",
-  "component",
-]);
+export const HierarchyLevel = z.enum(["enterprise", "region", "business_unit", "site", "area", "equipment", "component"]);
 export type HierarchyLevel = z.infer<typeof HierarchyLevel>;
 
 /**

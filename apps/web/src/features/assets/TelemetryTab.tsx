@@ -5,7 +5,7 @@
 import { useApiQuery } from "@pdm/api-client";
 import { MAX_SERIES_PER_CHART, type Asset, type Tag } from "@pdm/contracts";
 import { Skeleton } from "@pdm/ui";
-import { useEffect, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { usePreferences } from "../../shared/preferences";
 import { useGlobalSearch } from "../../shared/time-range";
@@ -20,22 +20,32 @@ export function TelemetryTab({ asset, siteTimeZone }: { asset: Asset; siteTimeZo
   const { t } = useTranslation();
   const { range } = useGlobalSearch();
   const tags = useApiQuery("assets.tags", { assetId: asset.id });
-  const all = tags.data?.items ?? [];
-  const [selected, setSelected] = useState<string[]>([]);
-
-  // Start with the two most telling tags selected.
-  useEffect(() => {
-    if (all.length > 0 && selected.length === 0) setSelected(keyTags(all, 2).map((tg) => tg.id));
-  }, [all, selected.length]);
+  const all = useMemo(() => tags.data?.items ?? [], [tags.data]);
+  // null = "the user hasn't picked yet", in which case the two most telling tags are shown.
+  // Calculated, not copied into state by an effect.
+  const [picked, setPicked] = useState<string[] | null>(null);
+  const selected = picked ?? keyTags(all, 2).map((tg) => tg.id);
 
   const toggle = (id: string) =>
-    setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : s.length >= MAX_SERIES_PER_CHART ? s : [...s, id]));
+    setPicked(
+      selected.includes(id) ? selected.filter((x) => x !== id) : selected.length >= MAX_SERIES_PER_CHART ? selected : [...selected, id],
+    );
   const chosen = selected.map((id) => all.find((tg) => tg.id === id)).filter((tg): tg is Tag => Boolean(tg));
 
   return (
     <div className="grid grid-cols-1 gap-4 xl:grid-cols-12">
-      <DashboardWidget title={t("telemetry.sensors", { count: all.length })} query={tags} className="xl:col-span-5"
-        skeleton={<div className="flex flex-col gap-2">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-8" />)}</div>}>
+      <DashboardWidget
+        title={t("telemetry.sensors", { count: all.length })}
+        query={tags}
+        className="xl:col-span-5"
+        skeleton={
+          <div className="flex flex-col gap-2">
+            {[0, 1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-8" />
+            ))}
+          </div>
+        }
+      >
         <p className="mb-2 text-xs text-fg-muted">{t("telemetry.pickHint", { max: MAX_SERIES_PER_CHART })}</p>
         <ul className="flex flex-col">
           {all.map((tag) => (
@@ -78,7 +88,8 @@ function LimitsText({ tag }: { tag: Tag }) {
   const conv = conversionFor(tag.quantity, units);
   return (
     <span className="block text-xs text-fg-muted">
-      {limits.map((l) => `${t(`telemetry.limit.${l.level}`)} ${formatMeasurement(conv.convert(l.value))}`).join(" · ")} {t(`unitSymbol.${conv.unit}`)}
+      {limits.map((l) => `${t(`telemetry.limit.${l.level}`)} ${formatMeasurement(conv.convert(l.value))}`).join(" · ")}{" "}
+      {t(`unitSymbol.${conv.unit}`)}
     </span>
   );
 }

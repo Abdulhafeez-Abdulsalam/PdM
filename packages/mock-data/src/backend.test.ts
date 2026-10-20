@@ -181,7 +181,9 @@ describe("operator actions", () => {
     expect(acked!.acknowledgedBy).not.toBeNull();
 
     expect(() => b.request("alarms.shelve", { alarmId: alarm.id, reason: "ok", until: iso(START + HOUR) })).toThrowError(ApiFailure);
-    expect(() => b.request("alarms.shelve", { alarmId: alarm.id, reason: "Transmitter being replaced", until: iso(START + 30 * HOUR) })).toThrowError(/24 hours/);
+    expect(() =>
+      b.request("alarms.shelve", { alarmId: alarm.id, reason: "Transmitter being replaced", until: iso(START + 30 * HOUR) }),
+    ).toThrowError(/24 hours/);
 
     const shelved = b.request("alarms.shelve", { alarmId: alarm.id, reason: "Transmitter being replaced", until: iso(START + 4 * HOUR) });
     expect(shelved.state).toBe("shelved");

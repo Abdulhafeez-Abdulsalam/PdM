@@ -9,14 +9,7 @@
  * For GET, the remaining input fields become the query string; for POST, the JSON body.
  */
 import { z } from "zod";
-import {
-  AcknowledgeAlarmsRequest,
-  Alarm,
-  AlarmListParams,
-  AlarmSummary,
-  ShelveAlarmRequest,
-  UnshelveAlarmRequest,
-} from "./alarms";
+import { AcknowledgeAlarmsRequest, Alarm, AlarmListParams, AlarmSummary, ShelveAlarmRequest, UnshelveAlarmRequest } from "./alarms";
 import { Asset, AssetListParams } from "./assets";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
@@ -48,12 +41,15 @@ const none = z.object({});
 export const endpoints = {
   // ── People ──
   "me.get": endpoint({
-    method: "GET", path: "/me",
+    method: "GET",
+    path: "/me",
     description: "The signed-in user (in demo mode: whoever the role switcher selected)",
-    input: none, output: User,
+    input: none,
+    output: User,
   }),
   "users.list": endpoint({
-    method: "GET", path: "/users",
+    method: "GET",
+    path: "/users",
     description: "Search people, e.g. for the work-order assignee picker",
     input: PageParams.extend({ role: RoleId.optional(), search: z.string().max(100).optional() }),
     output: page(User),
@@ -61,51 +57,68 @@ export const endpoints = {
 
   // ── Hierarchy ──
   "hierarchy.node": endpoint({
-    method: "GET", path: "/hierarchy/nodes/:nodeId",
+    method: "GET",
+    path: "/hierarchy/nodes/:nodeId",
     description: "One hierarchy node",
-    input: z.object({ nodeId: Id }), output: HierarchyNode,
+    input: z.object({ nodeId: Id }),
+    output: HierarchyNode,
   }),
   "hierarchy.children": endpoint({
-    method: "GET", path: "/hierarchy/nodes/:nodeId/children",
+    method: "GET",
+    path: "/hierarchy/nodes/:nodeId/children",
     description: "Direct children of a node (the tree loads one level at a time)",
-    input: z.object({ nodeId: Id }), output: list(HierarchyNode),
+    input: z.object({ nodeId: Id }),
+    output: list(HierarchyNode),
   }),
   "hierarchy.path": endpoint({
-    method: "GET", path: "/hierarchy/nodes/:nodeId/path",
+    method: "GET",
+    path: "/hierarchy/nodes/:nodeId/path",
     description: "Ancestors from the enterprise root down to this node — feeds the breadcrumb",
-    input: z.object({ nodeId: Id }), output: list(HierarchyNode),
+    input: z.object({ nodeId: Id }),
+    output: list(HierarchyNode),
   }),
   "sites.list": endpoint({
-    method: "GET", path: "/sites",
+    method: "GET",
+    path: "/sites",
     description: "All sites, for the map and site pickers",
-    input: none, output: list(Site),
+    input: none,
+    output: list(Site),
   }),
 
   // ── Assets & tags ──
   "assets.list": endpoint({
-    method: "GET", path: "/assets",
+    method: "GET",
+    path: "/assets",
     description: "Asset registry with filters, sorting and paging",
-    input: AssetListParams, output: page(Asset),
+    input: AssetListParams,
+    output: page(Asset),
   }),
   "assets.get": endpoint({
-    method: "GET", path: "/assets/:assetId",
+    method: "GET",
+    path: "/assets/:assetId",
     description: "One asset — the Asset 360 header",
-    input: z.object({ assetId: Id }), output: Asset,
+    input: z.object({ assetId: Id }),
+    output: Asset,
   }),
   "assets.tags": endpoint({
-    method: "GET", path: "/assets/:assetId/tags",
+    method: "GET",
+    path: "/assets/:assetId/tags",
     description: "All sensor tags on an asset, with their limits",
-    input: z.object({ assetId: Id }), output: list(Tag),
+    input: z.object({ assetId: Id }),
+    output: list(Tag),
   }),
 
   // ── Time series ──
   "timeseries.history": endpoint({
-    method: "POST", path: "/timeseries/history",
+    method: "POST",
+    path: "/timeseries/history",
     description: "Aggregated history (avg/min/max per interval, ≤ 2,000 points per tag). POST because tag lists can be long.",
-    input: HistoryRequest, output: HistoryResponse,
+    input: HistoryRequest,
+    output: HistoryResponse,
   }),
   "timeseries.latest": endpoint({
-    method: "POST", path: "/timeseries/latest",
+    method: "POST",
+    path: "/timeseries/latest",
     description: "Most recent value per tag — used on page load and after a reconnect, before live updates arrive",
     input: z.object({ tagIds: z.array(Id).min(1).max(MAX_SUBSCRIBED_TAGS) }),
     output: z.object({ values: z.array(LiveValue) }),
@@ -113,75 +126,101 @@ export const endpoints = {
 
   // ── Predictions & risk ──
   "risks.top": endpoint({
-    method: "GET", path: "/risks/top",
+    method: "GET",
+    path: "/risks/top",
     description: "Assets ranked by probability × consequence (acceptance criterion A)",
-    input: TopRisksParams, output: list(RiskItem),
+    input: TopRisksParams,
+    output: list(RiskItem),
   }),
   "predictions.list": endpoint({
-    method: "GET", path: "/predictions",
+    method: "GET",
+    path: "/predictions",
     description: "Predictions with filters",
-    input: PredictionListParams, output: page(Prediction),
+    input: PredictionListParams,
+    output: page(Prediction),
   }),
   "predictions.get": endpoint({
-    method: "GET", path: "/predictions/:predictionId",
+    method: "GET",
+    path: "/predictions/:predictionId",
     description: "One prediction with evidence, explanation, confidence and action (acceptance criterion B)",
-    input: z.object({ predictionId: Id }), output: Prediction,
+    input: z.object({ predictionId: Id }),
+    output: Prediction,
   }),
 
   // ── Alarms & events ──
   "alarms.list": endpoint({
-    method: "GET", path: "/alarms",
+    method: "GET",
+    path: "/alarms",
     description: "Alarm list with filters, sorting and paging",
-    input: AlarmListParams, output: page(Alarm),
+    input: AlarmListParams,
+    output: page(Alarm),
   }),
   "alarms.summary": endpoint({
-    method: "GET", path: "/alarms/summary",
+    method: "GET",
+    path: "/alarms/summary",
     description: "Counts for the alarm bar (then kept fresh by alarm_summary live messages)",
-    input: z.object({ scopeId: ScopeId.optional() }), output: AlarmSummary,
+    input: z.object({ scopeId: ScopeId.optional() }),
+    output: AlarmSummary,
   }),
   "alarms.acknowledge": endpoint({
-    method: "POST", path: "/alarms/acknowledge",
+    method: "POST",
+    path: "/alarms/acknowledge",
     description: "Acknowledge one or more alarms",
-    input: AcknowledgeAlarmsRequest, output: list(Alarm),
+    input: AcknowledgeAlarmsRequest,
+    output: list(Alarm),
   }),
   "alarms.shelve": endpoint({
-    method: "POST", path: "/alarms/:alarmId/shelve",
+    method: "POST",
+    path: "/alarms/:alarmId/shelve",
     description: "Temporarily hide an alarm, with a required reason and expiry",
-    input: ShelveAlarmRequest, output: Alarm,
+    input: ShelveAlarmRequest,
+    output: Alarm,
   }),
   "alarms.unshelve": endpoint({
-    method: "POST", path: "/alarms/:alarmId/unshelve",
+    method: "POST",
+    path: "/alarms/:alarmId/unshelve",
     description: "Return a shelved alarm to the active list",
-    input: UnshelveAlarmRequest, output: Alarm,
+    input: UnshelveAlarmRequest,
+    output: Alarm,
   }),
   "events.list": endpoint({
-    method: "GET", path: "/events",
+    method: "GET",
+    path: "/events",
     description: "Timeline of alarms, operator actions, maintenance, process events and predictions",
-    input: EventListParams, output: list(TimelineEvent),
+    input: EventListParams,
+    output: list(TimelineEvent),
   }),
 
   // ── KPIs & briefing ──
   "kpis.get": endpoint({
-    method: "GET", path: "/kpis",
+    method: "GET",
+    path: "/kpis",
     description: "Command Center KPI strip for a scope",
-    input: KpiParams, output: KpiResponse,
+    input: KpiParams,
+    output: KpiResponse,
   }),
   "briefing.daily": endpoint({
-    method: "GET", path: "/briefing/daily",
+    method: "GET",
+    path: "/briefing/daily",
     description: "AI daily briefing with citations (scripted provider for now — ADR-0010)",
-    input: z.object({ scopeId: ScopeId.optional() }), output: Briefing,
+    input: z.object({ scopeId: ScopeId.optional() }),
+    output: Briefing,
   }),
 
   // ── Work orders ──
   "workOrders.list": endpoint({
-    method: "GET", path: "/work-orders",
+    method: "GET",
+    path: "/work-orders",
     description: "Work orders with filters and paging",
-    input: WorkOrderListParams, output: page(WorkOrder),
+    input: WorkOrderListParams,
+    output: page(WorkOrder),
   }),
   "workOrders.create": endpoint({
-    method: "POST", path: "/work-orders",
+    method: "POST",
+    path: "/work-orders",
     description: "Create a work order, e.g. from an alarm (acceptance criterion C)",
-    input: CreateWorkOrderRequest, output: WorkOrder,
+    input: CreateWorkOrderRequest,
+    output: WorkOrder,
   }),
 } as const;
 

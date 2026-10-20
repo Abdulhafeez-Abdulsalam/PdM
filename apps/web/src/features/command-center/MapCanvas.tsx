@@ -6,7 +6,7 @@ import type { Site } from "@pdm/contracts";
 import { HealthBadge } from "@pdm/ui";
 import { LngLatBounds, Map as MapLibreMap, Marker, NavigationControl } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { groupHealthLabel } from "../../shared/health";
@@ -23,8 +23,6 @@ export default function MapCanvas({ sites, onSelectSite }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MapLibreMap | null>(null);
   const theme = usePreferences((p) => p.theme);
-  // One DOM element per site; React draws the marker into it with a portal.
-  const [markerEls, setMarkerEls] = useState<Map<string, HTMLElement>>(new Map());
 
   // Create the map once.
   useEffect(() => {
@@ -51,24 +49,38 @@ export default function MapCanvas({ sites, onSelectSite }: Props) {
     mapRef.current?.setStyle(buildMapStyle());
   }, [theme]);
 
-  // Add a marker per site, and frame them all.
+  // One container element per site (React draws each marker into it with a portal),
+  // kept as long as the set of sites doesn't change.
+  const siteIds = sites.map((s) => s.id).join(",");
+  const markerEls = useMemo(
+    () =>
+      new Map(
+        siteIds
+          .split(",")
+          .filter(Boolean)
+          .map((id) => [id, document.createElement("div")] as const),
+      ),
+    [siteIds],
+  );
+  const framed = useRef(false);
+
+  // Attach the markers to the map (re-attached on each refresh — cheap for a dozen sites).
+  // Frame all sites only the first time, so a refresh never moves the user's view.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || sites.length === 0) return;
-    const els = new Map<string, HTMLElement>();
-    const markers = sites.map((site) => {
-      const el = document.createElement("div");
-      els.set(site.id, el);
-      return new Marker({ element: el }).setLngLat([site.location.lon, site.location.lat]).addTo(map);
+    if (!map) return;
+    const markers = sites.flatMap((site) => {
+      const el = markerEls.get(site.id);
+      return el ? [new Marker({ element: el }).setLngLat([site.location.lon, site.location.lat]).addTo(map)] : [];
     });
-    setMarkerEls(els);
-    const bounds = new LngLatBounds();
-    sites.forEach((s) => bounds.extend([s.location.lon, s.location.lat]));
-    map.fitBounds(bounds, { padding: 48, maxZoom: 5, duration: 0 });
+    if (!framed.current && sites.length > 0) {
+      const bounds = new LngLatBounds();
+      sites.forEach((s) => bounds.extend([s.location.lon, s.location.lat]));
+      map.fitBounds(bounds, { padding: 48, maxZoom: 5, duration: 0 });
+      framed.current = true;
+    }
     return () => markers.forEach((m) => m.remove());
-    // Deliberately keyed on the list of site ids: re-run when sites are added or removed,
-    // not on every health refresh (the portal below re-draws markers for those).
-  }, [sites.map((s) => s.id).join(",")]);
+  }, [sites, markerEls]);
 
   return (
     <div className="overflow-hidden rounded-md">

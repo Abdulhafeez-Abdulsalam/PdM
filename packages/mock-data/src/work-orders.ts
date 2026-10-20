@@ -25,33 +25,70 @@ const HISTORY_DAYS = 180;
 export const OPEN_STATUSES: readonly WorkOrderStatus[] = ["requested", "triaged", "planned", "scheduled", "approved", "in_progress"];
 
 const TYPE_WEIGHTS: readonly (readonly [WorkOrderType, number])[] = [
-  ["preventive", 40], ["corrective", 25], ["inspection", 15], ["predictive", 8],
-  ["calibration", 6], ["condition_based", 3], ["regulatory", 2], ["shutdown", 1],
+  ["preventive", 40],
+  ["corrective", 25],
+  ["inspection", 15],
+  ["predictive", 8],
+  ["calibration", 6],
+  ["condition_based", 3],
+  ["regulatory", 2],
+  ["shutdown", 1],
 ];
 
 const PRIORITY_WEIGHTS: readonly (readonly [WorkOrderPriority, number])[] = [
-  ["emergency", 2], ["urgent", 8], ["high", 20], ["normal", 55], ["low", 15],
+  ["emergency", 2],
+  ["urgent", 8],
+  ["high", 20],
+  ["normal", 55],
+  ["low", 15],
 ];
 
 function statusForAge(rng: Rng, ageDays: number): WorkOrderStatus {
-  if (ageDays > 30) return rng.weighted([["closed", 88], ["cancelled", 4], ["verified", 4], ["completed", 4]]);
+  if (ageDays > 30)
+    return rng.weighted([
+      ["closed", 88],
+      ["cancelled", 4],
+      ["verified", 4],
+      ["completed", 4],
+    ]);
   if (ageDays > 7) {
-    return rng.weighted([["closed", 30], ["completed", 15], ["in_progress", 15], ["scheduled", 20], ["planned", 10], ["approved", 10]]);
+    return rng.weighted([
+      ["closed", 30],
+      ["completed", 15],
+      ["in_progress", 15],
+      ["scheduled", 20],
+      ["planned", 10],
+      ["approved", 10],
+    ]);
   }
-  return rng.weighted([["requested", 30], ["triaged", 20], ["planned", 20], ["scheduled", 15], ["in_progress", 15]]);
+  return rng.weighted([
+    ["requested", 30],
+    ["triaged", 20],
+    ["planned", 20],
+    ["scheduled", 15],
+    ["in_progress", 15],
+  ]);
 }
 
 function titleFor(rng: Rng, type: WorkOrderType, asset: AssetRecord): string {
   const name = asset.data.id;
   switch (type) {
-    case "preventive": return `${rng.pick(["Monthly", "Quarterly", "Annual"])} PM — ${name}`;
-    case "corrective": return `${rng.pick(["Repair leak on", "Replace failed seal on", "Investigate trip of", "Replace faulty transmitter on"])} ${name}`;
-    case "inspection": return `${rng.pick(["Visual inspection", "Thermographic survey", "UT thickness survey"])} — ${name}`;
-    case "calibration": return `Calibrate instruments — ${name}`;
-    case "predictive": return `Condition-based intervention — ${name}`;
-    case "condition_based": return `Condition-based service — ${name}`;
-    case "regulatory": return `Statutory inspection — ${name}`;
-    case "shutdown": return `Turnaround scope item — ${name}`;
+    case "preventive":
+      return `${rng.pick(["Monthly", "Quarterly", "Annual"])} PM — ${name}`;
+    case "corrective":
+      return `${rng.pick(["Repair leak on", "Replace failed seal on", "Investigate trip of", "Replace faulty transmitter on"])} ${name}`;
+    case "inspection":
+      return `${rng.pick(["Visual inspection", "Thermographic survey", "UT thickness survey"])} — ${name}`;
+    case "calibration":
+      return `Calibrate instruments — ${name}`;
+    case "predictive":
+      return `Condition-based intervention — ${name}`;
+    case "condition_based":
+      return `Condition-based service — ${name}`;
+    case "regulatory":
+      return `Statutory inspection — ${name}`;
+    case "shutdown":
+      return `Turnaround scope item — ${name}`;
   }
 }
 

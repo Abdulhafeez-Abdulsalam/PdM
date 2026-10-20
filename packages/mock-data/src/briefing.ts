@@ -35,7 +35,10 @@ export function scriptedBriefing(input: BriefingInput): Briefing {
     changed.push({
       text: `New prediction: ${p.failureMode.label.toLowerCase()} on ${name(p.assetId)} (${Math.round(p.probability * 100)}% within ${p.horizonDays} days).`,
       severity: p.probability >= 0.7 ? "warning" : "degraded",
-      citations: [{ kind: "prediction", id: p.id, label: p.id }, { kind: "asset", id: p.assetId, label: p.assetId }],
+      citations: [
+        { kind: "prediction", id: p.id, label: p.id },
+        { kind: "asset", id: p.assetId, label: p.assetId },
+      ],
     });
   }
   const before = buildSnapshot(world, since, overlays);

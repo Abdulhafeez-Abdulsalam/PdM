@@ -40,7 +40,10 @@ function ToastItem({ toast }: { toast: Toast }) {
   const Icon = toast.tone === "success" ? CircleCheck : CircleAlert;
   return (
     <li className="flex items-start gap-2 rounded-lg border border-line bg-raised p-3 text-sm shadow-2">
-      <Icon aria-hidden className={cx("mt-0.5 size-4 shrink-0", toast.tone === "success" ? "text-health-healthy" : "text-health-critical")} />
+      <Icon
+        aria-hidden
+        className={cx("mt-0.5 size-4 shrink-0", toast.tone === "success" ? "text-health-healthy" : "text-health-critical")}
+      />
       <span className="flex-1">{toast.message}</span>
       <button type="button" onClick={() => dismiss(toast.id)} aria-label={t("toast.dismiss")} className="rounded p-0.5 hover:bg-sunken">
         <X aria-hidden className="size-4" />
@@ -53,7 +56,11 @@ function ToastItem({ toast }: { toast: Toast }) {
 export function Toaster() {
   const toasts = useToasts((s) => s.toasts);
   return (
-    <ol aria-live="polite" role="status" className="pointer-events-none fixed bottom-4 right-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 [&>li]:pointer-events-auto">
+    <ol
+      aria-live="polite"
+      role="status"
+      className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 [&>li]:pointer-events-auto"
+    >
       {toasts.map((t) => (
         <ToastItem key={t.id} toast={t} />
       ))}

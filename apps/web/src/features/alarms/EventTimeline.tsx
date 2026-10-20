@@ -57,14 +57,28 @@ export function EventTimeline() {
       query={events}
       isEmpty={groups.length === 0}
       emptyText={t("timeline.empty")}
-      skeleton={<div className="flex flex-col gap-2">{[0, 1, 2, 3, 4].map((i) => <Skeleton key={i} className="h-8" />)}</div>}
+      skeleton={
+        <div className="flex flex-col gap-2">
+          {[0, 1, 2, 3, 4].map((i) => (
+            <Skeleton key={i} className="h-8" />
+          ))}
+        </div>
+      }
       actions={
         <span className="hidden gap-1 md:flex" role="group" aria-label={t("timeline.kinds")}>
           {TimelineEventKind.options.map((k) => {
             const Icon = ICON[k];
             return (
-              <button key={k} type="button" aria-pressed={kinds.has(k)} onClick={() => toggle(k)}
-                className={cx("flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs", kinds.has(k) ? "border-accent text-fg" : "border-line text-fg-muted")}>
+              <button
+                key={k}
+                type="button"
+                aria-pressed={kinds.has(k)}
+                onClick={() => toggle(k)}
+                className={cx(
+                  "flex items-center gap-1 rounded-md border px-2 py-0.5 text-xs",
+                  kinds.has(k) ? "border-accent text-fg" : "border-line text-fg-muted",
+                )}
+              >
                 <Icon aria-hidden className="size-3.5" />
                 {t(`timeline.kind.${k}`)}
               </button>
@@ -82,7 +96,7 @@ export function EventTimeline() {
                 const Icon = ICON[e.kind];
                 return (
                   <li key={e.id} className="relative flex items-start gap-2 py-1 pl-4 text-sm">
-                    <Icon aria-hidden className="absolute -left-2 top-1.5 size-4 rounded-full bg-surface text-fg-muted" />
+                    <Icon aria-hidden className="absolute top-1.5 -left-2 size-4 rounded-full bg-surface text-fg-muted" />
                     {e.severity && <HealthBadge compact state={e.severity} label={t(`health.${e.severity}`)} className="mt-0.5" />}
                     <span className="min-w-0 flex-1">
                       <span className="sr-only">{t(`timeline.kind.${e.kind}`)}: </span>
@@ -90,11 +104,20 @@ export function EventTimeline() {
                       {e.detail && <span className="block text-xs text-fg-muted">{e.detail}</span>}
                     </span>
                     {e.kind === "prediction" && e.refId ? (
-                      <button type="button" onClick={() => setSearch({ prediction: e.refId ?? undefined })} className="font-mono text-xs text-accent hover:underline">
+                      <button
+                        type="button"
+                        onClick={() => setSearch({ prediction: e.refId ?? undefined })}
+                        className="font-mono text-xs text-accent hover:underline"
+                      >
                         {e.assetId}
                       </button>
                     ) : (
-                      <Link to="/assets/$assetId" params={{ assetId: e.assetId }} search={(prev) => prev} className="font-mono text-xs text-fg-muted hover:underline">
+                      <Link
+                        to="/assets/$assetId"
+                        params={{ assetId: e.assetId }}
+                        search={(prev) => prev}
+                        className="font-mono text-xs text-fg-muted hover:underline"
+                      >
                         {e.assetId}
                       </Link>
                     )}

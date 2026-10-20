@@ -20,15 +20,7 @@ export type Timestamp = z.infer<typeof Timestamp>;
 export const Probability = z.number().min(0).max(1);
 
 /** The 7-level health scale (design system §3). Order = increasing concern, then the two "no judgement" states. */
-export const HealthState = z.enum([
-  "healthy",
-  "watch",
-  "degraded",
-  "warning",
-  "critical",
-  "offline",
-  "maintenance",
-]);
+export const HealthState = z.enum(["healthy", "watch", "degraded", "warning", "critical", "offline", "maintenance"]);
 export type HealthState = z.infer<typeof HealthState>;
 
 /** How trustworthy a measured value is (standard historian / OPC UA concept). */

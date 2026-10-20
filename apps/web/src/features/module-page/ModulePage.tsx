@@ -39,7 +39,9 @@ export function ModulePage({ moduleId }: { moduleId: ModuleId }) {
           <p className="text-fg-muted">{t(`modules.${moduleId}.description`)}</p>
         </div>
       </header>
-      <EmptyState title={module.phase > CURRENT_PHASE ? t("placeholder.plannedFor", { phase: module.phase }) : t("placeholder.comingInChunk")}>
+      <EmptyState
+        title={module.phase > CURRENT_PHASE ? t("placeholder.plannedFor", { phase: module.phase }) : t("placeholder.comingInChunk")}
+      >
         {access === "view" && <p>{t("placeholder.viewOnly")}</p>}
       </EmptyState>
     </div>

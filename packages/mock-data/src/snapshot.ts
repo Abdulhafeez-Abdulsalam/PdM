@@ -54,7 +54,13 @@ export function emptyCounts(): HealthCounts {
 }
 
 const SEVERITY: Record<HealthState, number> = {
-  healthy: 0, watch: 1, degraded: 2, warning: 3, critical: 4, offline: -1, maintenance: -1,
+  healthy: 0,
+  watch: 1,
+  degraded: 2,
+  warning: 3,
+  critical: 4,
+  offline: -1,
+  maintenance: -1,
 };
 
 export function healthState(score: number): HealthState {

@@ -20,7 +20,8 @@ export function listEvents(params: EventListParams, sources: EventSources): Time
   const wanted = (e: TimelineEvent) => {
     const t = Date.parse(e.t);
     return (
-      t >= from && t <= to &&
+      t >= from &&
+      t <= to &&
       (!params.assetId || e.assetId === params.assetId) &&
       (!params.kinds || params.kinds.includes(e.kind)) &&
       sources.inScope(e.assetId)
@@ -30,20 +31,38 @@ export function listEvents(params: EventListParams, sources: EventSources): Time
   const events: TimelineEvent[] = [];
   for (const a of sources.alarms.all()) {
     events.push({
-      id: `ev-${a.id}`, kind: "alarm", t: a.raisedAt, assetId: a.assetId, title: a.message,
-      detail: `${a.priority.toUpperCase()} · ${a.state.replace(/_/g, " ")}`, severity: ALARM_PRIORITY_HEALTH[a.priority], refId: a.id,
+      id: `ev-${a.id}`,
+      kind: "alarm",
+      t: a.raisedAt,
+      assetId: a.assetId,
+      title: a.message,
+      detail: `${a.priority.toUpperCase()} · ${a.state.replace(/_/g, " ")}`,
+      severity: ALARM_PRIORITY_HEALTH[a.priority],
+      refId: a.id,
     });
   }
   for (const wo of sources.workOrders.all()) {
     events.push({
-      id: `ev-${wo.id}`, kind: "maintenance", t: wo.createdAt, assetId: wo.assetId, title: `${wo.number} created: ${wo.title}`,
-      detail: `${wo.type.replace("_", " ")} · ${wo.status.replace("_", " ")}`, severity: null, refId: wo.id,
+      id: `ev-${wo.id}`,
+      kind: "maintenance",
+      t: wo.createdAt,
+      assetId: wo.assetId,
+      title: `${wo.number} created: ${wo.title}`,
+      detail: `${wo.type.replace("_", " ")} · ${wo.status.replace("_", " ")}`,
+      severity: null,
+      refId: wo.id,
     });
   }
   for (const p of sources.snapshot.predictions) {
     events.push({
-      id: `ev-${p.id}`, kind: "prediction", t: p.detectedAt, assetId: p.assetId, title: `Prediction: ${p.failureMode.label}`,
-      detail: `${Math.round(p.probability * 100)}% within ${p.horizonDays} days`, severity: p.probability >= 0.7 ? "warning" : "degraded", refId: p.id,
+      id: `ev-${p.id}`,
+      kind: "prediction",
+      t: p.detectedAt,
+      assetId: p.assetId,
+      title: `Prediction: ${p.failureMode.label}`,
+      detail: `${Math.round(p.probability * 100)}% within ${p.horizonDays} days`,
+      severity: p.probability >= 0.7 ? "warning" : "degraded",
+      refId: p.id,
     });
   }
   events.push(...sources.log);

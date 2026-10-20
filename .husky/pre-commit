@@ -1,0 +1,2 @@
+# Before each commit: lint and format only the files being committed (fast).
+npx lint-staged

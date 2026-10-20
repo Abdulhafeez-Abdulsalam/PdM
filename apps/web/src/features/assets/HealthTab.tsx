@@ -18,7 +18,9 @@ export function HealthTab({ asset }: { asset: Asset }) {
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
       <section className="flex flex-col gap-4 rounded-lg border border-line bg-surface p-4 lg:col-span-4" aria-labelledby="health-summary">
-        <h2 id="health-summary" className="font-semibold">{t("assets.healthSummary")}</h2>
+        <h2 id="health-summary" className="font-semibold">
+          {t("assets.healthSummary")}
+        </h2>
         <div className="flex items-center gap-3">
           <span className="text-4xl font-semibold">{formatNumber(asset.health.score)}</span>
           <HealthBadge state={asset.health.state} label={t(`health.${asset.health.state}`)} />
@@ -42,7 +44,10 @@ export function HealthTab({ asset }: { asset: Asset }) {
                     type="button"
                     onClick={() => setChosen(p.id)}
                     aria-pressed={p.id === selectedId}
-                    className={cx("w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-sunken", p.id === selectedId && "bg-sunken font-semibold")}
+                    className={cx(
+                      "w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-sunken",
+                      p.id === selectedId && "bg-sunken font-semibold",
+                    )}
                   >
                     {p.failureMode.label} · {formatProbability(p.probability)}
                     <span className="block text-xs font-normal text-fg-muted">{t(`prediction.status.${p.status}`)}</span>

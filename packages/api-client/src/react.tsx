@@ -6,14 +6,16 @@
  * TanStack Query handles caching, loading/error states and refetching; the query key is
  * [endpoint name, input], so the same request from two components is fetched once.
  */
-import type { AlarmSummary, EndpointInput, EndpointName, EndpointOutput, LiveValue, SimulationControl, SimulationStatus } from "@pdm/contracts";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type UseMutationOptions,
-  type UseQueryOptions,
-} from "@tanstack/react-query";
+import type {
+  AlarmSummary,
+  EndpointInput,
+  EndpointName,
+  EndpointOutput,
+  LiveValue,
+  SimulationControl,
+  SimulationStatus,
+} from "@pdm/contracts";
+import { useMutation, useQuery, useQueryClient, type UseMutationOptions, type UseQueryOptions } from "@tanstack/react-query";
 import { createContext, useCallback, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 import type { ApiClient } from "./client";
 import type { LiveClient } from "./live";

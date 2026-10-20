@@ -21,7 +21,7 @@ export function SimulationPanel() {
 
   return (
     <section aria-labelledby="sim-title" className="m-2 rounded-lg border border-dashed border-line p-3 text-xs">
-      <h2 id="sim-title" className="mb-2 flex items-center justify-between font-semibold uppercase tracking-wide text-fg-muted">
+      <h2 id="sim-title" className="mb-2 flex items-center justify-between font-semibold tracking-wide text-fg-muted uppercase">
         {t("simulation.title")}
         <span className="rounded bg-sunken px-1.5 py-0.5 font-normal normal-case">{t("simulation.demoMode")}</span>
       </h2>

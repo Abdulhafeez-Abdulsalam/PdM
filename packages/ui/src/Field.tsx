@@ -11,7 +11,13 @@ export interface FieldControlProps {
   "aria-invalid"?: boolean;
 }
 
-export function Field({ label, hint, error, required, children }: {
+export function Field({
+  label,
+  hint,
+  error,
+  required,
+  children,
+}: {
   label: string;
   hint?: string;
   /** Already translated. */
@@ -27,11 +33,23 @@ export function Field({ label, hint, error, required, children }: {
     <div className="flex flex-col gap-1">
       <label htmlFor={id} className="text-sm font-medium">
         {label}
-        {required && <span aria-hidden className="ml-0.5 text-health-critical">*</span>}
+        {required && (
+          <span aria-hidden className="ml-0.5 text-health-critical">
+            *
+          </span>
+        )}
       </label>
       {children({ id, "aria-describedby": describedBy, "aria-invalid": error ? true : undefined })}
-      {hint && <p id={hintId} className="text-xs text-fg-muted">{hint}</p>}
-      {error && <p id={errorId} role="alert" className="text-xs text-health-critical">{error}</p>}
+      {hint && (
+        <p id={hintId} className="text-xs text-fg-muted">
+          {hint}
+        </p>
+      )}
+      {error && (
+        <p id={errorId} role="alert" className="text-xs text-health-critical">
+          {error}
+        </p>
+      )}
     </div>
   );
 }

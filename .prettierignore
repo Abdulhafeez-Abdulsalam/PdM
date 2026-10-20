@@ -1,0 +1,7 @@
+node_modules
+dist
+coverage
+package-lock.json
+.turbo
+# Docs are hand-laid-out (wide tables); keep them as written.
+*.md

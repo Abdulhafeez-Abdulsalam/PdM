@@ -136,7 +136,15 @@ export function TimeSeriesChart(props: TimeSeriesChartProps) {
         },
         series: [
           // Invisible base of the band…
-          { type: "line", data: withGaps(points, intervalMs, (p) => p.min), stack: "band", symbol: "none", lineStyle: { opacity: 0 }, silent: true, tooltip: { show: false } },
+          {
+            type: "line",
+            data: withGaps(points, intervalMs, (p) => p.min),
+            stack: "band",
+            symbol: "none",
+            lineStyle: { opacity: 0 },
+            silent: true,
+            tooltip: { show: false },
+          },
           // …plus (max − min) stacked on top, filled: the min–max band.
           {
             type: "line",

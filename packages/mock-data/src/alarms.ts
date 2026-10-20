@@ -172,10 +172,19 @@ export class AlarmEngine {
     this.raiseOnLimit(tag, 0, priority, t + hashNoise(this.bgSeed + 4, m) * 50_000, t + durationMin * MINUTE);
   }
 
-  private raiseOnLimit(tag: TagRecord, level: 0 | 1 | 2, priority: AlarmPriority, t: number, rtnAt: number | null, occurrenceCount?: number): void {
+  private raiseOnLimit(
+    tag: TagRecord,
+    level: 0 | 1 | 2,
+    priority: AlarmPriority,
+    t: number,
+    rtnAt: number | null,
+    occurrenceCount?: number,
+  ): void {
     const high = tag.template.bad === "high";
     const limits = tag.tag.limits;
-    const limit = (high ? [limits.highAlert, limits.highAlarm, limits.highTrip] : [limits.lowAlert, limits.lowAlarm, limits.lowTrip])[level] ?? tag.base;
+    const limit =
+      (high ? [limits.highAlert, limits.highAlarm, limits.highTrip] : [limits.lowAlert, limits.lowAlarm, limits.lowTrip])[level] ??
+      tag.base;
     this.raise({
       t,
       asset: tag.asset,
@@ -302,7 +311,11 @@ export class AlarmEngine {
 
   private prune(now: number): void {
     for (const [id, record] of this.records) {
-      if (record.alarm.state === "cleared" && record.alarm.returnedToNormalAt && now - Date.parse(record.alarm.returnedToNormalAt) > RETENTION) {
+      if (
+        record.alarm.state === "cleared" &&
+        record.alarm.returnedToNormalAt &&
+        now - Date.parse(record.alarm.returnedToNormalAt) > RETENTION
+      ) {
         this.records.delete(id);
       }
     }
@@ -335,7 +348,9 @@ export class AlarmEngine {
       record.alarm.acknowledgedBy = by.id;
       record.alarm.shelve = { by: by.id, reason: rng.pick(SHELVE_REASONS), until: iso(now + rng.between(2, 20) * HOUR) };
     }
-    const inMaintenance = [...this.world.assets.values()].filter((a) => a.staticStatus === "maintenance" && a.tags.some((t) => t.template.bad));
+    const inMaintenance = [...this.world.assets.values()].filter(
+      (a) => a.staticStatus === "maintenance" && a.tags.some((t) => t.template.bad),
+    );
     for (const asset of inMaintenance.slice(0, 6)) {
       const tag = asset.tags.find((t) => t.template.bad);
       if (!tag) continue;

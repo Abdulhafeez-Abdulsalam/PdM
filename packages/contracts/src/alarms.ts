@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { HealthState, Id, PageParams, ScopeId, Timestamp } from "./common";
+import { type HealthState, Id, PageParams, ScopeId, Timestamp } from "./common";
 import { Quantity } from "./quantities";
 
 /** ISA-18.2 priorities. p1 = most urgent. */
@@ -16,15 +16,7 @@ export type AlarmPriority = z.infer<typeof AlarmPriority>;
  *   suppressed     → hidden by design logic (e.g. equipment is stopped)
  *   out_of_service → disabled for maintenance
  */
-export const AlarmState = z.enum([
-  "active_unacked",
-  "active_acked",
-  "rtn_unacked",
-  "cleared",
-  "shelved",
-  "suppressed",
-  "out_of_service",
-]);
+export const AlarmState = z.enum(["active_unacked", "active_acked", "rtn_unacked", "cleared", "shelved", "suppressed", "out_of_service"]);
 export type AlarmState = z.infer<typeof AlarmState>;
 
 export const AlarmKind = z.enum([

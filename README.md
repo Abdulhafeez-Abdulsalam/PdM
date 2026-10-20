@@ -11,10 +11,14 @@ It helps people spot equipment that is about to fail, before it fails, and organ
 Requires Node.js 22 or newer.
 
 ```bash
-npm install      # download dependencies
+npm install      # download dependencies (also installs the git hooks)
 npm run dev      # start the app → open http://localhost:5173
-npm run check    # type-check and test every package
+npm run check    # formatting, types, lint and tests for every package
+npm run format   # auto-format every file with Prettier
+npm run lint     # ESLint only
 ```
+
+Every commit automatically lints and formats the files you changed, and checks the message follows [Conventional Commits](https://www.conventionalcommits.org/) (`feat(web): …`, `fix(mock-data): …`).
 
 The app runs entirely in your browser on simulated data — no server or account needed. Use the **Simulation** panel at the bottom of the left menu to speed up time or start the demo storyline.
 

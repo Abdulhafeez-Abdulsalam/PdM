@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { z } from "zod";
+import { type z } from "zod";
 import {
   ALARM_PRIORITY_HEALTH,
   AlarmPriority,
@@ -104,9 +104,7 @@ describe("Prediction", () => {
 describe("alarms", () => {
   it("requires a real reason to shelve", () => {
     expect(ShelveAlarmRequest.safeParse({ alarmId: "A1", reason: "  ok ", until: NOW }).success).toBe(false);
-    expect(
-      ShelveAlarmRequest.safeParse({ alarmId: "A1", reason: "Instrument tech recalibrating", until: NOW }).success,
-    ).toBe(true);
+    expect(ShelveAlarmRequest.safeParse({ alarmId: "A1", reason: "Instrument tech recalibrating", until: NOW }).success).toBe(true);
   });
 
   it("maps every priority to a health colour", () => {

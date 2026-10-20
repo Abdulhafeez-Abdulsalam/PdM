@@ -43,8 +43,14 @@ export function AlarmsPage() {
         </div>
         <div role="tablist" aria-label={t("alarmsPage.views")} className="flex rounded-md border border-line p-0.5">
           {(["list", "timeline"] as const).map((v) => (
-            <button key={v} type="button" role="tab" aria-selected={search.view === v} onClick={() => setAlarmSearch({ view: v })}
-              className={cx("rounded px-3 py-1 text-sm", search.view === v ? "bg-sunken font-semibold" : "text-fg-muted hover:text-fg")}>
+            <button
+              key={v}
+              type="button"
+              role="tab"
+              aria-selected={search.view === v}
+              onClick={() => setAlarmSearch({ view: v })}
+              className={cx("rounded px-3 py-1 text-sm", search.view === v ? "bg-sunken font-semibold" : "text-fg-muted hover:text-fg")}
+            >
               {t(`alarmsPage.view.${v}`)}
             </button>
           ))}
@@ -62,7 +68,11 @@ export function AlarmsPage() {
 function AlarmLoad({ scopeId }: { scopeId: string }) {
   const { t } = useTranslation();
   const { now } = useSimNow();
-  const active = useApiQuery("alarms.list", { scopeId, states: STATES_FOR.active, sort: "newest", limit: 500 }, { refetchInterval: 15_000 });
+  const active = useApiQuery(
+    "alarms.list",
+    { scopeId, states: STATES_FOR.active, sort: "newest", limit: 500 },
+    { refetchInterval: 15_000 },
+  );
   const items = active.data?.items ?? [];
   const recent = items.filter((a) => now - Date.parse(a.raisedAt) < FLOOD_WINDOW_MS).length;
   const unacked = items.filter((a) => a.state === "active_unacked" || a.state === "rtn_unacked").length;
@@ -80,7 +90,12 @@ function AlarmLoad({ scopeId }: { scopeId: string }) {
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <LoadStat label={t("alarmsPage.load.active")} value={items.length} />
         <LoadStat label={t("alarmsPage.load.unacked")} value={unacked} />
-        <LoadStat label={t("alarmsPage.load.recent")} value={recent} hint={t("alarmsPage.load.recentHint", { max: FLOOD_THRESHOLD })} warn={recent >= FLOOD_THRESHOLD} />
+        <LoadStat
+          label={t("alarmsPage.load.recent")}
+          value={recent}
+          hint={t("alarmsPage.load.recentHint", { max: FLOOD_THRESHOLD })}
+          warn={recent >= FLOOD_THRESHOLD}
+        />
         <LoadStat label={t("alarmsPage.load.standing")} value={standing} hint={t("alarmsPage.load.standingHint")} />
       </dl>
     </>
@@ -97,11 +112,25 @@ function LoadStat({ label, value, hint, warn }: { label: string; value: number; 
   );
 }
 
-function AlarmListView({ scopeId, search, onChange }: { scopeId: string; search: AlarmSearch; onChange: (patch: Partial<Record<keyof AlarmSearch, string>>) => void }) {
+function AlarmListView({
+  scopeId,
+  search,
+  onChange,
+}: {
+  scopeId: string;
+  search: AlarmSearch;
+  onChange: (patch: Partial<Record<keyof AlarmSearch, string>>) => void;
+}) {
   const { t } = useTranslation();
   const alarms = useApiQuery(
     "alarms.list",
-    { scopeId, states: STATES_FOR[search.show], priorities: search.priority.length > 0 ? search.priority : undefined, sort: "priority", limit: 500 },
+    {
+      scopeId,
+      states: STATES_FOR[search.show],
+      priorities: search.priority.length > 0 ? search.priority : undefined,
+      sort: "priority",
+      limit: 500,
+    },
     { refetchInterval: 15_000, placeholderData: keepPreviousData },
   );
   const items = alarms.data?.items ?? [];
@@ -114,17 +143,38 @@ function AlarmListView({ scopeId, search, onChange }: { scopeId: string; search:
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
-        <Select label={t("alarmsPage.show")} value={search.show} options={ALARM_SHOW.map((s) => ({ value: s, label: t(`alarmsPage.showOption.${s}`) }))} onChange={(show) => onChange({ show })} />
+        <Select
+          label={t("alarmsPage.show")}
+          value={search.show}
+          options={ALARM_SHOW.map((s) => ({ value: s, label: t(`alarmsPage.showOption.${s}`) }))}
+          onChange={(show) => onChange({ show })}
+        />
         <span role="group" aria-label={t("alarmsPage.priorities")} className="flex gap-1">
           {AlarmPriority.options.map((p) => (
-            <button key={p} type="button" aria-pressed={search.priority.includes(p)} onClick={() => togglePriority(p)}
-              className={cx("flex items-center gap-1 rounded-md border px-2 py-1 text-xs", search.priority.includes(p) ? "border-accent font-semibold" : "border-line text-fg-muted")}>
+            <button
+              key={p}
+              type="button"
+              aria-pressed={search.priority.includes(p)}
+              onClick={() => togglePriority(p)}
+              className={cx(
+                "flex items-center gap-1 rounded-md border px-2 py-1 text-xs",
+                search.priority.includes(p) ? "border-accent font-semibold" : "border-line text-fg-muted",
+              )}
+            >
               <PriorityIcon priority={p} />
               {t(`alarms.priority.${p}`)}
             </button>
           ))}
         </span>
-        <Select label={t("alarmsPage.group")} value={search.group} options={[{ value: "none", label: t("alarmsPage.groupNone") }, { value: "asset", label: t("alarmsPage.groupAsset") }]} onChange={(group) => onChange({ group })} />
+        <Select
+          label={t("alarmsPage.group")}
+          value={search.group}
+          options={[
+            { value: "none", label: t("alarmsPage.groupNone") },
+            { value: "asset", label: t("alarmsPage.groupAsset") },
+          ]}
+          onChange={(group) => onChange({ group })}
+        />
       </div>
 
       <DashboardWidget
@@ -132,7 +182,13 @@ function AlarmListView({ scopeId, search, onChange }: { scopeId: string; search:
         query={alarms}
         isEmpty={items.length === 0}
         emptyText={t("alarmsPage.empty")}
-        skeleton={<div className="flex flex-col gap-2">{Array.from({ length: 8 }, (_, i) => <Skeleton key={i} className="h-9" />)}</div>}
+        skeleton={
+          <div className="flex flex-col gap-2">
+            {Array.from({ length: 8 }, (_, i) => (
+              <Skeleton key={i} className="h-9" />
+            ))}
+          </div>
+        }
       >
         <AlarmTable alarms={items} caption={t("alarmsPage.listTitle", { count: items.length })} groupByAsset={search.group === "asset"} />
       </DashboardWidget>

@@ -15,7 +15,7 @@ import {
 import { ASSET_CLASSES } from "./catalog/asset-catalog";
 import { FAULT_TYPES, type FaultType } from "./catalog/fault-types";
 import { FIRST_NAMES, LAST_NAMES, ROLE_TITLES } from "./catalog/people";
-import { REGIONS, SITES, STORYLINE_ASSET_ID, type SiteDef } from "./catalog/sites";
+import { REGIONS, SITES, STORYLINE_ASSET_ID } from "./catalog/sites";
 import { TAG_TEMPLATES, type TagTemplate } from "./catalog/tag-templates";
 import { DAY, iso } from "./clock";
 import type { AssetRecord, Fault, NodeRecord, SiteRecord, StaticStatus, TagRecord } from "./model";
@@ -186,7 +186,10 @@ function buildSiteAssets(world: World, site: SiteRecord, rng: Rng, now: number):
         addNode(world, id, parent ? "component" : "equipment", `${info.label} ${id}`, parentNodeId, id);
 
         const asset = makeAsset(world, site, rng, now, {
-          id, assetClass, areaId, scale: scale * rng.between(0.92, 1.08),
+          id,
+          assetClass,
+          areaId,
+          scale: scale * rng.between(0.92, 1.08),
           parentAssetId: parent?.data.id ?? null,
           scopeIds: new Set([...ancestors, areaId, ...(parent ? [parent.data.id] : []), id]),
           location: {
@@ -235,7 +238,9 @@ function makeAsset(world: World, site: SiteRecord, rng: Rng, now: number, a: New
     staticStatus: pickStaticStatus(rng, a.assetClass, a.id),
     schedule:
       site.def.profile === "peaker" && ["gas_turbine", "recip_engine", "generator"].includes(a.assetClass)
-        ? rng.chance(0.6) ? "day" : "evening"
+        ? rng.chance(0.6)
+          ? "day"
+          : "evening"
         : null,
     scopeIds: a.scopeIds,
     baseWear: rng.between(0, 8),

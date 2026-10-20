@@ -34,7 +34,9 @@ export function AssetPage() {
     return (
       <EmptyState icon={<SearchX className="size-8" />} title={t("assets.notFoundTitle")}>
         <p>{t("assets.notFound", { id: assetId })}</p>
-        <Link to="/assets" search={(prev) => prev} className="mt-2 inline-block text-accent underline">{t("assets.backToRegistry")}</Link>
+        <Link to="/assets" search={(prev) => prev} className="mt-2 inline-block text-accent underline">
+          {t("assets.backToRegistry")}
+        </Link>
       </EmptyState>
     );
   }
@@ -56,7 +58,7 @@ export function AssetPage() {
             search={(prev) => prev}
             aria-current={tb === current ? "page" : undefined}
             className={cx(
-              "-mb-px whitespace-nowrap border-b-2 px-3 py-2 text-sm",
+              "-mb-px border-b-2 px-3 py-2 text-sm whitespace-nowrap",
               tb === current ? "border-accent font-semibold text-fg" : "border-transparent text-fg-muted hover:text-fg",
             )}
           >
@@ -82,12 +84,13 @@ function AssetHeader({ asset, siteName, areaName }: { asset: Asset; siteName?: s
   return (
     <header className="flex flex-wrap items-start justify-between gap-4 rounded-lg border border-line bg-surface p-4">
       <div className="min-w-0">
-        <p className="text-xs text-fg-muted">
-          {[siteName, areaName].filter(Boolean).join(" › ")}
-        </p>
-        <h1 className="text-2xl font-semibold">{t(`assetClass.${asset.assetClass}`)} <span className="font-mono">{asset.id}</span></h1>
+        <p className="text-xs text-fg-muted">{[siteName, areaName].filter(Boolean).join(" › ")}</p>
+        <h1 className="text-2xl font-semibold">
+          {t(`assetClass.${asset.assetClass}`)} <span className="font-mono">{asset.id}</span>
+        </h1>
         <p className="text-sm text-fg-muted">
-          {asset.manufacturer} {asset.model} · {t("assets.serial", { serial: asset.serialNumber })} · {t("assets.commissioned", { date: formatDate(asset.commissionedAt) })}
+          {asset.manufacturer} {asset.model} · {t("assets.serial", { serial: asset.serialNumber })} ·{" "}
+          {t("assets.commissioned", { date: formatDate(asset.commissionedAt) })}
         </p>
       </div>
       <dl className="flex flex-wrap gap-6 text-sm">

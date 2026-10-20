@@ -64,7 +64,14 @@ export class Storyline {
       dataQuality: null,
     });
     this.run = { startedAt: now, fault, workOrderId: null, done: new Set(["started"]) };
-    this.log({ kind: "process", t: iso(now), title: "Demo storyline started: compressor fouling begins", detail: null, severity: null, refId: null });
+    this.log({
+      kind: "process",
+      t: iso(now),
+      title: "Demo storyline started: compressor fouling begins",
+      detail: null,
+      severity: null,
+      refId: null,
+    });
   }
 
   tick(now: number): void {
@@ -77,7 +84,14 @@ export class Storyline {
 
     if (reached("anomaly_detected")) {
       run.done.add("anomaly_detected");
-      this.log({ kind: "process", t: iso(at("anomaly_detected")), title: "Compressor efficiency drifting below baseline", detail: "Ambient-corrected deviation −0.4%", severity: "watch", refId: null });
+      this.log({
+        kind: "process",
+        t: iso(at("anomaly_detected")),
+        title: "Compressor efficiency drifting below baseline",
+        detail: "Ambient-corrected deviation −0.4%",
+        severity: "watch",
+        refId: null,
+      });
     }
     if (reached("prediction_raised")) run.done.add("prediction_raised");
     if (reached("alarm_raised")) run.done.add("alarm_raised");
@@ -112,14 +126,28 @@ export class Storyline {
       run.done.add("repaired");
       run.fault.resolvedAt = at("repaired");
       if (run.workOrderId) this.workOrders.setStatus(run.workOrderId, "completed");
-      this.log({ kind: "maintenance", t: iso(at("repaired")), title: "Offline compressor water wash completed", detail: "Unit returned to service", severity: null, refId: run.workOrderId });
+      this.log({
+        kind: "maintenance",
+        t: iso(at("repaired")),
+        title: "Offline compressor water wash completed",
+        detail: "Unit returned to service",
+        severity: null,
+        refId: run.workOrderId,
+      });
     }
 
     if (reached("verified")) {
       run.done.add("verified");
       if (run.workOrderId) this.workOrders.setStatus(run.workOrderId, "verified");
       this.overlays.set(predId, { ...this.overlays.get(predId), status: "closed", feedback: "true_positive" });
-      this.log({ kind: "process", t: iso(at("verified")), title: "Performance recovery verified after water wash", detail: "Compressor efficiency back to baseline; prediction confirmed", severity: "healthy", refId: predId });
+      this.log({
+        kind: "process",
+        t: iso(at("verified")),
+        title: "Performance recovery verified after water wash",
+        detail: "Compressor efficiency back to baseline; prediction confirmed",
+        severity: "healthy",
+        refId: predId,
+      });
     }
   }
 

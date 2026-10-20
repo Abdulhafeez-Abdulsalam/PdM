@@ -22,8 +22,20 @@ export function PredictionDetail({ predictionId, showEvidence = true }: { predic
   const tags = useApiQuery("assets.tags", { assetId: p?.assetId ?? "" }, { enabled: Boolean(p) });
   const site = useApiQuery("sites.list", {}, { enabled: Boolean(p) });
 
-  if (prediction.isPending) return <div className="flex flex-col gap-3">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-16" />)}</div>;
-  if (!p) return <p role="alert" className="text-sm text-health-warning">{t("prediction.notFound")}</p>;
+  if (prediction.isPending)
+    return (
+      <div className="flex flex-col gap-3">
+        {[0, 1, 2, 3].map((i) => (
+          <Skeleton key={i} className="h-16" />
+        ))}
+      </div>
+    );
+  if (!p)
+    return (
+      <p role="alert" className="text-sm text-health-warning">
+        {t("prediction.notFound")}
+      </p>
+    );
 
   const evidenceTags = (tags.data?.items ?? []).filter((tg) => p.evidenceTagIds.includes(tg.id));
   const siteTz = site.data?.items.find((s) => s.id === asset.data?.siteId)?.timezone;
@@ -33,15 +45,33 @@ export function PredictionDetail({ predictionId, showEvidence = true }: { predic
     <div className="flex flex-col gap-6">
       {/* What, how likely, how sure */}
       <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <Stat label={t("prediction.probability")} value={formatProbability(p.probability)} hint={t("prediction.withinDays", { count: p.horizonDays })} />
-        <Stat label={t("prediction.confidence")} value={formatProbability(p.confidence)} hint={t(`prediction.confidenceLevel.${confidenceLevel(p.confidence)}`)} />
+        <Stat
+          label={t("prediction.probability")}
+          value={formatProbability(p.probability)}
+          hint={t("prediction.withinDays", { count: p.horizonDays })}
+        />
+        <Stat
+          label={t("prediction.confidence")}
+          value={formatProbability(p.confidence)}
+          hint={t(`prediction.confidenceLevel.${confidenceLevel(p.confidence)}`)}
+        />
         <Stat label={t("prediction.detected")} value={formatDate(p.detectedAt)} hint={t(`prediction.status.${p.status}`)} />
-        <Stat label={t("prediction.asset")} value={p.assetId} mono hint={
-          <Link to="/assets/$assetId" params={{ assetId: p.assetId }} search={(prev) => ({ ...prev, prediction: undefined })} className="inline-flex items-center gap-1 text-accent hover:underline">
-            <ExternalLink aria-hidden className="size-3" />
-            {t("prediction.openAsset")}
-          </Link>
-        } />
+        <Stat
+          label={t("prediction.asset")}
+          value={p.assetId}
+          mono
+          hint={
+            <Link
+              to="/assets/$assetId"
+              params={{ assetId: p.assetId }}
+              search={(prev) => ({ ...prev, prediction: undefined })}
+              className="inline-flex items-center gap-1 text-accent hover:underline"
+            >
+              <ExternalLink aria-hidden className="size-3" />
+              {t("prediction.openAsset")}
+            </Link>
+          }
+        />
       </dl>
 
       {/* What to do, and the business case */}
@@ -74,7 +104,7 @@ export function PredictionDetail({ predictionId, showEvidence = true }: { predic
           {p.contributions.map((c) => (
             <li key={c.tagId} className="grid grid-cols-[1fr_auto] items-center gap-x-3 gap-y-1 text-sm">
               <span>{c.label}</span>
-              <span className="tabular-nums text-fg-muted">{formatProbability(Math.abs(c.weight))}</span>
+              <span className="text-fg-muted tabular-nums">{formatProbability(Math.abs(c.weight))}</span>
               <span aria-hidden className="col-span-2 h-1.5 overflow-hidden rounded-full bg-sunken">
                 <span className="block h-full rounded-full bg-series-1" style={{ width: `${Math.abs(c.weight) * 100}%` }} />
               </span>
@@ -109,7 +139,11 @@ export function PredictionDetail({ predictionId, showEvidence = true }: { predic
       {/* The evidence */}
       {showEvidence && (
         <Section title={t("prediction.evidence")} hint={t("prediction.evidenceHint")}>
-          {tags.isPending ? <Skeleton className="h-40" /> : <TagCharts tags={evidenceTags} range="30d" siteTimeZone={siteTz} height={160} />}
+          {tags.isPending ? (
+            <Skeleton className="h-40" />
+          ) : (
+            <TagCharts tags={evidenceTags} range="30d" siteTimeZone={siteTz} height={160} />
+          )}
         </Section>
       )}
     </div>
@@ -134,7 +168,10 @@ export function RulRange({ rul }: { rul: RulEstimate }) {
         {t("prediction.rulSentence", { p50: formatNumber(rul.p50Days), p10: formatNumber(rul.p10Days), p90: formatNumber(rul.p90Days) })}
       </p>
       <div aria-hidden className="relative mt-3 h-3 rounded-full bg-sunken">
-        <span className="absolute inset-y-0 rounded-full bg-series-1 opacity-30" style={{ left: pct(rul.p10Days), width: `calc(${pct(rul.p90Days)} - ${pct(rul.p10Days)})` }} />
+        <span
+          className="absolute inset-y-0 rounded-full bg-series-1 opacity-30"
+          style={{ left: pct(rul.p10Days), width: `calc(${pct(rul.p90Days)} - ${pct(rul.p10Days)})` }}
+        />
         <span className="absolute -inset-y-1 w-1 rounded-full bg-series-1" style={{ left: pct(rul.p50Days) }} />
       </div>
       <div aria-hidden className="mt-1 flex justify-between text-xs text-fg-muted">
@@ -148,7 +185,7 @@ export function RulRange({ rul }: { rul: RulEstimate }) {
 function Section({ title, hint, children }: { title: string; hint?: string; children: ReactNode }) {
   return (
     <section>
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-fg-muted">{title}</h3>
+      <h3 className="text-sm font-semibold tracking-wide text-fg-muted uppercase">{title}</h3>
       {hint && <p className="mb-2 text-xs text-fg-muted">{hint}</p>}
       <div className="mt-2">{children}</div>
     </section>

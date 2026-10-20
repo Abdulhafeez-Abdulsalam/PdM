@@ -9,16 +9,36 @@ import type { Quantity } from "@pdm/contracts";
 import type { UnitSystem } from "./preferences";
 
 export type DisplayUnit =
-  | "degC" | "degF" | "deltaC" | "deltaF"
-  | "bar" | "psi"
-  | "m3/h" | "gpm" | "bbl/d"
-  | "Sm3/d" | "scf/d" | "MMscfd"
-  | "mm" | "in"
-  | "kg" | "lb"
-  | "kW" | "MWh"
-  | "mm/s" | "in/s"
-  | "kJ/kWh" | "Btu/kWh"
-  | "A" | "V" | "Hz" | "rpm" | "W/m2" | "ppm" | "%" | "count";
+  | "degC"
+  | "degF"
+  | "deltaC"
+  | "deltaF"
+  | "bar"
+  | "psi"
+  | "m3/h"
+  | "gpm"
+  | "bbl/d"
+  | "Sm3/d"
+  | "scf/d"
+  | "MMscfd"
+  | "mm"
+  | "in"
+  | "kg"
+  | "lb"
+  | "kW"
+  | "MWh"
+  | "mm/s"
+  | "in/s"
+  | "kJ/kWh"
+  | "Btu/kWh"
+  | "A"
+  | "V"
+  | "Hz"
+  | "rpm"
+  | "W/m2"
+  | "ppm"
+  | "%"
+  | "count";
 
 interface Conversion {
   unit: DisplayUnit;

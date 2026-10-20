@@ -193,6 +193,7 @@
     "solar": "Solar"
   },
   "widget": {
+    "lineage": "Where the numbers in {{title}} come from",
     "updated": "Updated {{ago}}",
     "stale": "Stale — updated {{ago}}",
     "failed": "This widget couldn't load its data.",

@@ -41,7 +41,10 @@ export function SideNav({ mobileOpen, onCloseMobile }: { mobileOpen: boolean; on
             if (visible.length === 0) return null;
             return (
               <section key={group} className="mb-4" aria-labelledby={`nav-${group}`}>
-                <h2 id={`nav-${group}`} className={cx("px-4 pb-1 text-xs font-semibold uppercase tracking-wide text-fg-muted", collapsed && "md:sr-only")}>
+                <h2
+                  id={`nav-${group}`}
+                  className={cx("px-4 pb-1 text-xs font-semibold tracking-wide text-fg-muted uppercase", collapsed && "md:sr-only")}
+                >
                   {t(`nav.groups.${group}`)}
                 </h2>
                 <ul>

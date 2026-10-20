@@ -16,7 +16,11 @@ export function createApiClient(transport: Transport): ApiClient {
       const def: EndpointDef = endpoints[name];
       const result = def.output.safeParse(raw);
       if (!result.success) {
-        throw new ApiRequestError({ code: "internal", message: `Response from ${name} did not match the contract`, details: result.error.issues });
+        throw new ApiRequestError({
+          code: "internal",
+          message: `Response from ${name} did not match the contract`,
+          details: result.error.issues,
+        });
       }
       return result.data as EndpointOutput<typeof name>;
     },

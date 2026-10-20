@@ -5,7 +5,7 @@
 import { MAX_SUBSCRIBED_TAGS, type ClientMessage, type ServerMessage } from "@pdm/contracts";
 import type { AlarmEngine } from "./alarms";
 import { iso } from "./clock";
-import { ChaosWindows, tagValue } from "./signals";
+import { type ChaosWindows, tagValue } from "./signals";
 import type { World } from "./world";
 
 export class LiveHub {
@@ -38,7 +38,10 @@ export class LiveHub {
         }
         const unknown = fresh.filter((id) => !this.world.tags.has(id));
         if (unknown.length > 0) {
-          this.send({ type: "error", error: { code: "not_found", message: `Unknown tags: ${unknown.slice(0, 5).join(", ")}`, details: { unknown } } });
+          this.send({
+            type: "error",
+            error: { code: "not_found", message: `Unknown tags: ${unknown.slice(0, 5).join(", ")}`, details: { unknown } },
+          });
         }
         for (const id of fresh) if (this.world.tags.has(id)) this.tagIds.add(id);
         break;

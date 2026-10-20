@@ -1,8 +1,11 @@
 {
   // VS Code offers to install these when the project is opened.
   "recommendations": [
-    "bierner.markdown-mermaid",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "bradlc.vscode-tailwindcss",
     "vitest.explorer",
+    "bierner.markdown-mermaid",
     "editorconfig.editorconfig"
   ]
 }

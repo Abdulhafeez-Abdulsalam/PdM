@@ -303,16 +303,15 @@ export class MockBackend {
       this.flushLive();
       return alarm;
     },
-    "events.list": (p) =>
-      ({
-        items: listEvents(p, {
-          alarms: this.alarms,
-          workOrders: this.workOrders,
-          snapshot: this.snapshot(),
-          log: this.log,
-          inScope: this.inScope(p.scopeId),
-        }),
+    "events.list": (p) => ({
+      items: listEvents(p, {
+        alarms: this.alarms,
+        workOrders: this.workOrders,
+        snapshot: this.snapshot(),
+        log: this.log,
+        inScope: this.inScope(p.scopeId),
       }),
+    }),
 
     "kpis.get": ({ scopeId, keys }) =>
       computeKpis(
@@ -338,7 +337,11 @@ export class MockBackend {
       }),
 
     "workOrders.list": ({ offset, limit, ...filters }) =>
-      paginate(this.workOrders.query(filters, () => true), offset, limit),
+      paginate(
+        this.workOrders.query(filters, () => true),
+        offset,
+        limit,
+      ),
     "workOrders.create": (request) => {
       const now = this.now();
       const wo = this.workOrders.create(request, this.me().id, now);
@@ -347,7 +350,15 @@ export class MockBackend {
         const previous = this.overlays.get(request.source.refId);
         this.overlays.set(request.source.refId, { ...previous, status: "actioned", workOrderId: wo.id });
       }
-      this.addLog({ kind: "maintenance", t: iso(now), assetId: wo.assetId, title: `${wo.number} raised: ${wo.title}`, detail: null, severity: null, refId: wo.id });
+      this.addLog({
+        kind: "maintenance",
+        t: iso(now),
+        assetId: wo.assetId,
+        title: `${wo.number} raised: ${wo.title}`,
+        detail: null,
+        severity: null,
+        refId: wo.id,
+      });
       this.invalidate();
       this.flushLive();
       return wo;

@@ -3,12 +3,16 @@
  * 3600×); with a real backend it's the real clock.
  */
 import { useSimulationStatus } from "@pdm/api-client";
+import { useState } from "react";
 import type { TimeRange } from "./time-range";
 import { rangeWindow } from "./time-range";
 
 export function useSimNow(): { now: number; speed: number } {
   const status = useSimulationStatus();
-  return status ? { now: Date.parse(status.simTime), speed: status.speed } : { now: Date.now(), speed: 1 };
+  // Fallback until the first status arrives: the time when this component first appeared.
+  // Captured once — calling Date.now() on every render would give a different answer each time.
+  const [mountedAt] = useState(() => Date.now());
+  return status ? { now: Date.parse(status.simTime), speed: status.speed } : { now: mountedAt, speed: 1 };
 }
 
 /**

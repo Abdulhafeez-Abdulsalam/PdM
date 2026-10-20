@@ -28,28 +28,56 @@ export function OverviewTab({ asset }: { asset: Asset; siteTimeZone?: string }) 
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-12">
-      <DashboardWidget title={t("assets.keyValues")} query={tags} className="lg:col-span-7"
-        skeleton={<div className="flex flex-col gap-2">{[0, 1, 2, 3].map((i) => <Skeleton key={i} className="h-7" />)}</div>}>
+      <DashboardWidget
+        title={t("assets.keyValues")}
+        query={tags}
+        className="lg:col-span-7"
+        skeleton={
+          <div className="flex flex-col gap-2">
+            {[0, 1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-7" />
+            ))}
+          </div>
+        }
+      >
         <dl className="grid grid-cols-1 gap-x-6 sm:grid-cols-2">
           {keyTags(tags.data?.items ?? [], 8).map((tag) => (
             <div key={tag.id} className="flex items-center justify-between gap-3 border-b border-line py-2 text-sm">
-              <dt className="min-w-0 truncate text-fg-muted" title={tag.description}>{tag.description}</dt>
-              <dd><LiveTagValue tag={tag} /></dd>
+              <dt className="min-w-0 truncate text-fg-muted" title={tag.description}>
+                {tag.description}
+              </dt>
+              <dd>
+                <LiveTagValue tag={tag} />
+              </dd>
             </div>
           ))}
         </dl>
-        <Link to="/assets/$assetId/$tab" params={{ assetId: asset.id, tab: "telemetry" }} search={(prev) => prev} className="mt-3 inline-flex items-center gap-1 text-sm text-accent hover:underline">
+        <Link
+          to="/assets/$assetId/$tab"
+          params={{ assetId: asset.id, tab: "telemetry" }}
+          search={(prev) => prev}
+          className="mt-3 inline-flex items-center gap-1 text-sm text-accent hover:underline"
+        >
           {t("assets.allTelemetry")}
           <ChevronRight aria-hidden className="size-4" />
         </Link>
       </DashboardWidget>
 
       <div className="flex flex-col gap-4 lg:col-span-5">
-        <DashboardWidget title={t("assets.openPredictions")} query={predictions} isEmpty={predictions.data?.items.length === 0} emptyText={t("assets.noPredictions")}>
+        <DashboardWidget
+          title={t("assets.openPredictions")}
+          query={predictions}
+          isEmpty={predictions.data?.items.length === 0}
+          emptyText={t("assets.noPredictions")}
+        >
           <ul className="flex flex-col gap-2">
             {predictions.data?.items.map((p) => (
               <li key={p.id}>
-                <button type="button" onClick={() => setSearch({ prediction: p.id })} className="flex w-full items-center gap-3 rounded-md border border-line p-3 text-left hover:bg-sunken">
+                <button
+                  type="button"
+                  onClick={() => setSearch({ prediction: p.id })}
+                  className="flex w-full items-center gap-3 rounded-md border border-line p-3 text-left hover:bg-sunken"
+                >
                   <span className="min-w-0 flex-1">
                     <span className="block font-medium">{p.failureMode.label}</span>
                     <span className="block text-xs text-fg-muted">
@@ -73,9 +101,24 @@ export function OverviewTab({ asset }: { asset: Asset; siteTimeZone?: string }) 
   );
 }
 
-function CountCard({ label, value, to, assetId }: { label: string; value: number | undefined; to: "alarms" | "maintenance"; assetId: string }) {
+function CountCard({
+  label,
+  value,
+  to,
+  assetId,
+}: {
+  label: string;
+  value: number | undefined;
+  to: "alarms" | "maintenance";
+  assetId: string;
+}) {
   return (
-    <Link to="/assets/$assetId/$tab" params={{ assetId, tab: to }} search={(prev) => prev} className="rounded-lg border border-line bg-surface p-4 hover:bg-sunken">
+    <Link
+      to="/assets/$assetId/$tab"
+      params={{ assetId, tab: to }}
+      search={(prev) => prev}
+      className="rounded-lg border border-line bg-surface p-4 hover:bg-sunken"
+    >
       <span className="block text-xs text-fg-muted">{label}</span>
       {value === undefined ? <Skeleton className="mt-1 h-7 w-10" /> : <span className="text-2xl font-semibold">{value}</span>}
     </Link>

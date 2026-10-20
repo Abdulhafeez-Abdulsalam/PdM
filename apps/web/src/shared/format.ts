@@ -50,7 +50,14 @@ export function formatAgo(then: number, now: number): string {
  */
 export function makeTimeFormatter(mode: "site" | "utc" | "user", siteTimeZone?: string) {
   const timeZone = mode === "utc" ? "UTC" : mode === "site" ? (siteTimeZone ?? "UTC") : undefined;
-  const f = new Intl.DateTimeFormat("en-GB", { timeZone, day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZoneName: "short" });
+  const f = new Intl.DateTimeFormat("en-GB", {
+    timeZone,
+    day: "numeric",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZoneName: "short",
+  });
   return (ms: number) => f.format(new Date(ms));
 }
 

@@ -24,14 +24,25 @@ export interface KpiCardProps {
 const TONE = { good: "text-health-healthy", bad: "text-health-warning", neutral: "text-fg-muted" } as const;
 const ARROW = { up: ArrowUpRight, down: ArrowDownRight, flat: ArrowRight } as const;
 
-export function KpiCard({ label, value, unit, change, changeTone = "neutral", changeDirection = "flat", trend, target, lineage, footer }: KpiCardProps) {
+export function KpiCard({
+  label,
+  value,
+  unit,
+  change,
+  changeTone = "neutral",
+  changeDirection = "flat",
+  trend,
+  target,
+  lineage,
+  footer,
+}: KpiCardProps) {
   const Arrow = ARROW[changeDirection];
   return (
     <div className="flex min-w-0 flex-col gap-1 rounded-lg border border-line bg-surface p-3" title={lineage}>
       <p className="truncate text-xs font-medium text-fg-muted">{label}</p>
       <div className="flex items-end justify-between gap-2">
         {/* Big standalone numbers read better with proportional digits; tabular is for columns. */}
-        <p className="text-2xl font-semibold leading-none proportional-nums">
+        <p className="text-2xl leading-none font-semibold proportional-nums">
           {value}
           {unit && <span className="ml-1 text-sm font-normal text-fg-muted">{unit}</span>}
         </p>

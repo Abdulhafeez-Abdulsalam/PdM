@@ -23,7 +23,7 @@ export function AppShell() {
     <div className="flex h-dvh flex-col bg-canvas text-fg">
       <a
         href="#main"
-        className="sr-only z-50 rounded-md bg-accent px-3 py-2 text-accent-fg focus:not-sr-only focus:absolute focus:left-2 focus:top-2"
+        className="sr-only z-50 rounded-md bg-accent px-3 py-2 text-accent-fg focus:not-sr-only focus:absolute focus:top-2 focus:left-2"
       >
         {t("app.skipToContent")}
       </a>

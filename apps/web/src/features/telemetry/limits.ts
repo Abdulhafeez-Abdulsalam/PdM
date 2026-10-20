@@ -4,9 +4,12 @@ export type LimitLevel = "alert" | "alarm" | "trip";
 
 /** Which limit (if any) a value is beyond. Checked worst-first. Values are in SI. */
 export function limitLevel(value: number, limits: TagLimits): LimitLevel | null {
-  if ((limits.highTrip !== undefined && value >= limits.highTrip) || (limits.lowTrip !== undefined && value <= limits.lowTrip)) return "trip";
-  if ((limits.highAlarm !== undefined && value >= limits.highAlarm) || (limits.lowAlarm !== undefined && value <= limits.lowAlarm)) return "alarm";
-  if ((limits.highAlert !== undefined && value >= limits.highAlert) || (limits.lowAlert !== undefined && value <= limits.lowAlert)) return "alert";
+  if ((limits.highTrip !== undefined && value >= limits.highTrip) || (limits.lowTrip !== undefined && value <= limits.lowTrip))
+    return "trip";
+  if ((limits.highAlarm !== undefined && value >= limits.highAlarm) || (limits.lowAlarm !== undefined && value <= limits.lowAlarm))
+    return "alarm";
+  if ((limits.highAlert !== undefined && value >= limits.highAlert) || (limits.lowAlert !== undefined && value <= limits.lowAlert))
+    return "alert";
   return null;
 }
 

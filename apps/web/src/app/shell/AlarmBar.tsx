@@ -18,7 +18,10 @@ export function AlarmBar() {
   const { data: summary, isPending } = useAlarmSummary(scopeId);
 
   return (
-    <section aria-label={t("alarms.barLabel")} className="flex h-10 shrink-0 items-center gap-1 overflow-x-auto border-b border-line bg-surface px-3 text-sm">
+    <section
+      aria-label={t("alarms.barLabel")}
+      className="flex h-10 shrink-0 items-center gap-1 overflow-x-auto border-b border-line bg-surface px-3 text-sm"
+    >
       {isPending || !summary ? (
         <span className="flex gap-3" aria-label={t("alarms.loading")}>
           {AlarmPriority.options.map((p) => (
@@ -54,8 +57,8 @@ export function AlarmBar() {
             );
           })}
           <span aria-hidden className="mx-2 h-5 w-px bg-line" />
-          <span className="whitespace-nowrap px-2 text-fg-muted">{t("alarms.shelved", { count: summary.shelved })}</span>
-          <span className="whitespace-nowrap px-2 text-fg-muted">{t("alarms.suppressed", { count: summary.suppressed })}</span>
+          <span className="px-2 whitespace-nowrap text-fg-muted">{t("alarms.shelved", { count: summary.shelved })}</span>
+          <span className="px-2 whitespace-nowrap text-fg-muted">{t("alarms.suppressed", { count: summary.suppressed })}</span>
         </>
       )}
     </section>

@@ -16,12 +16,7 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   return (
     <header className="flex h-14 shrink-0 items-center gap-3 border-b border-line bg-surface px-3">
       {/* Phones: open the menu drawer. Desktop: collapse the menu to icons. */}
-      <button
-        type="button"
-        className="rounded-md p-2 hover:bg-sunken md:hidden"
-        aria-label={t("nav.open")}
-        onClick={onOpenMobileNav}
-      >
+      <button type="button" className="rounded-md p-2 hover:bg-sunken md:hidden" aria-label={t("nav.open")} onClick={onOpenMobileNav}>
         <Menu aria-hidden className="size-5" />
       </button>
       <button
@@ -86,11 +81,31 @@ function DisplayMenu() {
         <SlidersHorizontal aria-hidden className="size-5" />
       </summary>
       <div className="absolute right-0 z-40 mt-2 flex w-64 flex-col gap-3 rounded-lg border border-line bg-raised p-4 shadow-2">
-        <Select label={t("topBar.theme")} value={prefs.theme} options={THEMES.map((v) => ({ value: v, label: t(`theme.${v}`) }))} onChange={(theme) => prefs.set({ theme })} />
-        <Select label={t("topBar.units")} value={prefs.units} options={UNIT_SYSTEMS.map((v) => ({ value: v, label: t(`units.${v}`) }))} onChange={(units) => prefs.set({ units })} />
-        <Select label={t("topBar.timeZone")} value={prefs.timeZone} options={TIME_ZONE_MODES.map((v) => ({ value: v, label: t(`timeZone.${v}`) }))} onChange={(timeZone) => prefs.set({ timeZone })} />
+        <Select
+          label={t("topBar.theme")}
+          value={prefs.theme}
+          options={THEMES.map((v) => ({ value: v, label: t(`theme.${v}`) }))}
+          onChange={(theme) => prefs.set({ theme })}
+        />
+        <Select
+          label={t("topBar.units")}
+          value={prefs.units}
+          options={UNIT_SYSTEMS.map((v) => ({ value: v, label: t(`units.${v}`) }))}
+          onChange={(units) => prefs.set({ units })}
+        />
+        <Select
+          label={t("topBar.timeZone")}
+          value={prefs.timeZone}
+          options={TIME_ZONE_MODES.map((v) => ({ value: v, label: t(`timeZone.${v}`) }))}
+          onChange={(timeZone) => prefs.set({ timeZone })}
+        />
         <span className="sm:hidden">
-          <Select label={t("topBar.role")} value={prefs.role} options={RoleId.options.map((r) => ({ value: r, label: t(`roles.${r}`) }))} onChange={(role) => prefs.set({ role })} />
+          <Select
+            label={t("topBar.role")}
+            value={prefs.role}
+            options={RoleId.options.map((r) => ({ value: r, label: t(`roles.${r}`) }))}
+            onChange={(role) => prefs.set({ role })}
+          />
         </span>
       </div>
     </details>
