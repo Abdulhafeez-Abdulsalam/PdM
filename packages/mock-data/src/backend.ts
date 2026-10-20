@@ -403,12 +403,42 @@ export class MockBackend {
         now: this.now(),
       }),
 
-    "workOrders.list": ({ offset, limit, ...filters }) =>
-      paginate(
-        this.workOrders.query(filters, () => true),
-        offset,
-        limit,
-      ),
+    "workOrders.list": ({ offset, limit, scopeId, ...filters }) =>
+      paginate(this.workOrders.query(filters, this.inScope(scopeId)), offset, limit),
+    "workOrders.get": ({ workOrderId }) => this.workOrders.get(workOrderId),
+    "workOrders.transition": (request) => {
+      const now = this.now();
+      const wo = this.workOrders.transition(request, this.me().id, now);
+      this.addLog({
+        kind: "maintenance",
+        t: iso(now),
+        assetId: wo.assetId,
+        title: `${wo.number} → ${request.to.replace("_", " ")}`,
+        detail: request.note ?? null,
+        severity: null,
+        refId: wo.id,
+      });
+      return wo;
+    },
+    "workOrders.closeOut": (request) => {
+      const now = this.now();
+      const wo = this.workOrders.closeOut(request, this.me().id, now);
+      // Closing the feedback loop from the field: the technician's verdict becomes the prediction's feedback.
+      if (wo.source.kind === "prediction" && wo.source.refId && request.predictionVerdict) {
+        this.overlays.set(wo.source.refId, { ...this.overlays.get(wo.source.refId), feedback: request.predictionVerdict });
+        this.invalidate();
+      }
+      this.addLog({
+        kind: "maintenance",
+        t: iso(now),
+        assetId: wo.assetId,
+        title: `${wo.number} completed: ${request.findings.slice(0, 80)}`,
+        detail: `${request.failureMode} / ${request.cause} / ${request.remedy} · ${request.laborHours} h`,
+        severity: null,
+        refId: wo.id,
+      });
+      return wo;
+    },
     "workOrders.create": (request) => {
       const now = this.now();
       const wo = this.workOrders.create(request, this.me().id, now);

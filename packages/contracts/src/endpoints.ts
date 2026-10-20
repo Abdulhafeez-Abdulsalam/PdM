@@ -30,7 +30,13 @@ import { Tag } from "./tags";
 import { HistoryRequest, HistoryResponse, LiveValue } from "./timeseries";
 import { MAX_SUBSCRIBED_TAGS } from "./realtime";
 import { RoleId, User } from "./users";
-import { CreateWorkOrderRequest, WorkOrder, WorkOrderListParams } from "./work-orders";
+import {
+  CloseOutWorkOrderRequest,
+  CreateWorkOrderRequest,
+  TransitionWorkOrderRequest,
+  WorkOrder,
+  WorkOrderListParams,
+} from "./work-orders";
 
 export type HttpMethod = "GET" | "POST";
 
@@ -258,6 +264,27 @@ export const endpoints = {
     path: "/work-orders",
     description: "Create a work order, e.g. from an alarm (acceptance criterion C)",
     input: CreateWorkOrderRequest,
+    output: WorkOrder,
+  }),
+  "workOrders.get": endpoint({
+    method: "GET",
+    path: "/work-orders/:workOrderId",
+    description: "One work order with its history and close-out",
+    input: z.object({ workOrderId: Id }),
+    output: WorkOrder,
+  }),
+  "workOrders.transition": endpoint({
+    method: "POST",
+    path: "/work-orders/:workOrderId/transition",
+    description: "Move a work order through its lifecycle (allowed moves: WORK_ORDER_TRANSITIONS)",
+    input: TransitionWorkOrderRequest,
+    output: WorkOrder,
+  }),
+  "workOrders.closeOut": endpoint({
+    method: "POST",
+    path: "/work-orders/:workOrderId/close-out",
+    description: "Complete the work with ISO 14224 failure coding, findings and hours",
+    input: CloseOutWorkOrderRequest,
     output: WorkOrder,
   }),
 } as const;

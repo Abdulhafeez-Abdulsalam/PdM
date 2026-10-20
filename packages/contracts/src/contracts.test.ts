@@ -9,7 +9,11 @@ import {
   RulEstimate,
   ServerMessage,
   ShelveAlarmRequest,
+  TransitionWorkOrderRequest,
+  WORK_ORDER_TRANSITIONS,
   WorkOrder,
+  WorkOrderStatus,
+  canTransition,
   endpoints,
   pathParams,
   pickIntervalSeconds,
@@ -116,6 +120,31 @@ describe("WorkOrder", () => {
   it("requires numbers shaped like WO-12345", () => {
     expect(WorkOrder.shape.number.safeParse("WO-10482").success).toBe(true);
     expect(WorkOrder.shape.number.safeParse("10482").success).toBe(false);
+  });
+});
+
+describe("work-order lifecycle", () => {
+  it("lets every open work order be cancelled, and nothing leave closed or cancelled", () => {
+    for (const s of WorkOrderStatus.options) {
+      if (["completed", "verified", "closed", "cancelled"].includes(s)) continue;
+      expect(canTransition(s, "cancelled"), s).toBe(true);
+    }
+    expect(WORK_ORDER_TRANSITIONS.closed).toEqual([]);
+    expect(WORK_ORDER_TRANSITIONS.cancelled).toEqual([]);
+  });
+
+  it("only reaches 'completed' through close-out, and cancelling needs a reason", () => {
+    expect(TransitionWorkOrderRequest.safeParse({ workOrderId: "wo-1", to: "completed" }).success).toBe(false);
+    expect(TransitionWorkOrderRequest.safeParse({ workOrderId: "wo-1", to: "cancelled" }).success).toBe(false);
+    expect(TransitionWorkOrderRequest.safeParse({ workOrderId: "wo-1", to: "cancelled", note: "Duplicate of WO-10002" }).success).toBe(
+      true,
+    );
+  });
+
+  it("can walk a work order from request to closed", () => {
+    const path = ["requested", "triaged", "planned", "scheduled", "approved", "in_progress"] as const;
+    for (let i = 1; i < path.length; i++) expect(canTransition(path[i - 1]!, path[i]!)).toBe(true);
+    expect(canTransition("completed", "verified") && canTransition("verified", "closed")).toBe(true);
   });
 });
 

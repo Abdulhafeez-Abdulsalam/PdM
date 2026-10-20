@@ -117,7 +117,7 @@ export class Storyline {
           this.world.usersWithRole("maintenance_planner")[0]?.id ?? "system",
           at("work_order_created"),
         );
-      if (!existing) this.workOrders.setStatus(wo.id, "scheduled");
+      if (!existing) this.workOrders.setStatus(wo.id, "scheduled", at("work_order_created"), "Scheduled for next low-demand window");
       run.workOrderId = wo.id;
       this.overlays.set(predId, { ...this.overlays.get(predId), status: "actioned", workOrderId: wo.id });
     }
@@ -125,7 +125,25 @@ export class Storyline {
     if (reached("repaired")) {
       run.done.add("repaired");
       run.fault.resolvedAt = at("repaired");
-      if (run.workOrderId) this.workOrders.setStatus(run.workOrderId, "completed");
+      if (run.workOrderId) {
+        // The technician starts the job, then closes it out with ISO 14224 coding.
+        const technician = this.world.usersWithRole("field_technician")[0]?.id ?? "system";
+        const wo = this.workOrders.get(run.workOrderId);
+        if (wo.status !== "in_progress") this.workOrders.setStatus(wo.id, "in_progress", at("repaired") - 6 * 3_600_000);
+        this.workOrders.closeOut(
+          {
+            workOrderId: wo.id,
+            failureMode: "LOO",
+            cause: "5.2",
+            remedy: "service",
+            findings: "Offline compressor water wash performed. Efficiency and discharge pressure recovered to baseline.",
+            laborHours: 6,
+            predictionVerdict: "true_positive",
+          },
+          technician,
+          at("repaired"),
+        );
+      }
       this.log({
         kind: "maintenance",
         t: iso(at("repaired")),
@@ -138,7 +156,7 @@ export class Storyline {
 
     if (reached("verified")) {
       run.done.add("verified");
-      if (run.workOrderId) this.workOrders.setStatus(run.workOrderId, "verified");
+      if (run.workOrderId) this.workOrders.setStatus(run.workOrderId, "verified", at("verified"), "Performance recovery confirmed");
       this.overlays.set(predId, { ...this.overlays.get(predId), status: "closed", feedback: "true_positive" });
       this.log({
         kind: "process",

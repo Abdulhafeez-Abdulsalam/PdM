@@ -1,0 +1,116 @@
+import { canTransition } from "@pdm/contracts";
+import { describe, expect, it } from "vitest";
+import { createMockBackend } from "./backend";
+import { HOUR, iso } from "./clock";
+import { ApiFailure } from "./errors";
+
+const START = Date.UTC(2026, 9, 10, 8);
+const makeBackend = () => createMockBackend({ seed: 42, startTime: START, realNow: () => 0, role: "maintenance_planner" });
+
+describe("seeded work orders", () => {
+  it("have a history that ends at their current status and only uses allowed moves", () => {
+    const { items } = makeBackend().request("workOrders.list", { limit: 500 });
+    expect(items.length).toBeGreaterThan(300);
+    for (const wo of items) {
+      expect(wo.history.at(-1)?.to, wo.number).toBe(wo.status);
+      for (const e of wo.history.slice(1)) {
+        if (e.to === "completed") continue; // reached via close-out
+        expect(canTransition(e.from!, e.to), `${wo.number}: ${e.from} → ${e.to}`).toBe(true);
+      }
+    }
+  });
+
+  it("finished work carries an ISO 14224 close-out", () => {
+    const { items } = makeBackend().request("workOrders.list", { status: ["completed", "verified", "closed"], limit: 50 });
+    for (const wo of items) expect(wo.closeOut?.failureMode, wo.number).toBeDefined();
+  });
+});
+
+describe("lifecycle", () => {
+  it("walks a new work order from request to closed", () => {
+    const b = makeBackend();
+    const asset = b.request("assets.list", { limit: 1 }).items[0]!;
+    const tech = b.request("users.list", { role: "field_technician", limit: 1 }).items[0]!;
+    const wo = b.request("workOrders.create", {
+      title: "Replace bearing",
+      description: "",
+      assetId: asset.id,
+      type: "corrective",
+      priority: "high",
+      assigneeId: null,
+      dueAt: null,
+      source: { kind: "manual", refId: null },
+      evidence: null,
+    });
+    const move = (to: Parameters<typeof b.request<"workOrders.transition">>[1]["to"], extra = {}) =>
+      b.request("workOrders.transition", { workOrderId: wo.id, to, ...extra });
+
+    move("triaged");
+    move("planned");
+    expect(() => move("scheduled")).toThrowError(/start time and someone assigned/);
+    move("scheduled", { scheduledStart: iso(START + 2 * HOUR), assigneeId: tech.id });
+    move("approved");
+    move("in_progress");
+    const done = b.request("workOrders.closeOut", {
+      workOrderId: wo.id,
+      failureMode: "VIB",
+      cause: "2.4",
+      remedy: "replace",
+      findings: "Outer race spalling on the drive-end bearing.",
+      laborHours: 5.5,
+      predictionVerdict: null,
+    });
+    expect(done.status).toBe("completed");
+    expect(done.closeOut?.cause).toBe("2.4");
+    move("verified");
+    const closed = move("closed");
+    expect(closed.history.map((e) => e.to)).toEqual([
+      "requested",
+      "triaged",
+      "planned",
+      "scheduled",
+      "approved",
+      "in_progress",
+      "completed",
+      "verified",
+      "closed",
+    ]);
+  });
+
+  it("refuses moves the lifecycle doesn't allow", () => {
+    const b = makeBackend();
+    const wo = b.request("workOrders.list", { status: ["requested"], limit: 1 }).items[0]!;
+    expect(() => b.request("workOrders.transition", { workOrderId: wo.id, to: "in_progress" })).toThrowError(ApiFailure);
+  });
+
+  it("a close-out verdict on predictive work becomes the prediction's feedback", () => {
+    const b = makeBackend();
+    // Set up our own data rather than hoping the random seed has a suitable work order.
+    const p = b.request("predictions.list", { status: ["open"], limit: 1 }).items[0]!;
+    const tech = b.request("users.list", { role: "field_technician", limit: 1 }).items[0]!;
+    const wo = b.request("workOrders.create", {
+      title: "Inspect bearing",
+      description: "",
+      assetId: p.assetId,
+      type: "predictive",
+      priority: "high",
+      assigneeId: tech.id,
+      dueAt: null,
+      source: { kind: "prediction", refId: p.id },
+      evidence: null,
+    });
+    for (const to of ["triaged", "planned", "scheduled", "approved", "in_progress"] as const) {
+      b.request("workOrders.transition", { workOrderId: wo.id, to, scheduledStart: to === "scheduled" ? iso(START + HOUR) : undefined });
+    }
+    b.request("workOrders.closeOut", {
+      workOrderId: wo.id,
+      failureMode: "VIB",
+      cause: "2.4",
+      remedy: "replace",
+      findings: "Bearing wear confirmed as predicted.",
+      laborHours: 8,
+      predictionVerdict: "true_positive",
+    });
+    expect(b.request("predictions.get", { predictionId: wo.source.refId! }).feedback).toBe("true_positive");
+  });
+});

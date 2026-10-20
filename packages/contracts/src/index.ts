@@ -10,6 +10,7 @@ export * from "./predictions";
 export * from "./anomalies";
 export * from "./alarms";
 export * from "./events";
+export * from "./iso14224";
 export * from "./work-orders";
 export * from "./kpis";
 export * from "./briefing";

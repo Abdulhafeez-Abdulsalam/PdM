@@ -495,7 +495,167 @@
     "titleTooShort": "Give a title of at least 3 characters.",
     "tooLong": "That's too long.",
     "assigneeRequired": "Choose who will do the work.",
-    "dateRequired": "Choose a due date."
+    "dateRequired": "Choose a date.",
+    "findingsTooShort": "Describe what you found in at least 10 characters.",
+    "hoursRequired": "Enter the hours worked (0–1000)."
+  },
+  "maintenance": {
+    "intro": "Work orders from request to verified repair. Drag a card, or use its Move to… menu.",
+    "onlyMine": "Only mine",
+    "view": {
+      "board": "Board",
+      "list": "List"
+    },
+    "show": {
+      "open": "Open",
+      "done": "Done",
+      "cancelled": "Cancelled",
+      "all": "All"
+    },
+    "count_one": "{{count}} work order",
+    "count_other": "{{count}} work orders"
+  },
+  "board": {
+    "hint": "Only moves your role may make are offered. Planners plan and schedule, the plant manager approves, technicians start and close out.",
+    "cardLabel": "{{number}}: {{title}}",
+    "columnLabel": "{{name}}, {{count}} work orders",
+    "dragHandle": "Drag {{number}}",
+    "moveTo": "Move to…",
+    "overdue": "Overdue · {{date}}",
+    "emptyColumn": "Nothing here.",
+    "srInstructions": "To pick up a work order, press Space or Enter. Use the arrow keys to move it between columns, Space or Enter to drop, Escape to cancel. Or use the card's Move to… menu.",
+    "column": {
+      "requested": "Requested",
+      "planned": "Planned",
+      "scheduled": "Scheduled",
+      "approved": "Approved",
+      "in_progress": "In progress",
+      "done": "Done"
+    },
+    "moveLabel": {
+      "requested": "Back to requested",
+      "triaged": "Triage",
+      "planned": "Plan",
+      "scheduled": "Schedule…",
+      "approved": "Approve",
+      "in_progress": "Start work",
+      "reopen": "Reopen — needs more work",
+      "completed": "Close out…",
+      "verified": "Verify",
+      "closed": "Close",
+      "cancelled": "Cancel…"
+    },
+    "refuse": {
+      "notAllowed": "{{number}} can't move straight to {{column}} — follow the steps in order.",
+      "role": "Your role can't move {{number}} to {{column}}."
+    },
+    "announce": {
+      "start": "Picked up {{id}}.",
+      "over": "Over {{column}}.",
+      "end": "Dropped on {{column}}.",
+      "cancel": "Move cancelled."
+    }
+  },
+  "woDialogs": {
+    "scheduleTitle": "Schedule work",
+    "start": "Planned start (UTC)",
+    "startHint": "Pick a window when the equipment can be taken out of service.",
+    "choose": "Choose…",
+    "schedule": "Schedule",
+    "closeOutTitle": "Close out work",
+    "closeOutIntro": "Record what you found using ISO 14224 codes, so failures can be compared across sites.",
+    "failureMode": "Failure mode (what)",
+    "cause": "Cause (why)",
+    "remedy": "Action taken",
+    "findings": "Findings",
+    "findingsHint": "What did you see, measure and do?",
+    "laborHours": "Hours worked",
+    "verdict": "Was the predicted problem there?",
+    "verdictHint": "This answer goes straight back to the prediction model.",
+    "complete": "Complete work",
+    "cancelTitle": "Cancel work order",
+    "cancelWo": "Cancel work order"
+  },
+  "workOrderActions": {
+    "moved": "{{number}} is now {{status}}.",
+    "closedOut": "{{number}} completed and sent for verification."
+  },
+  "workOrderPage": {
+    "back": "All work orders",
+    "notFound": "Work order not found",
+    "actions": "Actions",
+    "details": "Details",
+    "scheduled": "Planned start",
+    "createdBy": "Raised by",
+    "source": "Raised from",
+    "fromPrediction": "Prediction {{id}}",
+    "fromAlarm": "Alarm {{id}}",
+    "sourceKind": {
+      "manual": "Manual request",
+      "alarm": "Alarm",
+      "prediction": "Prediction"
+    },
+    "history": "History",
+    "system": "System",
+    "evidence": "Readings when raised ({{date}})",
+    "closeOut": "Close-out",
+    "completedBy": "Completed by"
+  },
+  "iso14224": {
+    "mode": {
+      "BRD": "Breakdown",
+      "ELP": "External leakage — process",
+      "ELU": "External leakage — utility",
+      "ERO": "Erratic output",
+      "FTS": "Fail to start",
+      "INL": "Internal leakage",
+      "LOO": "Low output",
+      "NOI": "Noise",
+      "OHE": "Overheating",
+      "PDE": "Parameter deviation",
+      "PLU": "Plugged / choked",
+      "STD": "Structural deficiency",
+      "UST": "Spurious stop",
+      "VIB": "Vibration",
+      "AIR": "Abnormal instrument reading",
+      "OTH": "Other"
+    },
+    "cause": {
+      "1_1": "Leakage",
+      "1_2": "Vibration",
+      "1_3": "Clearance / alignment",
+      "1_5": "Looseness",
+      "1_6": "Sticking",
+      "2_1": "Cavitation",
+      "2_2": "Corrosion",
+      "2_3": "Erosion",
+      "2_4": "Wear",
+      "2_5": "Breakage",
+      "2_6": "Fatigue",
+      "2_7": "Overheating",
+      "3_1": "Control failure",
+      "3_3": "Faulty signal",
+      "3_4": "Out of adjustment",
+      "4_1": "Short circuit",
+      "4_5": "Earth / isolation fault",
+      "5_1": "Blockage",
+      "5_2": "Contamination",
+      "6_0": "Unknown"
+    },
+    "remedy": {
+      "replace": "Replace",
+      "repair": "Repair",
+      "modify": "Modify",
+      "adjust": "Adjust",
+      "refit": "Refit",
+      "check": "Check",
+      "service": "Service",
+      "test": "Test",
+      "inspection": "Inspection",
+      "overhaul": "Overhaul",
+      "combination": "Combination",
+      "other": "Other"
+    }
   },
   "shelve": {
     "title": "Shelve alarm",

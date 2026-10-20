@@ -20,6 +20,8 @@ const AssetRegistryPage = lazyRouteComponent(() => import("../features/assets/As
 const AlarmsPage = lazyRouteComponent(() => import("../features/alarms/AlarmsPage"), "AlarmsPage");
 const PredictionConsolePage = lazyRouteComponent(() => import("../features/predictions/PredictionConsolePage"), "PredictionConsolePage");
 const PredictionPage = lazyRouteComponent(() => import("../features/predictions/PredictionPage"), "PredictionPage");
+const MaintenancePage = lazyRouteComponent(() => import("../features/maintenance/MaintenancePage"), "MaintenancePage");
+const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/WorkOrderPage"), "WorkOrderPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
 import { NotFoundPage } from "../features/module-page/NotFoundPage";
@@ -53,6 +55,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   assets: AssetRegistryPage,
   alarms: AlarmsPage,
   predictive: PredictionConsolePage,
+  maintenance: MaintenancePage,
 };
 
 const moduleRoutes = MODULES.map((m) =>
@@ -86,7 +89,14 @@ const predictionRoute = createRoute({
   component: PredictionPage,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, ...moduleRoutes, assetRoute, assetTabRoute, predictionRoute]);
+/** One work order. */
+const workOrderRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/maintenance/$workOrderId",
+  component: WorkOrderPage,
+});
+
+const routeTree = rootRoute.addChildren([indexRoute, ...moduleRoutes, assetRoute, assetTabRoute, predictionRoute, workOrderRoute]);
 
 /** Tests pass an in-memory history; the app uses the browser's address bar. */
 export function createAppRouter(history: RouterHistory = createBrowserHistory()) {

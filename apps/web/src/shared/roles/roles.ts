@@ -66,9 +66,13 @@ export const ACTIONS = {
   "prediction.triage": ["reliability_engineer", "condition_analyst"],
   "prediction.createWorkOrder": ["reliability_engineer", "condition_analyst", "maintenance_planner", "plant_manager"],
   "workOrder.approve": ["plant_manager"],
+  /** Triage, plan, schedule, re-plan, and finally close. */
   "workOrder.schedule": ["maintenance_planner"],
   "workOrder.execute": ["field_technician"],
+  /** The technician's close-out (ISO 14224 coding). */
   "workOrder.close": ["field_technician"],
+  "workOrder.verify": ["maintenance_planner", "reliability_engineer"],
+  "workOrder.cancel": ["maintenance_planner", "plant_manager"],
   "threshold.edit": ["reliability_engineer", "condition_analyst", "system_admin"],
   "model.approve": ["reliability_engineer", "condition_analyst", "system_admin"],
   "admin.manage": ["system_admin"],

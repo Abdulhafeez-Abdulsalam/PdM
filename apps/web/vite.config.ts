@@ -14,5 +14,8 @@ export default defineConfig({
     setupFiles: ["./src/test/setup.ts"],
     // Whole-journey tests compile lazily-loaded pages on first use; allow time for that.
     testTimeout: 20_000,
+    // `npm run check` runs typecheck, lint and every package's tests at once; leave CPU for them
+    // so these heavier tests don't time out on a laptop.
+    maxWorkers: "50%",
   },
 });
