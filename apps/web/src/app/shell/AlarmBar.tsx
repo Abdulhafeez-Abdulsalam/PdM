@@ -34,7 +34,8 @@ export function AlarmBar() {
               <Link
                 key={p}
                 to="/alarms"
-                search={(prev) => prev}
+                // Opens the list filtered to this priority, keeping scope and time range.
+                search={(prev) => ({ ...prev, view: "list", show: "active", priority: p })}
                 aria-label={t("alarms.countLabel", { priority: t(`alarms.priority.${p}`), active, unacked })}
                 className={cx(
                   "flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-sunken",

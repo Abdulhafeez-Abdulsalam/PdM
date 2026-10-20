@@ -9,3 +9,5 @@ export { ErrorBoundary } from "./ErrorBoundary";
 export { Sparkline } from "./Sparkline";
 export { KpiCard, type KpiCardProps } from "./KpiCard";
 export { Sheet, type SheetProps } from "./Sheet";
+export { Modal, type ModalProps } from "./Modal";
+export { Field, inputClass, type FieldControlProps } from "./Field";

@@ -27,6 +27,8 @@ export class WorkerTransport implements Transport {
   private readonly statusHandlers = new Set<(s: SimulationStatus) => void>();
   private readonly connectionHandlers = new Set<(s: ConnectionState) => void>();
   private connection: ConnectionState = "connecting";
+  /** Remembered so late subscribers get the current simulation status immediately. */
+  private lastStatus: SimulationStatus | null = null;
 
   constructor(private readonly worker: WorkerLike) {
     worker.addEventListener("message", (event) => this.receive(event.data));
@@ -47,8 +49,7 @@ export class WorkerTransport implements Transport {
         for (const h of this.messageHandlers) h(msg.message);
         break;
       case "status":
-        this.setConnection("live");
-        for (const h of this.statusHandlers) h(msg.status);
+        this.publishStatus(msg.status);
         break;
     }
   }
@@ -76,7 +77,18 @@ export class WorkerTransport implements Transport {
   }
 
   control(control: SimulationControl): Promise<SimulationStatus> {
-    return this.call({ kind: "control", control }) as Promise<SimulationStatus>;
+    return (this.call({ kind: "control", control }) as Promise<SimulationStatus>).then((status) => {
+      // Every control reply carries the latest status — share it, so the app knows the
+      // simulated time straight away instead of waiting for the next once-a-second update.
+      this.publishStatus(status);
+      return status;
+    });
+  }
+
+  private publishStatus(status: SimulationStatus): void {
+    this.lastStatus = status;
+    this.setConnection("live");
+    for (const h of this.statusHandlers) h(status);
   }
 
   send(message: ClientMessage): void {
@@ -90,6 +102,7 @@ export class WorkerTransport implements Transport {
 
   onStatus(handler: (s: SimulationStatus) => void): () => void {
     this.statusHandlers.add(handler);
+    if (this.lastStatus) handler(this.lastStatus);
     return () => this.statusHandlers.delete(handler);
   }
 

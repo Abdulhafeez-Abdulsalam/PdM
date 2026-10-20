@@ -12,7 +12,8 @@ export const TIME_RANGES = ["live", "1h", "24h", "7d", "30d"] as const;
 export type TimeRange = (typeof TIME_RANGES)[number];
 export const DEFAULT_TIME_RANGE: TimeRange = "24h";
 
-export const globalSearchSchema = z.object({
+// looseObject: keep parameters this schema doesn't know (pages add their own, e.g. alarm filters).
+export const globalSearchSchema = z.looseObject({
   range: z.enum(TIME_RANGES).optional().catch(undefined),
   /** Hierarchy node the page is scoped to. Omitted = the whole enterprise. */
   scope: z.string().min(1).max(64).optional().catch(undefined),

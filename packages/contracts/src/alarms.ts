@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { HealthState, Id, PageParams, ScopeId, Timestamp } from "./common";
+import { Quantity } from "./quantities";
 
 /** ISA-18.2 priorities. p1 = most urgent. */
 export const AlarmPriority = z.enum(["p1", "p2", "p3", "p4"]);
@@ -56,6 +57,8 @@ export const Alarm = z.object({
   /** Value that triggered the alarm and the limit it crossed, canonical unit. */
   value: z.number().nullable(),
   limit: z.number().nullable(),
+  /** What value/limit measure, so the UI can convert units. null when there's no value. */
+  quantity: Quantity.nullable(),
   raisedAt: Timestamp,
   acknowledgedAt: Timestamp.nullable(),
   acknowledgedBy: Id.nullable(),

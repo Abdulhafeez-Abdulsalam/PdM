@@ -9,6 +9,7 @@ import { WifiOff } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PredictionDrawer } from "../../features/predictions/PredictionDrawer";
+import { Toaster } from "../../shared/toast";
 import { AlarmBar } from "./AlarmBar";
 import { SideNav } from "./SideNav";
 import { TopBar } from "./TopBar";
@@ -42,6 +43,7 @@ export function AppShell() {
         </main>
       </div>
       <PredictionDrawer />
+      <Toaster />
     </div>
   );
 }

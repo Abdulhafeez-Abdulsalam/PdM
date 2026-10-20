@@ -44,6 +44,7 @@ export const EvidenceSnapshot = z.object({
   values: z.array(LiveValue).max(20),
   note: z.string().max(1000).nullable(),
 });
+export type EvidenceSnapshot = z.infer<typeof EvidenceSnapshot>;
 
 export const WorkOrder = z.object({
   id: Id,

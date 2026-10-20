@@ -4,7 +4,7 @@ The web frontend of a Predictive Maintenance & Asset Performance platform for an
 
 It helps people spot equipment that is about to fail, before it fails, and organise the maintenance to fix it.
 
-> **Status:** Steps 1–5 done. Phase 1 chunks 1–3 done: app shell, hierarchy picker, Command Center, asset registry, Asset 360 (live values, charts, health, predictions) and the prediction panel. Next: chunk 4 — Alarms.
+> **Status:** Phase 1 complete — see [docs/phase-1-review.md](docs/phase-1-review.md) for the acceptance-criteria results and what's deferred. Next: Phase 2 (prediction console, work-order lifecycle, field technician screens).
 
 ## Getting started
 

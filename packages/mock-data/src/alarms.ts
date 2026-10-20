@@ -132,6 +132,7 @@ export class AlarmEngine {
         message: input.message,
         value: input.value === null ? null : Number(input.value.toPrecision(5)),
         limit: input.limit === null ? null : Number(input.limit.toPrecision(5)),
+        quantity: input.tag && input.value !== null ? input.tag.template.quantity : null,
         raisedAt: iso(input.t),
         acknowledgedAt: null,
         acknowledgedBy: null,

@@ -3,8 +3,15 @@ import { cleanup, configure } from "@testing-library/react";
 import { afterEach } from "vitest";
 import "../shared/text/i18n";
 
-// Pages load their code on demand; the first time, the test runner compiles that code on the
-// fly, which can take a few seconds. Wait up to 10 s for things to appear (default is 1 s).
+// Pages load their code on demand. In the app that's a quick download; in tests the runner
+// compiles it on first use, which under load can take many seconds. Load those modules once,
+// up front, so tests time the app rather than the compiler.
+await Promise.all([
+  import("../features/assets/AssetPage"),
+  import("../features/assets/AssetRegistryPage"),
+  import("../features/alarms/AlarmsPage"),
+  import("../features/predictions/PredictionDetail"),
+]);
 configure({ asyncUtilTimeout: 10_000 });
 
 // The test browser (jsdom) has no graphics or scrolling. Say "not available" quietly,

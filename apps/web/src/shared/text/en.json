@@ -462,6 +462,13 @@
       "shutdown": "Shutdown",
       "regulatory": "Regulatory"
     },
+    "priorities": {
+      "emergency": "Emergency",
+      "urgent": "Urgent",
+      "high": "High",
+      "normal": "Normal",
+      "low": "Low"
+    },
     "statuses": {
       "requested": "Requested",
       "triaged": "Triaged",
@@ -473,6 +480,117 @@
       "verified": "Verified",
       "closed": "Closed",
       "cancelled": "Cancelled"
+    }
+  },
+  "common": {
+    "close": "Close",
+    "cancel": "Cancel"
+  },
+  "toast": {
+    "dismiss": "Dismiss message"
+  },
+  "forms": {
+    "reasonTooShort": "Give a reason of at least 5 characters.",
+    "titleTooShort": "Give a title of at least 3 characters.",
+    "tooLong": "That's too long.",
+    "assigneeRequired": "Choose who will do the work.",
+    "dateRequired": "Choose a due date."
+  },
+  "shelve": {
+    "title": "Shelve alarm",
+    "reason": "Reason",
+    "reasonHint": "Recorded in the audit trail. Say why it's safe to hide this alarm for a while.",
+    "duration": "Shelve for",
+    "hours_one": "{{count}} hour",
+    "hours_other": "{{count}} hours",
+    "submit": "Shelve"
+  },
+  "createWo": {
+    "title": "Create work order",
+    "fromAlarm": "Pre-filled from alarm {{id}} — check and create.",
+    "titleField": "Title",
+    "description": "Description",
+    "priority": "Priority",
+    "due": "Due",
+    "assignee": "Assign to",
+    "assigneeHint": "Technicians at this asset's site are listed first.",
+    "attachSnapshot_one": "Attach a snapshot of {{count}} current reading",
+    "attachSnapshot_other": "Attach a snapshot of {{count}} current readings",
+    "snapshotHint": "So the technician sees what the operator saw.",
+    "submit": "Create work order",
+    "created": "{{number}} created and assigned to {{who}}.",
+    "failed": "The work order couldn't be created: {{reason}}"
+  },
+  "alarmActions": {
+    "acknowledged_one": "Alarm acknowledged.",
+    "acknowledged_other": "{{count}} alarms acknowledged.",
+    "ackFailed": "Acknowledgement failed — the alarm list has been restored.",
+    "shelved": "Shelved: {{message}}",
+    "unshelved": "Alarm returned to the active list.",
+    "failed": "That didn't work: {{reason}}"
+  },
+  "alarmTable": {
+    "value": "Value / limit",
+    "actions": "Actions",
+    "selectAll": "Select all unacknowledged alarms",
+    "select": "Select alarm {{id}}",
+    "ackSelected_one": "Acknowledge {{count}}",
+    "ackSelected_other": "Acknowledge {{count}}",
+    "keyboardHint": "Keyboard: ↑ ↓ to move, A acknowledge, S shelve, W work order.",
+    "rowLabel": "{{priority}}: {{message}} on {{asset}}, {{state}}",
+    "groupCount_one": "{{count}} alarm",
+    "groupCount_other": "{{count}} alarms",
+    "chattering": "chattering · {{count}}×/h",
+    "standing": "standing > 24 h",
+    "hasWorkOrder": "work order raised",
+    "shelvedUntil": "shelved · back {{ago}}",
+    "ackOne": "Acknowledge {{id}}",
+    "shelveOne": "Shelve {{id}}",
+    "unshelveOne": "Un-shelve {{id}}",
+    "woOne": "Create work order from {{id}}"
+  },
+  "alarmsPage": {
+    "intro": "Live alarms in the current scope, most urgent first.",
+    "views": "View",
+    "view": {
+      "list": "Live alarms",
+      "timeline": "Event timeline"
+    },
+    "flood": "Alarm flood: {{count}} new alarms in the last 10 minutes. Deal with P1 and P2 first.",
+    "load": {
+      "active": "Active alarms",
+      "unacked": "Unacknowledged",
+      "recent": "New in last 10 min",
+      "recentHint": "Flood above {{max}}",
+      "standing": "Standing",
+      "standingHint": "Active for more than 24 h"
+    },
+    "show": "Show",
+    "showOption": {
+      "active": "Active",
+      "unacked": "Unacknowledged",
+      "shelved": "Shelved",
+      "suppressed": "Suppressed",
+      "all": "All, including cleared"
+    },
+    "priorities": "Priorities",
+    "group": "Group",
+    "groupNone": "No grouping",
+    "groupAsset": "By asset",
+    "listTitle_one": "{{count}} alarm",
+    "listTitle_other": "{{count}} alarms",
+    "empty": "No alarms match. That's good news — or try different filters."
+  },
+  "timeline": {
+    "title": "Events · {{range}}",
+    "empty": "No events in this time range.",
+    "kinds": "Event types",
+    "kind": {
+      "alarm": "Alarms",
+      "operator_action": "Operator actions",
+      "maintenance": "Maintenance",
+      "process": "Process",
+      "prediction": "Predictions"
     }
   },
   "errorPage": {

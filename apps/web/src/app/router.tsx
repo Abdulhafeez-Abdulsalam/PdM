@@ -17,6 +17,7 @@ import { CommandCenterPage } from "../features/command-center/CommandCenterPage"
 // Pages other than the home page load their code only when first visited (code-splitting).
 const AssetPage = lazyRouteComponent(() => import("../features/assets/AssetPage"), "AssetPage");
 const AssetRegistryPage = lazyRouteComponent(() => import("../features/assets/AssetRegistryPage"), "AssetRegistryPage");
+const AlarmsPage = lazyRouteComponent(() => import("../features/alarms/AlarmsPage"), "AlarmsPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
 import { NotFoundPage } from "../features/module-page/NotFoundPage";
@@ -48,6 +49,7 @@ const indexRoute = createRoute({
 const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   "command-center": CommandCenterPage,
   assets: AssetRegistryPage,
+  alarms: AlarmsPage,
 };
 
 const moduleRoutes = MODULES.map((m) =>
