@@ -56,14 +56,13 @@ function ToastItem({ toast }: { toast: Toast }) {
 export function Toaster() {
   const toasts = useToasts((s) => s.toasts);
   return (
-    <ol
-      aria-live="polite"
-      role="status"
-      className="pointer-events-none fixed right-4 bottom-4 z-50 flex w-80 max-w-[calc(100vw-2rem)] flex-col gap-2 [&>li]:pointer-events-auto"
-    >
-      {toasts.map((t) => (
-        <ToastItem key={t.id} toast={t} />
-      ))}
-    </ol>
+    // A list can't also be a status region, so the live region wraps it.
+    <div role="status" aria-live="polite" className="pointer-events-none fixed right-4 bottom-4 z-50 w-80 max-w-[calc(100vw-2rem)]">
+      <ol className="flex flex-col gap-2 [&>li]:pointer-events-auto">
+        {toasts.map((t) => (
+          <ToastItem key={t.id} toast={t} />
+        ))}
+      </ol>
+    </div>
   );
 }

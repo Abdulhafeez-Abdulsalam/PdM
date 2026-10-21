@@ -55,7 +55,7 @@ Operators watch screens for 12-hour shifts. If every healthy pump is bright gree
 |---|---|---|---|
 | `--color-bg-canvas` (page) | `#F7F8FA` | `#0B0F14` | `#2B2E31` |
 | `--color-bg-surface` (cards) | `#FFFFFF` | `#131A22` | `#34383C` |
-| `--color-bg-raised` (menus, dialogs) | `#FFFFFF` | `#1A2330` | `#3D4246` |
+| `--color-bg-raised` (menus, dialogs) | `#FFFFFF` | `#1A2330` | `#393D41` |
 | `--color-border` | `#D1D5DB` | `#2A3441` | `#4A4F54` |
 | `--color-text-primary` | `#111827` | `#E5E7EB` | `#D9DCDF` |
 | `--color-text-secondary` | `#4B5563` | `#9CA3AF` | `#A3A8AD` |
@@ -82,13 +82,15 @@ Every asset, sensor and widget uses the same 7 states. **Colour is never the onl
 
 | Token | Light | Dark | Control-Room |
 |---|---|---|---|
-| `--color-health-healthy` | `#15803D` | `#4ADE80` | `#A3A8AD` (grey — normal) |
+| `--color-health-healthy` | `#137A3A` | `#4ADE80` | `#A3A8AD` (grey — normal) |
 | `--color-health-watch` | `#0E7490` | `#22D3EE` | `#8FB3BF` |
-| `--color-health-degraded` | `#A16207` | `#FACC15` | `#D4B254` |
-| `--color-health-warning` | `#C2410C` | `#FB923C` | `#E8913A` |
-| `--color-health-critical` | `#B91C1C` | `#F87171` | `#E5484D` |
-| `--color-health-offline` | `#6B7280` | `#9CA3AF` | `#6E7378` |
-| `--color-health-maintenance` | `#6D28D9` | `#A78BFA` | `#9D8FC7` |
+| `--color-health-degraded` | `#94590A` | `#FACC15` | `#D4B254` |
+| `--color-health-warning` | `#C2410C` | `#FB923C` | `#F09A48` |
+| `--color-health-critical` | `#B91C1C` | `#F87171` | `#FF9093` |
+| `--color-health-offline` | `#626976` | `#9CA3AF` | `#B5AB9C` (warm grey) |
+| `--color-health-maintenance` | `#6D28D9` | `#A78BFA` | `#B3A5DD` |
+
+Every text and health colour reads at **4.5 : 1 or better on every background of its theme** (WCAG AA). `packages/ui/src/tokens.test.ts` checks this straight from `tokens.css`, so a colour change that breaks it fails the build. (The Phase 2 review found nine colours that didn't, and fixed them.)
 
 ### Alarm priorities (ISA-18.2)
 

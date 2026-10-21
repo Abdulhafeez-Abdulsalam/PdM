@@ -29,7 +29,7 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         <Menu aria-hidden className="size-5" />
       </button>
 
-      <Link to="/" className="flex items-center gap-2 font-semibold">
+      <Link to="/" className="flex shrink-0 items-center gap-2 font-semibold">
         <img src="/favicon.svg" alt="" className="size-7" />
         <span>{t("app.name")}</span>
       </Link>

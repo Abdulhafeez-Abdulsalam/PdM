@@ -39,7 +39,8 @@ export function AlarmBar() {
                 to="/alarms"
                 // Opens the list filtered to this priority, keeping scope and time range.
                 search={(prev) => ({ ...prev, view: "list", show: "active", priority: p })}
-                aria-label={t("alarms.countLabel", { priority: t(`alarms.priority.${p}`), active, unacked })}
+                // Starts with exactly what's on screen ("P1 0"), so voice control ("click P1 0") finds it.
+                aria-label={t("alarms.countLabel", { short: p.toUpperCase(), active, level: t(`alarms.level.${p}`), unacked })}
                 className={cx(
                   "flex items-center gap-1.5 rounded-md px-2 py-1 hover:bg-sunken",
                   active === 0 && "text-fg-muted",
@@ -47,7 +48,7 @@ export function AlarmBar() {
                 )}
               >
                 <PriorityIcon priority={p} className={cx(active === 0 && "opacity-40")} />
-                <span>{p.toUpperCase()}</span>
+                <span>{p.toUpperCase()}</span> {/* ↑ a real space, so the text reads "P1 0" rather than "P10" (flex hides it visually) */}
                 <span className="tabular-nums">{active}</span>
                 {unacked > 0 && (
                   // Unacknowledged = needs an operator. A dot, plus the pulse unless reduced motion is on.

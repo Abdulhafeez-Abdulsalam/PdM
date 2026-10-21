@@ -68,7 +68,15 @@ export function ScopeSelector() {
         trigger={
           <button
             type="button"
-            aria-label={t("hierarchy.change", { current: current?.name ?? t("topBar.enterprise") })}
+            // Starts with the visible name (for voice control) and keeps the health the badge shows.
+            aria-label={
+              current
+                ? t("hierarchy.changeWithHealth", {
+                    current: current.name,
+                    health: groupHealthLabel(t, current.health, current.healthCounts),
+                  })
+                : t("hierarchy.change", { current: t("topBar.enterprise") })
+            }
             className="flex min-w-0 items-center gap-1.5 rounded-md px-2 py-1 font-medium hover:bg-sunken"
           >
             {current && <HealthBadge compact state={current.health} label={groupHealthLabel(t, current.health, current.healthCounts)} />}

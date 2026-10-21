@@ -69,7 +69,13 @@
       "p3": "P3 Medium",
       "p4": "P4 Low"
     },
-    "countLabel": "{{priority}}: {{active}} active, {{unacked}} unacknowledged",
+    "countLabel": "{{short}} {{active}} active ({{level}}), {{unacked}} unacknowledged",
+    "level": {
+      "p1": "urgent",
+      "p2": "high",
+      "p3": "medium",
+      "p4": "low"
+    },
     "shelved": "Shelved {{count}}",
     "suppressed": "Suppressed {{count}}",
     "loading": "Loading alarm counts"
@@ -174,7 +180,8 @@
   },
   "hierarchy": {
     "label": "Asset hierarchy",
-    "change": "Change scope (currently {{current}})",
+    "change": "{{current}}: change scope",
+    "changeWithHealth": "{{current}}, {{health}}: change scope",
     "children": "Contents",
     "up": "Up to {{name}}",
     "openAsset": "Open asset page",

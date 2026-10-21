@@ -29,7 +29,7 @@ export function readChartColors(): ChartColors {
     surface: token("--pdm-bg-raised", "#ffffff"),
     border: token("--pdm-border", "#d1d5db"),
     // Limit lines are status, so they use the status (health) colours, never series colours.
-    alert: token("--pdm-health-degraded", "#a16207"),
+    alert: token("--pdm-health-degraded", "#94590a"),
     alarm: token("--pdm-health-warning", "#c2410c"),
     trip: token("--pdm-health-critical", "#b91c1c"),
   };

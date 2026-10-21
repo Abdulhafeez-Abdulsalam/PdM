@@ -22,12 +22,12 @@
   --pdm-accent-text: #ffffff;
   --pdm-focus-ring: #1d4ed8;
 
-  --pdm-health-healthy: #15803d;
+  --pdm-health-healthy: #137a3a;
   --pdm-health-watch: #0e7490;
-  --pdm-health-degraded: #a16207;
+  --pdm-health-degraded: #94590a;
   --pdm-health-warning: #c2410c;
   --pdm-health-critical: #b91c1c;
-  --pdm-health-offline: #6b7280;
+  --pdm-health-offline: #626976;
   --pdm-health-maintenance: #6d28d9;
 
   /* Chart series (identity, not status). Validated for colour-blind separation and 3:1 contrast on this surface. */
@@ -73,7 +73,7 @@
   color-scheme: dark;
   --pdm-bg-canvas: #2b2e31;
   --pdm-bg-surface: #34383c;
-  --pdm-bg-raised: #3d4246;
+  --pdm-bg-raised: #393d41;
   --pdm-bg-sunken: #26292c;
   --pdm-border: #4a4f54;
   --pdm-text-primary: #d9dcdf;
@@ -85,10 +85,10 @@
   --pdm-health-healthy: #a3a8ad; /* normal is grey */
   --pdm-health-watch: #8fb3bf;
   --pdm-health-degraded: #d4b254;
-  --pdm-health-warning: #e8913a;
-  --pdm-health-critical: #e5484d;
-  --pdm-health-offline: #6e7378;
-  --pdm-health-maintenance: #9d8fc7;
+  --pdm-health-warning: #f09a48;
+  --pdm-health-critical: #ff9093; /* light enough to read on every surface here */
+  --pdm-health-offline: #b5ab9c; /* warm grey: readable, yet apart from the cool grey of "normal" */
+  --pdm-health-maintenance: #b3a5dd;
 
   /* Muted for ISA-101, still passing the colour-blind and contrast checks on this surface. */
   --pdm-series-1: #4f8ad6;
