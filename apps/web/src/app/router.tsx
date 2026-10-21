@@ -22,6 +22,7 @@ const PredictionConsolePage = lazyRouteComponent(() => import("../features/predi
 const PredictionPage = lazyRouteComponent(() => import("../features/predictions/PredictionPage"), "PredictionPage");
 const MaintenancePage = lazyRouteComponent(() => import("../features/maintenance/MaintenancePage"), "MaintenancePage");
 const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/WorkOrderPage"), "WorkOrderPage");
+const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenance/ScheduleBoardPage"), "ScheduleBoardPage");
 const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
 const LiveLoadPage = lazyRouteComponent(() => import("../features/diagnostics/LiveLoadPage"), "LiveLoadPage");
@@ -100,6 +101,13 @@ const workOrderRoute = createRoute({
   component: WorkOrderPage,
 });
 
+/** The schedule board. A fixed path, so it wins over /maintenance/$workOrderId. */
+const scheduleRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/maintenance/schedule",
+  component: ScheduleBoardPage,
+});
+
 /** One field task (a work order as the technician works through it). */
 const taskRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -121,6 +129,7 @@ const routeTree = rootRoute.addChildren([
   assetTabRoute,
   predictionRoute,
   workOrderRoute,
+  scheduleRoute,
   taskRoute,
   liveLoadRoute,
 ]);

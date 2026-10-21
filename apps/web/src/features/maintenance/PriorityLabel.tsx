@@ -12,13 +12,15 @@ const STYLE: Record<WorkOrderPriority, { icon: typeof Siren; className: string }
   low: { icon: Minus, className: "text-fg-muted" },
 };
 
-export function PriorityLabel({ priority, className }: { priority: WorkOrderPriority; className?: string }) {
+/** `iconOnly` for tight spaces (calendar chips): the word is still there for screen readers. */
+export function PriorityLabel({ priority, className, iconOnly }: { priority: WorkOrderPriority; className?: string; iconOnly?: boolean }) {
   const { t } = useTranslation();
   const { icon: Icon, className: tone } = STYLE[priority];
+  const word = t(`workOrders.priorities.${priority}`);
   return (
-    <span className={cx("inline-flex items-center gap-0.5 text-xs", tone, className)}>
+    <span className={cx("inline-flex shrink-0 items-center gap-0.5 text-xs", tone, className)} title={iconOnly ? word : undefined}>
       <Icon aria-hidden className="size-3.5" />
-      {t(`workOrders.priorities.${priority}`)}
+      <span className={iconOnly ? "sr-only" : undefined}>{word}</span>
     </span>
   );
 }

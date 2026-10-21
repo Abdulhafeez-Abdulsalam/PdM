@@ -192,3 +192,56 @@ describe("checklists", () => {
     ).toThrowError(/Unknown checklist item/);
   });
 });
+
+describe("schedule", () => {
+  it("open scheduled work starts in the next two weeks, and every work order has a duration", () => {
+    const { items } = makeBackend().request("workOrders.list", { limit: 500 });
+    for (const wo of items) expect(wo.estimatedHours, wo.number).toBeGreaterThan(0);
+    const upcoming = items.filter((w) => w.status === "scheduled" || w.status === "approved");
+    expect(upcoming.length).toBeGreaterThan(0);
+    for (const wo of upcoming) {
+      const start = Date.parse(wo.scheduledStart!);
+      expect(start, wo.number).toBeGreaterThan(START);
+      expect(start, wo.number).toBeLessThan(START + 15 * 24 * HOUR);
+    }
+  });
+
+  it("filters by planned start and sorts soonest first", () => {
+    const b = makeBackend();
+    const from = iso(START);
+    const to = iso(START + 7 * 24 * HOUR);
+    const { items } = b.request("workOrders.list", { scheduledFrom: from, scheduledTo: to, sort: "start", limit: 500 });
+    expect(items.length).toBeGreaterThan(0);
+    for (const wo of items) expect(wo.scheduledStart! >= from && wo.scheduledStart! < to, wo.number).toBe(true);
+    expect(items.map((w) => w.scheduledStart)).toEqual([...items.map((w) => w.scheduledStart)].sort());
+  });
+
+  it("rescheduling approved work sends it back for approval", () => {
+    const b = makeBackend();
+    const wo = b.request("workOrders.list", { status: ["approved"], limit: 1 }).items[0]!;
+    const other = b.request("users.list", { role: "field_technician", limit: 50 }).items.find((u) => u.id !== wo.assigneeId)!;
+    const moved = b.request("workOrders.reschedule", {
+      workOrderId: wo.id,
+      scheduledStart: iso(START + 3 * 24 * HOUR),
+      assigneeId: other.id,
+    });
+    expect(moved.status).toBe("scheduled");
+    expect(moved.assigneeId).toBe(other.id);
+    expect(moved.history.at(-1)).toMatchObject({ from: "approved", to: "scheduled" });
+    expect(moved.history.at(-1)?.note).toMatch(/^Rescheduled to /);
+  });
+
+  it("refuses to reschedule work that isn't scheduled, or to someone who isn't a technician", () => {
+    const b = makeBackend();
+    const started = b.request("workOrders.list", { status: ["in_progress"], limit: 1 }).items[0]!;
+    const tech = b.request("users.list", { role: "field_technician", limit: 1 }).items[0]!;
+    expect(() =>
+      b.request("workOrders.reschedule", { workOrderId: started.id, scheduledStart: iso(START), assigneeId: tech.id }),
+    ).toThrowError(/Only scheduled or approved/);
+    const scheduled = b.request("workOrders.list", { status: ["scheduled"], limit: 1 }).items[0]!;
+    const planner = b.request("users.list", { role: "maintenance_planner", limit: 1 }).items[0]!;
+    expect(() =>
+      b.request("workOrders.reschedule", { workOrderId: scheduled.id, scheduledStart: iso(START), assigneeId: planner.id }),
+    ).toThrowError(/not a field technician/);
+  });
+});

@@ -35,13 +35,16 @@ const scheduleSchema = z.object({
 /** "2026-10-12T06:00" (what a datetime-local input uses, read as UTC) ↔ ISO. */
 const toLocalInput = (ms: number) => new Date(ms).toISOString().slice(0, 16);
 
+/** Planned work gets scheduled; scheduled or approved work gets rescheduled (same questions). */
+const isReschedule = (wo: WorkOrder | null) => wo !== null && (wo.status === "scheduled" || wo.status === "approved");
+
 function ScheduleDialog({ workOrder, onClose }: { workOrder: WorkOrder | null; onClose: () => void }) {
   const { t } = useTranslation();
   return (
     <Modal
       open={workOrder !== null}
       onOpenChange={(o) => !o && onClose()}
-      title={t("woDialogs.scheduleTitle")}
+      title={t(isReschedule(workOrder) ? "woDialogs.rescheduleTitle" : "woDialogs.scheduleTitle")}
       description={workOrder?.title}
       closeLabel={t("common.close")}
     >
@@ -54,7 +57,8 @@ function ScheduleForm({ workOrder, onClose }: { workOrder: WorkOrder; onClose: (
   const { t } = useTranslation();
   const { now } = useSimNow();
   const { technicians } = useUsers();
-  const { transition } = useWorkOrderActions();
+  const { transition, reschedule } = useWorkOrderActions();
+  const moving = isReschedule(workOrder);
   const form = useForm<z.input<typeof scheduleSchema>, unknown, z.output<typeof scheduleSchema>>({
     resolver: zodResolver(scheduleSchema),
     defaultValues: {
@@ -67,7 +71,8 @@ function ScheduleForm({ workOrder, onClose }: { workOrder: WorkOrder; onClose: (
   const { errors } = form.formState;
   const submit = form.handleSubmit(async ({ start, assigneeId }) => {
     try {
-      await transition.mutateAsync({ workOrderId: workOrder.id, to: "scheduled", scheduledStart: `${start}:00Z`, assigneeId });
+      if (moving) await reschedule.mutateAsync({ workOrderId: workOrder.id, scheduledStart: `${start}:00Z`, assigneeId });
+      else await transition.mutateAsync({ workOrderId: workOrder.id, to: "scheduled", scheduledStart: `${start}:00Z`, assigneeId });
       onClose();
     } catch {
       // shown by useWorkOrderActions
@@ -90,7 +95,8 @@ function ScheduleForm({ workOrder, onClose }: { workOrder: WorkOrder; onClose: (
           </select>
         )}
       </Field>
-      <Actions onCancel={onClose} submitLabel={t("woDialogs.schedule")} />
+      {moving && workOrder.status === "approved" && <p className="text-sm text-fg-muted">{t("woDialogs.reapprovalNote")}</p>}
+      <Actions onCancel={onClose} submitLabel={t(moving ? "woDialogs.reschedule" : "woDialogs.schedule")} />
     </form>
   );
 }

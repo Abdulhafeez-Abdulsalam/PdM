@@ -32,6 +32,7 @@ import { MAX_SUBSCRIBED_TAGS } from "./realtime";
 import { RoleId, User } from "./users";
 import {
   CloseOutWorkOrderRequest,
+  RescheduleWorkOrderRequest,
   CreateWorkOrderRequest,
   TransitionWorkOrderRequest,
   WorkOrder,
@@ -285,6 +286,13 @@ export const endpoints = {
     path: "/work-orders/:workOrderId/close-out",
     description: "Complete the work with ISO 14224 failure coding, findings and hours",
     input: CloseOutWorkOrderRequest,
+    output: WorkOrder,
+  }),
+  "workOrders.reschedule": endpoint({
+    method: "POST",
+    path: "/work-orders/:workOrderId/reschedule",
+    description: "Move scheduled work to another start time or technician (approved work needs approving again)",
+    input: RescheduleWorkOrderRequest,
     output: WorkOrder,
   }),
 } as const;

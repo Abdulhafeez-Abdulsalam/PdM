@@ -45,7 +45,7 @@ The information architecture listed more Phase 2 pages than the three chunks cov
 | Item | Notes |
 |---|---|
 | Anomaly views (`/predictive/anomalies`) | Anomaly *history* exists on each prediction page; a fleet-wide anomaly view doesn't |
-| Maintenance calendar, Gantt and schedule board (`/maintenance/schedule`) | Board and list exist |
+| ~~Maintenance calendar, Gantt and schedule board (`/maintenance/schedule`)~~ | ✅ Built afterwards: calendar view and schedule board with conflict detection. Not yet: critical-path view for shutdowns, optimisation suggestions, skills/permit/weather constraints |
 | Alarm analytics (`/alarms/analytics`): alarm KPIs, bad actors, floods | — |
 | Fleet comparison (`/assets/compare`) | — |
 | Asset tabs: documents, related, comments | — |

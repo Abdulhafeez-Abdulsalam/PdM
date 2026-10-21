@@ -1,12 +1,14 @@
 /**
- * Maintenance (spec §6.6): the work-order lifecycle as a Kanban board, or a sortable list
- * that also shows closed and cancelled work. Follows the scope from the top bar.
+ * Maintenance (spec §6.6): the work-order lifecycle as a Kanban board, a sortable list that
+ * also shows closed and cancelled work, or a month calendar of planned starts. The schedule
+ * board (who does what, when) has its own page. Follows the scope from the top bar.
  */
 import { useApiQuery } from "@pdm/api-client";
 import { type WorkOrderStatus } from "@pdm/contracts";
 import { Select, Skeleton, cx } from "@pdm/ui";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
+import { GanttChart } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -15,6 +17,7 @@ import { useGlobalSearch } from "../../shared/time-range";
 import { useUsers } from "../../shared/users";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
 import { BOARD_STATUSES } from "./lifecycle";
+import { MaintenanceCalendar } from "./MaintenanceCalendar";
 import { PriorityLabel } from "./PriorityLabel";
 import { WorkOrderBoard } from "./WorkOrderBoard";
 
@@ -27,7 +30,12 @@ const STATUSES: Record<(typeof SHOW)[number], WorkOrderStatus[] | undefined> = {
 };
 
 const searchSchema = z.object({
-  view: z.enum(["board", "list"]).catch("board"),
+  view: z.enum(["board", "list", "calendar"]).catch("board"),
+  month: z
+    .string()
+    .regex(/^\d{4}-\d{2}$/)
+    .optional()
+    .catch(undefined),
   show: z.enum(SHOW).catch("open"),
   mine: z.enum(["yes", "no"]).catch("no"),
 });
@@ -53,13 +61,21 @@ export function MaintenancePage() {
           <h1 className="text-2xl font-semibold">{t("modules.maintenance.name")}</h1>
           <p className="text-fg-muted">{t("maintenance.intro")}</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-3">
+          <Link
+            to="/maintenance/schedule"
+            search={(prev) => prev}
+            className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm hover:bg-sunken"
+          >
+            <GanttChart aria-hidden className="size-4" />
+            {t("schedule.title")}
+          </Link>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={search.mine === "yes"} onChange={(e) => set({ mine: e.target.checked ? "yes" : "no" })} />
             {t("maintenance.onlyMine")}
           </label>
           <div role="tablist" aria-label={t("alarmsPage.views")} className="flex rounded-md border border-line p-0.5">
-            {(["board", "list"] as const).map((v) => (
+            {(["board", "list", "calendar"] as const).map((v) => (
               <button
                 key={v}
                 type="button"
@@ -77,6 +93,8 @@ export function MaintenancePage() {
 
       {search.view === "board" ? (
         <BoardView scopeId={scopeId} assigneeId={assigneeId} />
+      ) : search.view === "calendar" ? (
+        <MaintenanceCalendar scopeId={scopeId} assigneeId={assigneeId} month={search.month} onMonth={(month) => set({ month })} />
       ) : (
         <ListView scopeId={scopeId} assigneeId={assigneeId} show={search.show} onShow={(show) => set({ show })} />
       )}

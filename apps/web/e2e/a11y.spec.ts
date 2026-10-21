@@ -38,6 +38,8 @@ test("every screen passes axe in every theme", async ({ page }) => {
     [prediction, "reliability_engineer"],
     ["/maintenance", "maintenance_planner"],
     ["/maintenance?view=list", "maintenance_planner"],
+    ["/maintenance?view=calendar", "maintenance_planner"],
+    ["/maintenance/schedule", "maintenance_planner"],
     [workOrder, "maintenance_planner"],
     ["/field", "field_technician"],
     [task, "field_technician"],

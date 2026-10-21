@@ -51,5 +51,18 @@ export function useWorkOrderActions() {
     onSettled: refresh,
   });
 
-  return { transition, closeOut };
+  const reschedule = useApiMutation("workOrders.reschedule", {
+    onSuccess: (wo) => {
+      // Approved work that moves needs approving again; say so, or it looks like it vanished from "Approved".
+      const wasApproved = wo.history.at(-1)?.from === "approved";
+      toast(
+        "success",
+        t(wasApproved ? "workOrderActions.rescheduledNeedsApproval" : "workOrderActions.rescheduled", { number: wo.number }),
+      );
+    },
+    onError: (error) => toast("error", t("alarmActions.failed", { reason: error.message })),
+    onSettled: refresh,
+  });
+
+  return { transition, closeOut, reschedule };
 }

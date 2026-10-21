@@ -12,6 +12,7 @@ import {
   type CloseOut,
   type CloseOutWorkOrderRequest,
   type CreateWorkOrderRequest,
+  type RescheduleWorkOrderRequest,
   type TransitionWorkOrderRequest,
   type User,
   type WorkOrder,
@@ -170,6 +171,23 @@ function seededChecklist(world: World, type: WorkOrderType, asset: AssetRecord, 
   return checklist;
 }
 
+/** Typical duration in working hours, [shortest, longest], by type of work. */
+const HOURS: Record<WorkOrderType, readonly [number, number]> = {
+  preventive: [2, 6],
+  corrective: [3, 12],
+  inspection: [1, 4],
+  calibration: [2, 4],
+  predictive: [4, 16],
+  condition_based: [4, 16],
+  regulatory: [4, 8],
+  shutdown: [24, 72],
+};
+
+const typicalHours = (type: WorkOrderType): number => Math.round(((HOURS[type][0] + HOURS[type][1]) / 2) * 2) / 2;
+
+/** Midnight UTC of the day `ms` falls in. */
+const dayStart = (ms: number) => Math.floor(ms / DAY) * DAY;
+
 function titleFor(rng: Rng, type: WorkOrderType, asset: AssetRecord): string {
   const name = asset.data.id;
   switch (type) {
@@ -210,6 +228,26 @@ export class WorkOrderStore {
       wo.id = `wo-${number}`;
       wo.number = `WO-${number}`;
       for (const overlay of overlays.values()) if (overlay.workOrderId === oldId) overlay.workOrderId = wo.id;
+    }
+    this.seedSchedule(now);
+  }
+
+  /**
+   * Durations, and start times for work that hasn't happened yet: scheduled and approved
+   * work starts in the next two weeks (07:00 or 13:00 UTC), work in progress started in the
+   * last day or so. A separate random stream, so the rest of the seeded data is unchanged.
+   */
+  private seedSchedule(now: number): void {
+    const rng = Rng.for(this.world.seed, "work-order-schedule");
+    const today = dayStart(now);
+    for (const wo of this.orders) {
+      const [low, high] = HOURS[wo.type];
+      wo.estimatedHours = Math.round(rng.between(low, high) * 2) / 2;
+      if (wo.status === "scheduled" || wo.status === "approved") {
+        wo.scheduledStart = iso(today + rng.int(1, 13) * DAY + (rng.chance(0.7) ? 7 : 13) * HOUR);
+      } else if (wo.status === "in_progress") {
+        wo.scheduledStart = iso(now - rng.between(2, 30) * HOUR);
+      }
     }
   }
 
@@ -253,6 +291,7 @@ export class WorkOrderStore {
         assigneeId,
         dueAt: iso(createdAt + rng.between(3, 30) * DAY),
         scheduledStart: scheduledStartFrom(history),
+        estimatedHours: typicalHours(type), // replaced in seedSchedule
         source: { kind: type === "predictive" ? "prediction" : "manual", refId: null },
         evidence: null,
         history,
@@ -289,6 +328,7 @@ export class WorkOrderStore {
         assigneeId,
         dueAt: iso(Math.min(fault.failAt, now + rng.between(2, 14) * DAY)),
         scheduledStart: scheduledStartFrom(history),
+        estimatedHours: typicalHours("predictive"), // replaced in seedSchedule
         source: { kind: "prediction", refId: predictionId(fault) },
         evidence: null,
         history,
@@ -305,6 +345,7 @@ export class WorkOrderStore {
     const number = this.nextNumber++;
     const wo: WorkOrder = {
       ...request,
+      estimatedHours: request.estimatedHours ?? typicalHours(request.type),
       id: `wo-${number}`,
       number: `WO-${number}`,
       status: "requested",
@@ -369,9 +410,30 @@ export class WorkOrderStore {
     }));
   }
 
+  /**
+   * The schedule board: a new start time or technician. Allowed for scheduled and approved
+   * work; approved work goes back to "scheduled" to be approved again.
+   */
+  reschedule(request: RescheduleWorkOrderRequest, by: string, now: number): WorkOrder {
+    const wo = this.get(request.workOrderId);
+    if (wo.status !== "scheduled" && wo.status !== "approved") {
+      throw new ApiFailure("conflict", `Only scheduled or approved work can be rescheduled (this one is ${wo.status})`);
+    }
+    const assignee = this.world.users.find((u) => u.id === request.assigneeId);
+    if (!assignee || assignee.role !== "field_technician")
+      throw new ApiFailure("bad_request", `${request.assigneeId} is not a field technician`);
+    wo.scheduledStart = request.scheduledStart;
+    wo.assigneeId = assignee.id;
+    const note = request.note ?? `Rescheduled to ${request.scheduledStart.slice(0, 16).replace("T", " ")} UTC, ${assignee.name}`;
+    // Approved → scheduled is an allowed move; scheduled stays scheduled, with the change in its history.
+    this.record(wo, "scheduled", by, now, note);
+    return wo;
+  }
+
   /** Used by the storyline; goes through the history like any other change. */
   setStatus(id: string, status: WorkOrderStatus, now: number, note: string | null = null): WorkOrder {
     const wo = this.get(id);
+    if (status === "scheduled" && !wo.scheduledStart) wo.scheduledStart = iso(now + DAY);
     this.record(wo, status, "system", now, note);
     return wo;
   }
@@ -388,6 +450,7 @@ export class WorkOrderStore {
       due: (a: WorkOrder, b: WorkOrder) => (a.dueAt ?? "9999").localeCompare(b.dueAt ?? "9999"),
       priority: (a: WorkOrder, b: WorkOrder) =>
         priorityRank(a.priority) - priorityRank(b.priority) || (a.dueAt ?? "9999").localeCompare(b.dueAt ?? "9999"),
+      start: (a: WorkOrder, b: WorkOrder) => (a.scheduledStart ?? "9999").localeCompare(b.scheduledStart ?? "9999"),
     };
     return this.orders
       .filter((o) => !params.assetId || o.assetId === params.assetId)
@@ -395,6 +458,8 @@ export class WorkOrderStore {
       .filter((o) => !params.status || params.status.includes(o.status))
       .filter((o) => !params.type || params.type.includes(o.type))
       .filter((o) => !params.priority || params.priority.includes(o.priority))
+      .filter((o) => !params.scheduledFrom || (o.scheduledStart !== null && o.scheduledStart >= params.scheduledFrom))
+      .filter((o) => !params.scheduledTo || (o.scheduledStart !== null && o.scheduledStart < params.scheduledTo))
       .filter((o) => inScope(o.assetId))
       .sort(sorters[params.sort]);
   }

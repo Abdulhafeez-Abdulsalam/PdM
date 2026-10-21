@@ -42,6 +42,8 @@ const SCREENS: [string, RoleId][] = [
   [`/predictive/${prediction.id}`, "reliability_engineer"],
   ["/maintenance", "maintenance_planner"],
   ["/maintenance?view=list", "maintenance_planner"],
+  ["/maintenance?view=calendar", "maintenance_planner"],
+  ["/maintenance/schedule?span=2weeks", "maintenance_planner"],
   [`/maintenance/${workOrder.id}`, "maintenance_planner"],
   ["/field", "field_technician"],
   [`/field/tasks/${myJob.id}`, "field_technician"],
@@ -77,10 +79,16 @@ describe("accessibility (axe, WCAG 2.1 AA)", () => {
     document.body.innerHTML = "";
   });
 
-  it.each(SCREENS)("%s as %s", async (url, role) => {
-    usePreferences.setState({ role, theme: "light", units: "si" });
-    renderApp(url);
-    await settle();
-    expect(await problems()).toEqual([]);
-  });
+  // axe walks every element; on big pages (the Kanban board has hundreds of cards) that takes
+  // a while in jsdom, more so on a busy machine. Slow is fine here, so allow a minute.
+  it.each(SCREENS)(
+    "%s as %s",
+    async (url, role) => {
+      usePreferences.setState({ role, theme: "light", units: "si" });
+      renderApp(url);
+      await settle();
+      expect(await problems()).toEqual([]);
+    },
+    60_000,
+  );
 });

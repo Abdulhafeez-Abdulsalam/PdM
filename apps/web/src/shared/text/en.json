@@ -515,7 +515,8 @@
     "onlyMine": "Only mine",
     "view": {
       "board": "Board",
-      "list": "List"
+      "list": "List",
+      "calendar": "Calendar"
     },
     "show": {
       "open": "Open",
@@ -566,6 +567,63 @@
       "end": "Dropped on {{column}}.",
       "cancel": "Move cancelled."
     }
+  },
+  "schedule": {
+    "title": "Schedule board",
+    "introPlanner": "Who does what, when. Drag a job to another day or technician, or drag planned work in from the tray. Days over 8 hours are flagged.",
+    "introViewer": "Who does what, when. Days where someone is booked over 8 hours are flagged.",
+    "navigate": "Choose the two weeks shown",
+    "spanLabel": "How much to show",
+    "span": {
+      "week": "Week",
+      "2weeks": "2 weeks"
+    },
+    "previous": {
+      "week": "Previous week",
+      "2weeks": "Previous two weeks"
+    },
+    "next": {
+      "week": "Next week",
+      "2weeks": "Next two weeks"
+    },
+    "today": "Today",
+    "todayMark": "Today",
+    "range": "{{from}} – {{to}} (UTC)",
+    "boardLabel": "Schedule, {{range}}",
+    "technician": "Technician",
+    "rowLabel_one": "{{name}}: {{count}} job",
+    "rowLabel_other": "{{name}}: {{count}} jobs",
+    "overbookedDays_one": "Overbooked on {{count}} day",
+    "overbookedDays_other": "Overbooked on {{count}} days",
+    "booked": "{{hours}}/{{max}} h",
+    "conflicts_one": "{{count}} conflict: someone is booked for more than {{hours}} hours",
+    "conflicts_other": "{{count}} conflicts: people booked for more than {{hours}} hours in a day",
+    "conflictItem": "{{name}}, {{day}}: {{hours}} h",
+    "andMore": "and {{count}} more",
+    "barExtra": ", {{day}}, {{hours}} h",
+    "reschedule": "Reschedule…",
+    "rescheduleOne": "Reschedule {{number}}",
+    "hours": "{{hours}} h",
+    "tray": "Unscheduled",
+    "trayLabel": "Unscheduled work, {{count}} jobs",
+    "trayHint": "Planned work without a date. Drag it onto a technician's day, or use Schedule….",
+    "trayHintViewer": "Planned work without a date yet.",
+    "trayEmpty": "Everything planned has a date.",
+    "srInstructions": "To pick up a job, press Space or Enter. Use the arrow keys to move it to another day or technician, Space or Enter to drop, Escape to cancel. Or use its Reschedule button.",
+    "announceOver": "Over {{name}}, {{day}}.",
+    "announceEnd": "Dropped on {{name}}, {{day}}."
+  },
+  "calendar": {
+    "label": "Calendar, {{month}}",
+    "caption": "Maintenance starting in {{month}}",
+    "previous": "Previous month",
+    "next": "Next month",
+    "thisMonth": "This month",
+    "utc": "Times in UTC",
+    "more_one": "+{{count}} more",
+    "more_other": "+{{count}} more",
+    "showLess": "Show less",
+    "nothing": "No maintenance planned to start this month."
   },
   "field": {
     "myJobs": "My jobs",
@@ -619,6 +677,9 @@
   },
   "woDialogs": {
     "scheduleTitle": "Schedule work",
+    "rescheduleTitle": "Reschedule work",
+    "reschedule": "Reschedule",
+    "reapprovalNote": "This work is approved for its current time. Moving it sends it back to the plant manager for approval.",
     "start": "Planned start (UTC)",
     "startHint": "Pick a window when the equipment can be taken out of service.",
     "choose": "Choose…",
@@ -639,7 +700,9 @@
   },
   "workOrderActions": {
     "moved": "{{number}} is now {{status}}.",
-    "closedOut": "{{number}} completed and sent for verification."
+    "closedOut": "{{number}} completed and sent for verification.",
+    "rescheduled": "{{number}} rescheduled.",
+    "rescheduledNeedsApproval": "{{number}} rescheduled. It was approved for the old time, so it needs approving again."
   },
   "workOrderPage": {
     "back": "All work orders",

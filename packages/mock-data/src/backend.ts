@@ -439,6 +439,20 @@ export class MockBackend {
       });
       return wo;
     },
+    "workOrders.reschedule": (request) => {
+      const now = this.now();
+      const wo = this.workOrders.reschedule(request, this.me().id, now);
+      this.addLog({
+        kind: "maintenance",
+        t: iso(now),
+        assetId: wo.assetId,
+        title: `${wo.number} rescheduled`,
+        detail: wo.history.at(-1)?.note ?? null,
+        severity: null,
+        refId: wo.id,
+      });
+      return wo;
+    },
     "workOrders.create": (request) => {
       const now = this.now();
       const wo = this.workOrders.create(request, this.me().id, now);

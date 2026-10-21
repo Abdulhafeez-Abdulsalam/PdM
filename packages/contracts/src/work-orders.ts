@@ -146,6 +146,8 @@ export const WorkOrder = z.object({
   dueAt: Timestamp.nullable(),
   /** Planned start, set when scheduled. */
   scheduledStart: Timestamp.nullable(),
+  /** How long the work is expected to take, in working hours. Draws its bar on the schedule board. */
+  estimatedHours: z.number().min(0.5).max(500),
   source: WorkOrderSource,
   evidence: EvidenceSnapshot.nullable(),
   /** Oldest first. */
@@ -166,6 +168,9 @@ export const CreateWorkOrderRequest = WorkOrder.pick({
   dueAt: true,
   source: true,
   evidence: true,
+}).extend({
+  /** Leave out for a typical estimate for this type of work. */
+  estimatedHours: WorkOrder.shape.estimatedHours.optional(),
 });
 export type CreateWorkOrderRequest = z.infer<typeof CreateWorkOrderRequest>;
 
@@ -176,8 +181,14 @@ export const WorkOrderListParams = PageParams.extend({
   status: z.array(WorkOrderStatus).optional(),
   type: z.array(WorkOrderType).optional(),
   priority: z.array(WorkOrderPriority).optional(),
-  /** newest = created most recently; due = soonest due date first (undated last); priority = most urgent first. */
-  sort: z.enum(["newest", "due", "priority"]).default("newest"),
+  /** Only work planned to start in this window (from inclusive, to exclusive), e.g. one calendar month. */
+  scheduledFrom: Timestamp.optional(),
+  scheduledTo: Timestamp.optional(),
+  /**
+   * newest = created most recently; due = soonest due date first (undated last);
+   * priority = most urgent first; start = soonest planned start first (unscheduled last).
+   */
+  sort: z.enum(["newest", "due", "priority", "start"]).default("newest"),
 });
 export type WorkOrderListParams = z.infer<typeof WorkOrderListParams>;
 
@@ -207,3 +218,19 @@ export const CloseOutWorkOrderRequest = CloseOut.omit({ completedAt: true, compl
   checklist: z.array(ChecklistResult).max(30).default([]),
 });
 export type CloseOutWorkOrderRequest = z.infer<typeof CloseOutWorkOrderRequest>;
+
+/**
+ * Move planned work to another time or person (the schedule board). Allowed while the work is
+ * scheduled or approved. Approved work goes back to "scheduled", because the plant manager
+ * approved a different plan and has to approve the new one.
+ */
+export const RescheduleWorkOrderRequest = z.object({
+  workOrderId: Id,
+  scheduledStart: Timestamp,
+  assigneeId: Id,
+  note: z.string().trim().max(1000).optional(),
+});
+export type RescheduleWorkOrderRequest = z.infer<typeof RescheduleWorkOrderRequest>;
+
+/** A technician's working day on the schedule board, in hours. More than this is a conflict. */
+export const WORKDAY_HOURS = 8;
