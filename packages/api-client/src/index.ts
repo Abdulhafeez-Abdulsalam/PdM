@@ -12,6 +12,7 @@ export {
   useConnectionState,
   useLiveValue,
   useSimulationControl,
+  useSimulationSelector,
   useSimulationStatus,
   type ApiContextValue,
 } from "./react";

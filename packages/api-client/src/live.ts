@@ -6,11 +6,25 @@
  * - Values arrive in batches (at most once per second) and are stored here.
  * - React reads them through useSyncExternalStore (see react.tsx), re-rendering only
  *   components whose tags changed.
+ * - Big batches are announced a slice per frame (see `announce`), so 300 changing values
+ *   never become one long freeze. Found by the criterion E performance test.
  */
 import { MAX_SUBSCRIBED_TAGS, type Alarm, type AlarmSummary, type LiveValue, type ServerMessage } from "@pdm/contracts";
 import type { Transport } from "./transport";
 
 type Listener = () => void;
+
+/**
+ * How many changed tags to announce (and so re-draw) per animation frame. A 300-tag second
+ * becomes 6 small frames (~0.1 s) instead of one long task that a tap would have to wait
+ * behind. Batches up to this size, i.e. almost every screen, still update in one go.
+ */
+export const ANNOUNCE_PER_FRAME = 50;
+
+const nextAnimationFrame = (callback: () => void): void => {
+  if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => callback());
+  else setTimeout(callback, 16);
+};
 
 export class LiveClient {
   private readonly counts = new Map<string, number>();
@@ -22,8 +36,15 @@ export class LiveClient {
   private lastSeq: number | null = null;
   private alarmScope: string | null = null;
   private alarmWatchers = 0;
+  /** Tags whose new value hasn't been announced yet (a Set, so repeat updates collapse). */
+  private readonly unannounced = new Set<string>();
+  private announcing = false;
 
-  constructor(private readonly transport: Transport) {
+  constructor(
+    private readonly transport: Transport,
+    /** When to announce the next slice; tests pass a manual one. */
+    private readonly nextFrame: (callback: () => void) => void = nextAnimationFrame,
+  ) {
     transport.onMessage((m) => this.receive(m));
   }
 
@@ -116,6 +137,25 @@ export class LiveClient {
     return () => this.alarmHandlers.delete(handler);
   }
 
+  // ─── Announcing changes ────────────────────────────────────────────────────
+
+  /** Tell listeners about changed tags: the first slice now, the rest one slice per frame. */
+  private announce(tagIds: readonly string[]): void {
+    for (const id of tagIds) this.unannounced.add(id);
+    if (!this.announcing) this.announceSlice();
+  }
+
+  private announceSlice = (): void => {
+    let n = 0;
+    for (const id of this.unannounced) {
+      if (n++ === ANNOUNCE_PER_FRAME) break;
+      this.unannounced.delete(id);
+      this.tagListeners.get(id)?.forEach((l) => l());
+    }
+    this.announcing = this.unannounced.size > 0;
+    if (this.announcing) this.nextFrame(this.announceSlice);
+  };
+
   // ─── Incoming ──────────────────────────────────────────────────────────────
 
   private receive(message: ServerMessage): void {
@@ -126,11 +166,13 @@ export class LiveClient {
           this.gapHandlers.forEach((h) => h(ids));
         }
         this.lastSeq = message.seq;
+        const changed: string[] = [];
         for (const v of message.values) {
           if (!this.counts.has(v.tagId)) continue;
-          this.values.set(v.tagId, v);
-          this.tagListeners.get(v.tagId)?.forEach((l) => l());
+          this.values.set(v.tagId, v); // stored at once; only the re-draw is spread out
+          changed.push(v.tagId);
         }
+        this.announce(changed);
         break;
       }
       case "alarm_summary":

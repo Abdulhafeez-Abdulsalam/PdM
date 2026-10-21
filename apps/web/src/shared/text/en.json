@@ -609,6 +609,14 @@
     },
     "openTask": "Open as field task"
   },
+  "diagnostics": {
+    "liveLoad": {
+      "title": "Live data load test",
+      "intro": "{{count}} live tags updating once a second (the budget is {{max}}).",
+      "tap": "Tap test",
+      "listLabel": "Live tags"
+    }
+  },
   "woDialogs": {
     "scheduleTitle": "Schedule work",
     "start": "Planned start (UTC)",

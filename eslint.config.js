@@ -26,7 +26,16 @@ const onlyAllow = (allowed) => ({
 });
 
 export default tseslint.config(
-  { ignores: ["**/dist/**", "**/node_modules/**", "**/coverage/**", "**/storybook-static/**"] },
+  {
+    ignores: [
+      "**/dist/**",
+      "**/node_modules/**",
+      "**/coverage/**",
+      "**/storybook-static/**",
+      "**/playwright-report/**",
+      "**/test-results/**",
+    ],
+  },
 
   js.configs.recommended,
   ...tseslint.configs.recommended,

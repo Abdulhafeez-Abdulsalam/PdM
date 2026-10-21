@@ -1,6 +1,6 @@
 import tailwindcss from "@tailwindcss/vite";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
@@ -12,6 +12,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
+    // e2e/ holds Playwright tests, which run in a real browser with `npm run e2e`.
+    exclude: [...configDefaults.exclude, "e2e/**"],
     // Whole-journey tests compile lazily-loaded pages on first use; allow time for that.
     testTimeout: 20_000,
     // `npm run check` runs typecheck, lint and every package's tests at once; leave CPU for them

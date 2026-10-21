@@ -2,12 +2,12 @@
  * Runs the real mock backend in-process behind a fake Worker, so the client, transport,
  * contract checks and live subscriptions are tested end to end without a browser.
  */
-import type { FromWorker, ToWorker } from "@pdm/contracts";
+import type { FromWorker, ServerMessage, ToWorker } from "@pdm/contracts";
 import { createMockBackend } from "@pdm/mock-data";
 import { describe, expect, it } from "vitest";
 import { createApiClient } from "./client";
-import { LiveClient } from "./live";
-import { ApiRequestError } from "./transport";
+import { ANNOUNCE_PER_FRAME, LiveClient } from "./live";
+import { ApiRequestError, type Transport } from "./transport";
 import { WorkerTransport, type WorkerLike } from "./worker-transport";
 
 function setup() {
@@ -89,5 +89,40 @@ describe("api client over the worker transport", () => {
     transport.setDisconnected(false);
     expect((await api.request("risks.top", { limit: 3 })).items).toHaveLength(3);
     expect(states).toEqual(["connecting", "offline", "connecting"]);
+  });
+});
+
+describe("live values on a busy screen (criterion E)", () => {
+  it("announces a big batch a slice per frame, a small one at once", () => {
+    let deliver: (m: ServerMessage) => void = () => {};
+    const transport = { send: () => {}, onMessage: (h: (m: ServerMessage) => void) => ((deliver = h), () => {}) } as unknown as Transport;
+    const frames: (() => void)[] = [];
+    const live = new LiveClient(transport, (cb) => frames.push(cb));
+
+    const ids = Array.from({ length: 120 }, (_, i) => `T-${i}`);
+    live.subscribeTags(ids);
+    const heard = new Set<string>();
+    for (const id of ids) live.listenTag(id, () => heard.add(id));
+    const batch = (seq: number, tags: string[]) =>
+      deliver({
+        type: "tag_values",
+        seq,
+        t: "2026-10-10T08:00:00Z",
+        values: tags.map((tagId) => ({ tagId, t: "2026-10-10T08:00:00Z", value: seq, quality: "good" })),
+      });
+
+    batch(1, ids);
+    expect(heard.size).toBe(ANNOUNCE_PER_FRAME); // first slice straight away
+    expect(live.getValue("T-119")?.value).toBe(1); // but every value is stored already
+    frames.shift()!();
+    expect(heard.size).toBe(2 * ANNOUNCE_PER_FRAME);
+    frames.shift()!();
+    expect(heard.size).toBe(120);
+    expect(frames).toHaveLength(0); // done: no more frames asked for
+
+    heard.clear();
+    batch(2, ids.slice(0, 10));
+    expect(heard.size).toBe(10); // small batch: no waiting
+    expect(frames).toHaveLength(0);
   });
 });

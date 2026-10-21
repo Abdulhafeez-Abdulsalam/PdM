@@ -4,8 +4,12 @@
  */
 import type { Site } from "@pdm/contracts";
 import { HealthBadge } from "@pdm/ui";
-import { LngLatBounds, Map as MapLibreMap, Marker, NavigationControl } from "maplibre-gl";
+import { LngLatBounds, Map as MapLibreMap, Marker, NavigationControl, setWorkerUrl } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
+// MapLibre looks for its tile worker next to its own code. The production build moves that
+// code, so the worker went missing and the map stayed blank ("Worker failed to load", found by
+// the end-to-end tests). "?url" makes Vite copy the file and give us its final address.
+import maplibreWorkerUrl from "maplibre-gl/dist/maplibre-gl-worker.mjs?url";
 import { useEffect, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
@@ -17,6 +21,8 @@ interface Props {
   sites: readonly Site[];
   onSelectSite: (siteId: string) => void;
 }
+
+setWorkerUrl(maplibreWorkerUrl);
 
 export default function MapCanvas({ sites, onSelectSite }: Props) {
   const { t } = useTranslation();

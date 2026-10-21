@@ -114,6 +114,43 @@ export function useSimulationStatus(): SimulationStatus | null {
   return status;
 }
 
+/**
+ * One shared copy of the latest simulation status per transport, so hundreds of components
+ * can read it without hundreds of subscriptions.
+ */
+class StatusStore {
+  current: SimulationStatus | null = null;
+  private readonly listeners = new Set<() => void>();
+
+  constructor(transport: Transport) {
+    transport.onStatus((s) => {
+      this.current = s;
+      for (const l of this.listeners) l();
+    });
+  }
+
+  subscribe = (listener: () => void) => {
+    this.listeners.add(listener);
+    return () => void this.listeners.delete(listener);
+  };
+}
+
+const statusStores = new WeakMap<Transport, StatusStore>();
+
+/**
+ * Re-renders only when `select(status)` gives a different answer. Use it for answers that
+ * rarely change, e.g. "is this value stale?": a component that read the whole status would
+ * re-render every second for nothing (found by the criterion E performance test).
+ * `select` must return a primitive (true/false, a number, a string), so equal answers compare equal.
+ */
+export function useSimulationSelector<T extends string | number | boolean | null>(select: (status: SimulationStatus | null) => T): T {
+  const { transport } = useApiContext();
+  let store = statusStores.get(transport);
+  if (!store) statusStores.set(transport, (store = new StatusStore(transport)));
+  const current = store;
+  return useSyncExternalStore(current.subscribe, () => select(current.current));
+}
+
 /** Send a demo control. Data changes afterwards (new role, storyline), so cached queries are refreshed. */
 export function useSimulationControl() {
   const { transport } = useApiContext();

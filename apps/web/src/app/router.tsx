@@ -24,6 +24,7 @@ const MaintenancePage = lazyRouteComponent(() => import("../features/maintenance
 const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/WorkOrderPage"), "WorkOrderPage");
 const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
+const LiveLoadPage = lazyRouteComponent(() => import("../features/diagnostics/LiveLoadPage"), "LiveLoadPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
 import { NotFoundPage } from "../features/module-page/NotFoundPage";
@@ -106,6 +107,13 @@ const taskRoute = createRoute({
   component: TaskPage,
 });
 
+/** Diagnostics: 300 live tags on one screen, for the criterion E performance test. Not in the menu. */
+const liveLoadRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/diagnostics/live-load",
+  component: LiveLoadPage,
+});
+
 const routeTree = rootRoute.addChildren([
   indexRoute,
   ...moduleRoutes,
@@ -114,6 +122,7 @@ const routeTree = rootRoute.addChildren([
   predictionRoute,
   workOrderRoute,
   taskRoute,
+  liveLoadRoute,
 ]);
 
 /** Tests pass an in-memory history; the app uses the browser's address bar. */
