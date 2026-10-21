@@ -35,6 +35,7 @@ test("every screen passes axe in every theme", async ({ page }) => {
     ["/alarms", "control_room_operator"],
     ["/alarms?view=timeline", "control_room_operator"],
     ["/predictive", "reliability_engineer"],
+    ["/predictive/anomalies", "condition_analyst"],
     [prediction, "reliability_engineer"],
     ["/maintenance", "maintenance_planner"],
     ["/maintenance?view=list", "maintenance_planner"],

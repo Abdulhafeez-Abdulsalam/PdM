@@ -20,6 +20,7 @@ const AssetRegistryPage = lazyRouteComponent(() => import("../features/assets/As
 const AlarmsPage = lazyRouteComponent(() => import("../features/alarms/AlarmsPage"), "AlarmsPage");
 const PredictionConsolePage = lazyRouteComponent(() => import("../features/predictions/PredictionConsolePage"), "PredictionConsolePage");
 const PredictionPage = lazyRouteComponent(() => import("../features/predictions/PredictionPage"), "PredictionPage");
+const AnomaliesPage = lazyRouteComponent(() => import("../features/predictions/AnomaliesPage"), "AnomaliesPage");
 const MaintenancePage = lazyRouteComponent(() => import("../features/maintenance/MaintenancePage"), "MaintenancePage");
 const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/WorkOrderPage"), "WorkOrderPage");
 const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenance/ScheduleBoardPage"), "ScheduleBoardPage");
@@ -87,6 +88,13 @@ const assetTabRoute = createRoute({
   component: AssetPage,
 });
 
+/** The fleet anomaly view. A fixed path, so it wins over /predictive/$predictionId. */
+const anomaliesRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/predictive/anomalies",
+  component: AnomaliesPage,
+});
+
 /** One prediction, full page. */
 const predictionRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -128,6 +136,7 @@ const routeTree = rootRoute.addChildren([
   assetRoute,
   assetTabRoute,
   predictionRoute,
+  anomaliesRoute,
   workOrderRoute,
   scheduleRoute,
   taskRoute,

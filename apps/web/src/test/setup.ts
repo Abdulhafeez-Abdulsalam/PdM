@@ -13,6 +13,7 @@ await Promise.all([
   import("../features/predictions/PredictionDetail"),
   import("../features/predictions/PredictionConsolePage"),
   import("../features/predictions/PredictionPage"),
+  import("../features/predictions/AnomaliesPage"),
   import("../features/maintenance/MaintenancePage"),
   import("../features/maintenance/WorkOrderPage"),
   import("../features/maintenance/ScheduleBoardPage"),

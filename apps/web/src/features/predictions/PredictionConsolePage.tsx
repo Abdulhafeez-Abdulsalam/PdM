@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import { formatCurrency, formatNumber, formatProbability } from "../../shared/format";
 import { useGlobalSearch } from "../../shared/time-range";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
+import { PredictiveNav } from "./PredictiveNav";
 import { MIN_PROBABILITY, PREDICTION_SHOW, STATUSES_FOR, WITHIN_DAYS, usePredictionSearch } from "./prediction-search";
 
 export function PredictionConsolePage() {
@@ -46,6 +47,7 @@ export function PredictionConsolePage() {
         <h1 className="text-2xl font-semibold">{t("modules.predictive.name")}</h1>
         <p className="text-fg-muted">{t("console.intro")}</p>
       </header>
+      <PredictiveNav />
 
       {active.isPending ? (
         <Skeleton className="h-20" />

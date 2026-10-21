@@ -39,6 +39,7 @@ const SCREENS: [string, RoleId][] = [
   ["/alarms", "control_room_operator"],
   ["/alarms?view=timeline", "control_room_operator"],
   ["/predictive", "reliability_engineer"],
+  ["/predictive/anomalies", "condition_analyst"],
   [`/predictive/${prediction.id}`, "reliability_engineer"],
   ["/maintenance", "maintenance_planner"],
   ["/maintenance?view=list", "maintenance_planner"],

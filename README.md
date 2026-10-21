@@ -4,7 +4,7 @@ The web frontend of a Predictive Maintenance & Asset Performance platform for an
 
 It helps people spot equipment that is about to fail, before it fails, and organise the maintenance to fix it.
 
-> **Status:** Phase 1 complete ([review](docs/phase-1-review.md)). Phase 2 complete ([review](docs/phase-2-review.md)): prediction console and feedback loop, work-order lifecycle with Kanban board and ISO 14224 close-out, field technician screens with safety-gated checklists; typed work survives a dropped connection. Quality chunk done ([report](docs/quality-report.md)): all acceptance criteria A–G met and tested; run `npm run e2e` for the real-browser tests. Filling in the Phase 2 pages not yet built: 1 of 4 done (maintenance calendar and schedule board).
+> **Status:** Phase 1 complete ([review](docs/phase-1-review.md)). Phase 2 complete ([review](docs/phase-2-review.md)): prediction console and feedback loop, work-order lifecycle with Kanban board and ISO 14224 close-out, field technician screens with safety-gated checklists; typed work survives a dropped connection. Quality chunk done ([report](docs/quality-report.md)): all acceptance criteria A–G met and tested; run `npm run e2e` for the real-browser tests. Filling in the Phase 2 pages not yet built: 2 of 4 done (maintenance calendar and schedule board; fleet anomaly view).
 
 ## Getting started
 

@@ -625,6 +625,51 @@
     "showLess": "Show less",
     "nothing": "No maintenance planned to start this month."
   },
+  "predictiveNav": {
+    "label": "Predictive pages",
+    "predictions": "Predictions",
+    "anomalies": "Anomalies"
+  },
+  "anomalies": {
+    "title": "Anomalies",
+    "intro": "How unusual each asset's sensors look right now, compared with its normal behaviour, and which sensors are causing it. Rising assets are the early warning: below the line, but climbing.",
+    "filterLabel": "Show assets that are",
+    "state": {
+      "anomalous": "Anomalous",
+      "rising": "Rising",
+      "normal": "Normal",
+      "no_data": "No data"
+    },
+    "stateHint": {
+      "anomalous": "Over the threshold",
+      "rising": "Climbing, or close to it",
+      "normal": "Nothing unusual",
+      "no_data": "Offline: no sensor data"
+    },
+    "search": "Find an asset",
+    "sortLabel": "Order by",
+    "sort": {
+      "score": "Most unusual first",
+      "rise": "Fastest rising first"
+    },
+    "count_one": "{{count}} asset",
+    "count_other": "{{count}} assets",
+    "caption": "Assets with their anomaly score, last 24 hours, driving sensors and prediction",
+    "empty": "No assets match.",
+    "pickAState": "Choose at least one group above to see assets.",
+    "col": {
+      "state": "State",
+      "score": "Score (0–1)",
+      "trend": "Last 24 h",
+      "drivers": "Driving sensors",
+      "prediction": "Prediction"
+    },
+    "since": "since {{ago}}",
+    "change": "{{change}} in 24 h",
+    "nothingStandsOut": "Nothing stands out",
+    "noPredictionYet": "No prediction yet: the model waits to see if it lasts",
+    "showingFirst": "Showing the {{shown}} most relevant of {{total}}. Use the search box to find a particular asset."
+  },
   "field": {
     "myJobs": "My jobs",
     "assignedTo_one": "{{count}} open job assigned to {{name}}",

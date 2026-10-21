@@ -16,7 +16,7 @@ import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
 import { HierarchyNode, Site } from "./hierarchy";
 import { KpiParams, KpiResponse } from "./kpis";
-import { AnomalyHistory, AnomalyHistoryRequest } from "./anomalies";
+import { AnomalyFleetRequest, AnomalyFleetResponse, AnomalyHistory, AnomalyHistoryRequest } from "./anomalies";
 import {
   Prediction,
   PredictionFeedbackRequest,
@@ -183,6 +183,13 @@ export const endpoints = {
     description: "How often predictions were confirmed or rejected — the model-quality signal",
     input: z.object({ scopeId: ScopeId.optional() }),
     output: PredictionFeedbackSummary,
+  }),
+  "anomalies.fleet": endpoint({
+    method: "GET",
+    path: "/anomalies",
+    description: "Every asset's anomaly score now, with its 24-hour trend and the sensors driving it",
+    input: AnomalyFleetRequest,
+    output: AnomalyFleetResponse,
   }),
   "anomalies.history": endpoint({
     method: "GET",

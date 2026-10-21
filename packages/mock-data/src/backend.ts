@@ -28,7 +28,7 @@ import {
 } from "@pdm/contracts";
 import { z } from "zod";
 import { AlarmEngine } from "./alarms";
-import { ANOMALY_THRESHOLD, anomalyHistory } from "./anomaly";
+import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
 import { SimClock, iso } from "./clock";
@@ -335,6 +335,23 @@ export class MockBackend {
       return this.prediction(predictionId);
     },
     "predictions.feedbackSummary": ({ scopeId }) => feedbackSummary(scopeId ?? ENTERPRISE_SCOPE, this.scope(scopeId), this.snapshot()),
+    "anomalies.fleet": ({ scopeId, state, search, sort, offset, limit }) => {
+      const now = this.now();
+      const inScope = this.inScope(scopeId);
+      const predictions = this.snapshot().predictions;
+      const all = [...this.world.assets.values()]
+        .filter((a) => inScope(a.data.id))
+        .map((a) => anomalySummary(this.world, a, now, predictions));
+      const counts = { anomalous: 0, rising: 0, normal: 0, no_data: 0 };
+      for (const row of all) counts[row.state]++;
+      const needle = search?.toLowerCase();
+      const rise = (r: (typeof all)[number]) => (r.score ?? 0) - (r.scoreDayAgo ?? r.score ?? 0);
+      const rows = all
+        .filter((r) => !state || state.includes(r.state))
+        .filter((r) => !needle || r.assetId.toLowerCase().includes(needle) || r.assetName.toLowerCase().includes(needle))
+        .sort((a, b) => (sort === "rise" ? rise(b) - rise(a) : (b.score ?? -1) - (a.score ?? -1)) || a.assetId.localeCompare(b.assetId));
+      return { ...paginate(rows, offset, limit), counts };
+    },
     "anomalies.history": ({ assetId, from, to, maxPoints }) => {
       const asset = this.asset(assetId);
       const fromMs = Date.parse(from);

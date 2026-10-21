@@ -7,6 +7,7 @@ import {
   ENTERPRISE_SCOPE,
   type Asset,
   type AssetHealth,
+  type FeatureContribution,
   type HealthCounts,
   type HealthState,
   type OperatingStatus,
@@ -78,6 +79,25 @@ export function predictionId(fault: Fault): string {
 /** Keep closed predictions visible this long after the repair. */
 const CLOSED_PREDICTION_RETENTION = 30 * DAY;
 
+/**
+ * Which sensors a fault shows up in, and how much each one counts (biggest first, weights
+ * adding up to 1). Shared by predictions and the anomaly view, so both name the same sensors.
+ */
+export function faultContributions(fault: Fault): FeatureContribution[] {
+  const asset = fault.asset;
+  const effects = fault.type.effects.filter((e) => asset.tags.some((tag) => tag.template.name === e.tag));
+  const rawWeights = effects.map((_, i) => 1 / (i + 1));
+  const totalWeight = rawWeights.reduce((a, b) => a + b, 0);
+  return effects.map((e, i) => {
+    const tag = asset.tags.find((tg) => tg.template.name === e.tag);
+    return {
+      tagId: `${asset.data.id}.${e.tag}`,
+      label: tag?.template.description ?? e.tag,
+      weight: round((rawWeights[i] ?? 0) / totalWeight, 2),
+    };
+  });
+}
+
 export function buildPrediction(fault: Fault, t: number, overlay: PredictionOverlay | undefined): Prediction | null {
   const resolved = fault.resolvedAt !== null && fault.resolvedAt <= t;
   const effectiveT = resolved ? (fault.resolvedAt as number) : t;
@@ -92,9 +112,7 @@ export function buildPrediction(fault: Fault, t: number, overlay: PredictionOver
   const p50 = Math.max(0.5, remainingDays * (1 + fault.rulBias));
   const updatedAt = Math.floor(effectiveT / HOUR) * HOUR;
 
-  const effects = fault.type.effects.filter((e) => asset.tags.some((tag) => tag.template.name === e.tag));
-  const rawWeights = effects.map((_, i) => 1 / (i + 1));
-  const totalWeight = rawWeights.reduce((a, b) => a + b, 0);
+  const contributions = faultContributions(fault);
   const failureCost = Math.round(asset.info.failureCost * (0.5 + 0.5 * asset.scale));
 
   return {
@@ -115,16 +133,9 @@ export function buildPrediction(fault: Fault, t: number, overlay: PredictionOver
       p90Days: round(p50 * 1.45, 1),
       estimatedAt: iso(updatedAt),
     },
-    contributions: effects.map((e, i) => {
-      const tag = asset.tags.find((tg) => tg.template.name === e.tag);
-      return {
-        tagId: `${asset.data.id}.${e.tag}`,
-        label: tag?.template.description ?? e.tag,
-        weight: round((rawWeights[i] ?? 0) / totalWeight, 2),
-      };
-    }),
+    contributions,
     dataQuality: flags,
-    evidenceTagIds: effects.slice(0, 5).map((e) => `${asset.data.id}.${e.tag}`),
+    evidenceTagIds: contributions.slice(0, 5).map((c) => c.tagId),
     recommendedAction: {
       summary: fault.type.action,
       actBy: iso(effectiveT + Math.max(1, remainingDays * 0.5) * DAY),
