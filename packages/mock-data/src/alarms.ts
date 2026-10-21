@@ -9,12 +9,15 @@
 import {
   AlarmPriority,
   type Alarm,
+  type AlarmAnalytics,
+  type AlarmAnalyticsWindow,
   type AlarmKind,
   type AlarmListParams,
   type AlarmState,
   type AlarmSummary,
   type User,
 } from "@pdm/contracts";
+import { alarmAnalytics, type Activation } from "./alarm-analytics";
 import { DAY, HOUR, MINUTE, iso } from "./clock";
 import { DETECTION_PROGRESS, limitCrossings, timeAtProgress } from "./faults";
 import type { AssetRecord, Fault, TagRecord } from "./model";
@@ -31,6 +34,8 @@ const BACKGROUND_RATE = 0.12;
 const INITIAL_AUTO_ACK_AGE = 45 * MINUTE;
 const MAX_SHELVE = 24 * HOUR;
 const RETENTION = 7 * DAY;
+/** How much alarm history the analytics page can look back over. */
+const LOG_RETENTION = 7 * DAY;
 
 interface AlarmRecord {
   alarm: Alarm;
@@ -59,6 +64,18 @@ export class AlarmEngine {
   private readonly candidates: TagRecord[];
   private readonly chatterTags: TagRecord[];
   private readonly operators: User[];
+  /** Every time an alarm sounded, for the analytics page (ISA-18.2 counts each annunciation). */
+  private readonly log: Activation[] = [];
+  /**
+   * While true, alarms are only written to the log, not kept as live alarms. Used at start-up
+   * to fill a week of history without changing the alarm list every other screen shows.
+   */
+  private logOnly = false;
+  /**
+   * When each chattering tag's alarm clears, for the log. Tracked apart from the live alarms
+   * so the log counts its re-soundings the same way however fast the simulation catches up.
+   */
+  private readonly chatterActiveUntil = new Map<string, number>();
 
   constructor(
     private readonly world: World,
@@ -73,6 +90,12 @@ export class AlarmEngine {
     );
     const rng = Rng.for(world.seed, "chatter");
     this.chatterTags = [0, 1, 2].map(() => rng.pick(this.candidates));
+
+    // A week of history for the analytics, from the repeatable background sources only.
+    this.logOnly = true;
+    this.processedUntil = now - LOG_RETENTION;
+    this.processBackground(now - DAY);
+    this.logOnly = false;
 
     this.processedUntil = now - DAY;
     this.processBackground(now);
@@ -115,7 +138,19 @@ export class AlarmEngine {
     rtnAt: number | null;
     faultId: string | null;
     occurrenceCount?: number;
-  }): AlarmRecord {
+    /** false when the caller writes the log itself (chattering alarms). */
+    log?: boolean;
+  }): void {
+    if (input.log !== false)
+      this.log.push({
+        t: input.t,
+        assetId: input.asset.data.id,
+        siteId: input.asset.data.siteId,
+        tagId: input.tag?.tag.id ?? null,
+        priority: input.priority,
+        message: input.message,
+      });
+    if (this.logOnly) return;
     const id = `ALM-${String(this.nextNumber++).padStart(6, "0")}`;
     const record: AlarmRecord = {
       rtnAt: input.rtnAt,
@@ -144,7 +179,6 @@ export class AlarmEngine {
     };
     this.records.set(id, record);
     this.markChanged(record);
-    return record;
   }
 
   private markChanged(record: AlarmRecord): void {
@@ -153,7 +187,7 @@ export class AlarmEngine {
 
   /** Background alarms, chattering bad actors, chaos floods — processed one simulated minute at a time. */
   private processBackground(now: number): void {
-    const firstMinute = Math.max(Math.floor(this.processedUntil / MINUTE) + 1, Math.floor(now / MINUTE) - 1440);
+    const firstMinute = Math.max(Math.floor(this.processedUntil / MINUTE) + 1, Math.floor(now / MINUTE) - LOG_RETENTION / MINUTE);
     const lastMinute = Math.floor(now / MINUTE);
     for (let m = firstMinute; m <= lastMinute; m++) {
       const t = m * MINUTE;
@@ -179,6 +213,7 @@ export class AlarmEngine {
     t: number,
     rtnAt: number | null,
     occurrenceCount?: number,
+    log = true,
   ): void {
     const high = tag.template.bad === "high";
     const limits = tag.tag.limits;
@@ -197,6 +232,7 @@ export class AlarmEngine {
       rtnAt,
       faultId: null,
       occurrenceCount,
+      log,
     });
   }
 
@@ -207,13 +243,29 @@ export class AlarmEngine {
       if (hashNoise(seed, m) >= 0.3) return;
       let count = 0;
       for (let k = m - 59; k <= m; k++) if (hashNoise(seed, k) < 0.3) count++;
+      // The log: it sounds again only once it has cleared (2 minutes without a trigger).
+      if ((this.chatterActiveUntil.get(tag.tag.id) ?? 0) <= t) {
+        const high = tag.template.bad === "high";
+        this.log.push({
+          t,
+          assetId: tag.asset.data.id,
+          siteId: tag.asset.data.siteId,
+          tagId: tag.tag.id,
+          priority: "p4",
+          message: `${tag.template.description} ${high ? LEVEL_WORDS[0] : LEVEL_WORDS[0].replace("high", "low")}`,
+        });
+      }
+      this.chatterActiveUntil.set(tag.tag.id, t + 2 * MINUTE);
+      if (this.logOnly) return;
+
+      // The live alarm list.
       const existing = this.findActive(tag.tag.id);
       if (existing) {
         existing.alarm.occurrenceCount = Math.min(99, count);
         existing.rtnAt = t + 2 * MINUTE;
         this.markChanged(existing);
       } else {
-        this.raiseOnLimit(tag, 0, "p4", t, t + 2 * MINUTE, count);
+        this.raiseOnLimit(tag, 0, "p4", t, t + 2 * MINUTE, count, false);
       }
     });
   }
@@ -310,6 +362,14 @@ export class AlarmEngine {
   }
 
   private prune(now: number): void {
+    const oldest = now - LOG_RETENTION - HOUR;
+    if (this.log.length > 0 && this.log[0]!.t < oldest) {
+      this.log.sort((a, b) => a.t - b.t);
+      this.log.splice(
+        0,
+        this.log.findIndex((a) => a.t >= oldest),
+      );
+    }
     for (const [id, record] of this.records) {
       if (
         record.alarm.state === "cleared" &&
@@ -419,6 +479,22 @@ export class AlarmEngine {
       if (alarm.state === "suppressed" || alarm.state === "out_of_service") summary.suppressed++;
     }
     return summary;
+  }
+
+  analytics(params: {
+    window: AlarmAnalyticsWindow;
+    scopeId: string | undefined;
+    sites: readonly { id: string; name: string }[];
+    now: number;
+  }): AlarmAnalytics {
+    return alarmAnalytics({
+      log: this.log,
+      alarms: this.all().filter((a) => this.inScope(a, params.scopeId)),
+      sites: params.sites,
+      inScope: (assetId) => !params.scopeId || (this.world.assets.get(assetId)?.scopeIds.has(params.scopeId) ?? false),
+      window: params.window,
+      now: params.now,
+    });
   }
 
   get(id: string): Alarm {

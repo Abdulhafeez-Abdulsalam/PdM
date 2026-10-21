@@ -670,6 +670,80 @@
     "noPredictionYet": "No prediction yet: the model waits to see if it lasts",
     "showingFirst": "Showing the {{shown}} most relevant of {{total}}. Use the search box to find a particular asset."
   },
+  "alarmsNav": {
+    "label": "Alarm pages",
+    "alarms": "Alarms",
+    "analytics": "Performance"
+  },
+  "analytics": {
+    "title": "Alarm performance",
+    "intro": "Is the alarm system helping operators or drowning them? Measured against ISA-18.2, the alarm management standard.",
+    "windowLabel": "Period",
+    "window": {
+      "24h": "Last 24 hours",
+      "7d": "Last 7 days"
+    },
+    "headline": "Alarm system health",
+    "per10Min": "per 10 min",
+    "kpi": {
+      "rate": "Alarm rate (busiest control room)",
+      "flood": "Time in flood (worst control room)",
+      "top10": "Share from the top 10 alarms",
+      "chattering": "Chattering alarms",
+      "standing": "Standing alarms (over 24 h)"
+    },
+    "target": {
+      "rate": "Target ≤ {{ok}}, never over {{max}}",
+      "flood": "Target < {{max}} % (flood = over {{n}} in 10 min)",
+      "top10": "Target ≤ {{max}} %",
+      "chattering": "Target 0 (sounding {{count}}+ times in {{minutes}} min)",
+      "standing": "Target ≤ {{max}}"
+    },
+    "verdict": {
+      "good": "Within target",
+      "watch": "Near the limit",
+      "bad": "Above target"
+    },
+    "rateVerdict": {
+      "good": "Acceptable",
+      "watch": "Manageable",
+      "bad": "Overloaded"
+    },
+    "worst": "{{name}}",
+    "shelvedSuppressed": "Also {{shelved}} shelved, {{suppressed}} suppressed",
+    "rateTitle": "Alarms per {{bucket}} minutes, all control rooms",
+    "rateHint": "Each column is one period. Spikes are floods; a high floor means constant noise.",
+    "chartSummary": "{{total}} alarms in total; the busiest period had {{peak}}, {{when}}.",
+    "showTable": "Show as table",
+    "showChart": "Show as chart",
+    "alarmsCount_one": "{{count}} alarm",
+    "alarmsCount_other": "{{count}} alarms",
+    "sitesTitle": "Control rooms",
+    "sitesHint": "Each site's operators see its alarms. ISA-18.2 judges the load per operator position.",
+    "mixTitle": "Priority mix",
+    "mixHint": "Most alarms should be low priority, so the urgent ones stand out. The upright line marks the recommended share.",
+    "badActorsTitle": "Top 10 alarms (bad actors)",
+    "badActorsHint": "These 10 make up {{share}} % of all alarms. Fixing a few sources often removes most of the noise.",
+    "noAlarms": "No alarms in this period.",
+    "chatteringEpisodes_one": "Chattering ({{count}} burst)",
+    "chatteringEpisodes_other": "Chattering ({{count}} bursts)",
+    "col": {
+      "period": "Period (UTC)",
+      "alarms": "Alarms",
+      "site": "Control room",
+      "per10Min": "Per 10 min",
+      "peak": "Busiest 10 min",
+      "flood": "Time in flood",
+      "priority": "Priority",
+      "share": "Actual share",
+      "recommended": "Recommended",
+      "rank": "#",
+      "alarm": "Alarm",
+      "times": "Times",
+      "shareOfAll": "Share of all alarms",
+      "pattern": "Pattern"
+    }
+  },
   "field": {
     "myJobs": "My jobs",
     "assignedTo_one": "{{count}} open job assigned to {{name}}",

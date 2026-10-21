@@ -34,6 +34,7 @@ test("every screen passes axe in every theme", async ({ page }) => {
     ["/assets/CBC-GT-101/maintenance", "reliability_engineer"],
     ["/alarms", "control_room_operator"],
     ["/alarms?view=timeline", "control_room_operator"],
+    ["/alarms/analytics", "control_room_operator"],
     ["/predictive", "reliability_engineer"],
     ["/predictive/anomalies", "condition_analyst"],
     [prediction, "reliability_engineer"],

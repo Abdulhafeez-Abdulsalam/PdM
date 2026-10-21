@@ -110,3 +110,90 @@ export const ALARM_PRIORITY_HEALTH = {
   p3: "degraded",
   p4: "watch",
 } as const satisfies Record<AlarmPriority, HealthState>;
+
+// ─── Alarm system performance (ISA-18.2 / EEMUA 191) ─────────────────────────
+
+/**
+ * The yardsticks from ISA-18.2 (the alarm management standard), per control room (here: per
+ * site). An operator can handle about one alarm every 10 minutes comfortably, two at most.
+ */
+export const ISA_TARGETS = {
+  /** Average alarms per 10 minutes: up to this is "very likely acceptable". */
+  ratePer10MinAcceptable: 1,
+  /** …and above this is more than an operator can manage. */
+  ratePer10MinMax: 2,
+  /** More than this many alarms in 10 minutes is a flood. */
+  floodAlarmsPer10Min: 10,
+  /** Share of 10-minute periods in flood: should stay below this (%). */
+  floodPercentMax: 1,
+  /** The 10 most frequent alarms should be at most this share of all alarms (%). */
+  top10SharePercentMax: 5,
+  /** Alarms active for over 24 hours ("standing"): at most this many. */
+  standingMax: 5,
+  /** Recommended share of alarms by priority (%): mostly low, very few urgent. */
+  priorityMix: { p1: 1, p2: 5, p3: 15, p4: 79 },
+} as const;
+
+/** An alarm sounding again and again: this many times… */
+export const CHATTER_COUNT = 3;
+/** …within this many minutes. */
+export const CHATTER_MINUTES = 5;
+
+export const AlarmAnalyticsWindow = z.enum(["24h", "7d"]);
+export type AlarmAnalyticsWindow = z.infer<typeof AlarmAnalyticsWindow>;
+
+export const AlarmAnalyticsRequest = z.object({
+  scopeId: ScopeId.optional(),
+  window: AlarmAnalyticsWindow.default("24h"),
+});
+export type AlarmAnalyticsRequest = z.infer<typeof AlarmAnalyticsRequest>;
+
+/** One alarm source (a tag's alarm, or an asset's prediction alarm) and how often it sounded. */
+export const AlarmSource = z.object({
+  /** Stable key: the tag id, or "<assetId>:prediction". */
+  key: z.string(),
+  assetId: Id,
+  tagId: Id.nullable(),
+  message: z.string(),
+  priority: AlarmPriority,
+  count: z.number().int().min(0),
+  /** Share of all alarms in the window, %. */
+  sharePercent: z.number().min(0).max(100),
+});
+export type AlarmSource = z.infer<typeof AlarmSource>;
+
+export const AlarmAnalytics = z.object({
+  window: AlarmAnalyticsWindow,
+  from: Timestamp,
+  to: Timestamp,
+  /** Every time an alarm sounded (annunciation), including each repeat of a chattering alarm. */
+  total: z.number().int().min(0),
+  /** One row per control room (site). */
+  sites: z.array(
+    z.object({
+      siteId: Id,
+      siteName: z.string(),
+      total: z.number().int().min(0),
+      averagePer10Min: z.number().min(0),
+      peakPer10Min: z.number().int().min(0),
+      /** % of 10-minute periods with more than ISA_TARGETS.floodAlarmsPer10Min alarms. */
+      floodPercent: z.number().min(0).max(100),
+    }),
+  ),
+  /** Alarms per bucket for the whole scope: 10-minute buckets for 24 h, hourly for 7 days. */
+  rate: z.object({
+    bucketMinutes: z.number().int().positive(),
+    points: z.array(z.object({ t: Timestamp, count: z.number().int().min(0) })).max(200),
+  }),
+  /** The 10 most frequent sources ("bad actors"), most first. */
+  badActors: z.array(AlarmSource).max(10),
+  top10SharePercent: z.number().min(0).max(100),
+  /** Sources that sounded CHATTER_COUNT+ times within CHATTER_MINUTES, with how often that happened. */
+  chattering: z.array(AlarmSource.extend({ episodes: z.number().int().min(1) })).max(20),
+  priorities: z.record(AlarmPriority, z.number().int().min(0)),
+  /** Right now: alarms active for over 24 hours, shelved, and suppressed. */
+  standing: z.number().int().min(0),
+  shelved: z.number().int().min(0),
+  suppressed: z.number().int().min(0),
+});
+export type AlarmAnalytics = z.infer<typeof AlarmAnalytics>;

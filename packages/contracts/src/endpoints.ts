@@ -9,7 +9,16 @@
  * For GET, the remaining input fields become the query string; for POST, the JSON body.
  */
 import { z } from "zod";
-import { AcknowledgeAlarmsRequest, Alarm, AlarmListParams, AlarmSummary, ShelveAlarmRequest, UnshelveAlarmRequest } from "./alarms";
+import {
+  AcknowledgeAlarmsRequest,
+  Alarm,
+  AlarmAnalytics,
+  AlarmAnalyticsRequest,
+  AlarmListParams,
+  AlarmSummary,
+  ShelveAlarmRequest,
+  UnshelveAlarmRequest,
+} from "./alarms";
 import { Asset, AssetListParams } from "./assets";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
@@ -206,6 +215,13 @@ export const endpoints = {
     description: "Alarm list with filters, sorting and paging",
     input: AlarmListParams,
     output: page(Alarm),
+  }),
+  "alarms.analytics": endpoint({
+    method: "GET",
+    path: "/alarms/analytics",
+    description: "Alarm system performance against ISA-18.2: rates, floods, bad actors, chattering, standing alarms",
+    input: AlarmAnalyticsRequest,
+    output: AlarmAnalytics,
   }),
   "alarms.summary": endpoint({
     method: "GET",

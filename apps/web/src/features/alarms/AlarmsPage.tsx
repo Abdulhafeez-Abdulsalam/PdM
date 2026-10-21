@@ -10,6 +10,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { Waves } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { AlarmsNav } from "./AlarmsNav";
 import { useSimNow } from "../../shared/sim-time";
 import { useGlobalSearch } from "../../shared/time-range";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
@@ -56,6 +57,7 @@ export function AlarmsPage() {
           ))}
         </div>
       </header>
+      <AlarmsNav />
 
       <AlarmLoad scopeId={scopeId} />
 

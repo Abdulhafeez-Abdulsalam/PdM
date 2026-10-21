@@ -38,6 +38,7 @@ const SCREENS: [string, RoleId][] = [
   [`/command-center?prediction=${prediction.id}`, "reliability_engineer"],
   ["/alarms", "control_room_operator"],
   ["/alarms?view=timeline", "control_room_operator"],
+  ["/alarms/analytics", "control_room_operator"],
   ["/predictive", "reliability_engineer"],
   ["/predictive/anomalies", "condition_analyst"],
   [`/predictive/${prediction.id}`, "reliability_engineer"],

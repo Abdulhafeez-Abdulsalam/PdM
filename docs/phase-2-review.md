@@ -46,7 +46,7 @@ The information architecture listed more Phase 2 pages than the three chunks cov
 |---|---|
 | ~~Anomaly views (`/predictive/anomalies`)~~ | ✅ Built afterwards: every asset ranked by anomaly score, rising early warnings, 24-hour trends, contribution analysis. Not yet: similar historical event retrieval |
 | ~~Maintenance calendar, Gantt and schedule board (`/maintenance/schedule`)~~ | ✅ Built afterwards: calendar view and schedule board with conflict detection. Not yet: critical-path view for shutdowns, optimisation suggestions, skills/permit/weather constraints |
-| Alarm analytics (`/alarms/analytics`): alarm KPIs, bad actors, floods | — |
+| ~~Alarm analytics (`/alarms/analytics`)~~ | ✅ Built afterwards: ISA-18.2 measures against targets, alarm-rate chart, control rooms, priority mix, bad actors and chattering. Not yet: operator response times, alarm rationalisation workflow |
 | Fleet comparison (`/assets/compare`) | — |
 | Asset tabs: documents, related, comments | — |
 

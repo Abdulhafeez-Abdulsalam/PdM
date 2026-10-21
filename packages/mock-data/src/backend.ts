@@ -368,6 +368,14 @@ export class MockBackend {
       if (p.scopeId) this.scope(p.scopeId); // 404 for an unknown scope
       return paginate(this.alarms.query(p), p.offset, p.limit);
     },
+    "alarms.analytics": ({ scopeId, window }) => {
+      if (scopeId) this.scope(scopeId);
+      const inScope = this.inScope(scopeId);
+      // Each site has its own control room, so rates are judged per site.
+      const siteIds = new Set([...this.world.assets.values()].filter((a) => inScope(a.data.id)).map((a) => a.data.siteId));
+      const sites = [...this.world.sites.values()].filter((s) => siteIds.has(s.site.id)).map((s) => ({ id: s.site.id, name: s.site.name }));
+      return this.alarms.analytics({ window, scopeId, sites, now: this.now() });
+    },
     "alarms.summary": ({ scopeId }) => {
       this.scope(scopeId);
       return this.alarms.summary(scopeId ?? ENTERPRISE_SCOPE, this.now());

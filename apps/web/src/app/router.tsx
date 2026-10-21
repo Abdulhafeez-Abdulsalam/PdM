@@ -18,6 +18,7 @@ import { CommandCenterPage } from "../features/command-center/CommandCenterPage"
 const AssetPage = lazyRouteComponent(() => import("../features/assets/AssetPage"), "AssetPage");
 const AssetRegistryPage = lazyRouteComponent(() => import("../features/assets/AssetRegistryPage"), "AssetRegistryPage");
 const AlarmsPage = lazyRouteComponent(() => import("../features/alarms/AlarmsPage"), "AlarmsPage");
+const AlarmAnalyticsPage = lazyRouteComponent(() => import("../features/alarms/AlarmAnalyticsPage"), "AlarmAnalyticsPage");
 const PredictionConsolePage = lazyRouteComponent(() => import("../features/predictions/PredictionConsolePage"), "PredictionConsolePage");
 const PredictionPage = lazyRouteComponent(() => import("../features/predictions/PredictionPage"), "PredictionPage");
 const AnomaliesPage = lazyRouteComponent(() => import("../features/predictions/AnomaliesPage"), "AnomaliesPage");
@@ -88,6 +89,13 @@ const assetTabRoute = createRoute({
   component: AssetPage,
 });
 
+/** Alarm system performance (ISA-18.2). */
+const alarmAnalyticsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/alarms/analytics",
+  component: AlarmAnalyticsPage,
+});
+
 /** The fleet anomaly view. A fixed path, so it wins over /predictive/$predictionId. */
 const anomaliesRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -137,6 +145,7 @@ const routeTree = rootRoute.addChildren([
   assetTabRoute,
   predictionRoute,
   anomaliesRoute,
+  alarmAnalyticsRoute,
   workOrderRoute,
   scheduleRoute,
   taskRoute,

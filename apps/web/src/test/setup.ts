@@ -10,6 +10,7 @@ await Promise.all([
   import("../features/assets/AssetPage"),
   import("../features/assets/AssetRegistryPage"),
   import("../features/alarms/AlarmsPage"),
+  import("../features/alarms/AlarmAnalyticsPage"),
   import("../features/predictions/PredictionDetail"),
   import("../features/predictions/PredictionConsolePage"),
   import("../features/predictions/PredictionPage"),
