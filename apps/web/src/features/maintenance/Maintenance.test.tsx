@@ -66,28 +66,13 @@ describe("work-order board", () => {
 });
 
 describe("work-order page", () => {
-  it("lets a technician close out work with ISO 14224 coding", async () => {
+  it("sends a technician to the field task page to close out", async () => {
     usePreferences.setState({ role: "field_technician" });
     const user = userEvent.setup();
     const wo = probe().request("workOrders.list", { status: ["in_progress"], limit: 1 }).items[0]!;
-    const { backend } = renderApp(`/maintenance/${wo.id}`);
-
+    const { router } = renderApp(`/maintenance/${wo.id}`);
+    expect(await screen.findByRole("region", { name: "Checklist" })).toBeInTheDocument();
     await user.click(await screen.findByRole("button", { name: "Close out…" }));
-    const dialog = await screen.findByRole("dialog", { name: "Close out work" });
-    await user.selectOptions(within(dialog).getByLabelText(/Failure mode/), "VIB");
-    await user.selectOptions(within(dialog).getByLabelText(/Cause/), "2.4");
-    await user.selectOptions(within(dialog).getByLabelText(/Action taken/), "replace");
-    await user.click(within(dialog).getByRole("button", { name: "Complete work" }));
-    expect(await within(dialog).findByText("Describe what you found in at least 10 characters.")).toBeInTheDocument();
-
-    await user.type(within(dialog).getByLabelText(/Findings/), "Drive-end bearing spalled; replaced and aligned.");
-    await user.type(within(dialog).getByLabelText(/Hours worked/), "4.5");
-    await user.click(within(dialog).getByRole("button", { name: "Complete work" }));
-
-    await waitFor(() => {
-      const after = backend.request("workOrders.get", { workOrderId: wo.id });
-      expect(after.status).toBe("completed");
-      expect(after.closeOut).toMatchObject({ failureMode: "VIB", cause: "2.4", remedy: "replace", laborHours: 4.5 });
-    });
+    await waitFor(() => expect(router.state.location.pathname).toBe(`/field/tasks/${wo.id}`));
   });
 });

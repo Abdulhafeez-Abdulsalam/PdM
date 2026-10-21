@@ -6,6 +6,7 @@ import type { ClientMessage, EndpointName, FromWorker, ServerMessage, Simulation
 import { ApiRequestError, type ConnectionState, type Transport } from "./transport";
 
 const REQUEST_TIMEOUT_MS = 15_000;
+const NO_CONNECTION = { code: "unavailable", message: "No connection" } as const;
 
 /** The parts of a Worker we use — lets tests pass a fake. */
 export interface WorkerLike {
@@ -29,12 +30,15 @@ export class WorkerTransport implements Transport {
   private connection: ConnectionState = "connecting";
   /** Remembered so late subscribers get the current simulation status immediately. */
   private lastStatus: SimulationStatus | null = null;
+  /** While true, nothing goes out or comes in, as if the network cable were pulled. */
+  private disconnected = false;
 
   constructor(private readonly worker: WorkerLike) {
     worker.addEventListener("message", (event) => this.receive(event.data));
   }
 
   private receive(msg: FromWorker): void {
+    if (this.disconnected) return;
     switch (msg.kind) {
       case "response": {
         const p = this.pending.get(msg.id);
@@ -65,6 +69,10 @@ export class WorkerTransport implements Transport {
   ): Promise<unknown> {
     const id = this.nextId++;
     return new Promise((resolve, reject) => {
+      if (this.disconnected) {
+        reject(new ApiRequestError(NO_CONNECTION));
+        return;
+      }
       const timer = setTimeout(() => {
         this.pending.delete(id);
         reject(new ApiRequestError({ code: "unavailable", message: "The data service did not respond in time" }));
@@ -94,6 +102,7 @@ export class WorkerTransport implements Transport {
   }
 
   send(message: ClientMessage): void {
+    if (this.disconnected) return;
     this.worker.postMessage({ kind: "live", message });
   }
 
@@ -112,6 +121,22 @@ export class WorkerTransport implements Transport {
     this.connectionHandlers.add(handler);
     handler(this.connection);
     return () => this.connectionHandlers.delete(handler);
+  }
+
+  setDisconnected(disconnected: boolean): void {
+    if (disconnected === this.disconnected) return;
+    this.disconnected = disconnected;
+    if (disconnected) {
+      // Requests in flight are lost with the connection: fail them now rather than after the timeout.
+      for (const p of this.pending.values()) {
+        clearTimeout(p.timer);
+        p.reject(new ApiRequestError(NO_CONNECTION));
+      }
+      this.pending.clear();
+      this.setConnection("offline");
+    } else {
+      this.setConnection(this.lastStatus ? "live" : "connecting");
+    }
   }
 
   close(): void {

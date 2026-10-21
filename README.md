@@ -4,7 +4,7 @@ The web frontend of a Predictive Maintenance & Asset Performance platform for an
 
 It helps people spot equipment that is about to fail, before it fails, and organise the maintenance to fix it.
 
-> **Status:** Phase 1 complete ([review](docs/phase-1-review.md)). Phase 2 in progress: chunk 1 done (prediction console, prediction page with anomaly history, feedback loop and triage); chunk 2 done (work-order lifecycle: Kanban board, scheduling, ISO 14224 close-out, work-order page). Next: chunk 3 — field technician screens.
+> **Status:** Phase 1 complete ([review](docs/phase-1-review.md)). Phase 2 in progress: chunk 1 done (prediction console, prediction page with anomaly history, feedback loop and triage); chunk 2 done (work-order lifecycle: Kanban board, scheduling, ISO 14224 close-out, work-order page); chunk 3 done (field technician screens: my jobs, safety-gated start, checklists and readings, typed work kept through a dropped connection).
 
 ## Getting started
 

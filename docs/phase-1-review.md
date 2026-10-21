@@ -9,7 +9,7 @@ Phase 1 ("Foundation") is complete: shell, role-based views, design system, asse
 | A | A new user finds the top 5 riskiest assets within 10 s of login | ✅ | Top risks visible **~1.1 s** after page load (measured in the browser, development build). Test checks the table matches the backend ranking. |
 | B | Any prediction traces to evidence, explanation, confidence and action within 2 clicks | ✅ | **1 click** from a top-risk row opens the prediction panel with all four. Automated test. |
 | C | An alarm becomes an assigned work order in under 30 s | ✅ | **2 clicks**, all fields pre-filled including assignee and a readings snapshot. App time **~1.1 s** (0.7 s open + pre-fill, 0.35 s create), measured in the browser. Automated test. |
-| D | A technician who loses connection keeps what they typed | ⏳ Phase 2 | Belongs with the field technician screens. The connection banner exists. |
+| D | A technician who loses connection keeps what they typed | ✅ Phase 2, chunk 3 | Field task page keeps every entry in the tab through a dropped connection or reload; submit waits for the connection. Tested in `Field.test.tsx`. |
 | E | Dashboards stay responsive with 300 live tags at 1 update/s | 🟡 Partly | Budget enforced in contracts, mock and client. A dedicated performance test comes with the Phase 2 test plan. |
 | F | Every screen passes automated accessibility checks in all three themes | 🟡 Partly | Built to WCAG patterns (labels, roles, keyboard, table views, colour + shape). Automated axe checks not yet wired in. |
 | G | No hard-coded strings, units or colours outside tokens and the text catalog | ✅ | All text in `en.json`; all colours via tokens (scanned); all units via `units.ts`. |

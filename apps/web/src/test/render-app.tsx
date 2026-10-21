@@ -44,5 +44,5 @@ export function renderApp(url: string) {
       <RouterProvider router={router} />
     </Providers>,
   );
-  return { ...utils, backend, router };
+  return { ...utils, backend, router, transport };
 }

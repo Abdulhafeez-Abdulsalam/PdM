@@ -15,6 +15,8 @@ await Promise.all([
   import("../features/predictions/PredictionPage"),
   import("../features/maintenance/MaintenancePage"),
   import("../features/maintenance/WorkOrderPage"),
+  import("../features/field/FieldPage"),
+  import("../features/field/TaskPage"),
 ]);
 configure({ asyncUtilTimeout: 10_000 });
 

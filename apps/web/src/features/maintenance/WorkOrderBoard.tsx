@@ -16,7 +16,6 @@ import { BOARD_COLUMNS, allowedMoves, resolveDrop, type BoardColumn } from "./li
 import { WorkOrderCard } from "./WorkOrderCard";
 import { WorkOrderDialogs } from "./WorkOrderDialogs";
 import { useMove } from "./use-move";
-import { useWorkOrderActions } from "./use-work-order-actions";
 
 export function WorkOrderBoard({ orders }: { orders: readonly WorkOrder[] }) {
   const { t } = useTranslation();
@@ -24,7 +23,6 @@ export function WorkOrderBoard({ orders }: { orders: readonly WorkOrder[] }) {
   const { now } = useSimNow();
   const { byId } = useUsers();
   const toast = useToasts((s) => s.show);
-  const { transition } = useWorkOrderActions();
   const { move, dialog, closeDialog, openDialog } = useMove();
   // A small move threshold so clicking the grip without dragging doesn't start a drag.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor));
@@ -36,13 +34,13 @@ export function WorkOrderBoard({ orders }: { orders: readonly WorkOrder[] }) {
     const outcome = resolveDrop(role, wo, column);
     switch (outcome.kind) {
       case "move":
-        transition.mutate({ workOrderId: wo.id, to: outcome.to });
+        move(wo, outcome.to);
         break;
       case "schedule":
         openDialog({ kind: "schedule", workOrder: wo });
         break;
       case "closeOut":
-        openDialog({ kind: "closeOut", workOrder: wo });
+        move(wo, "completed");
         break;
       case "refuse":
         toast("error", t(`board.refuse.${outcome.reason}`, { number: wo.number, column: t(`board.column.${column.id}`) }));

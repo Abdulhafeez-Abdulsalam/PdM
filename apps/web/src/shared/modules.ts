@@ -59,7 +59,14 @@ export type ModuleId = Module["id"];
 export const CURRENT_PHASE = 2;
 
 /** Modules with a real screen (the rest show a placeholder). */
-export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>(["command-center", "assets", "alarms", "predictive", "maintenance"]);
+export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
+  "command-center",
+  "assets",
+  "alarms",
+  "predictive",
+  "maintenance",
+  "field",
+]);
 
 export function moduleById(id: ModuleId): Module {
   const found = MODULES.find((m) => m.id === id);

@@ -139,6 +139,7 @@ export class Storyline {
             findings: "Offline compressor water wash performed. Efficiency and discharge pressure recovered to baseline.",
             laborHours: 6,
             predictionVerdict: "true_positive",
+            checklist: this.workOrders.completedChecklist(wo.id),
           },
           technician,
           at("repaired"),

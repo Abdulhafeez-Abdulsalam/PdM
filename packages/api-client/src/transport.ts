@@ -15,6 +15,11 @@ export interface Transport {
   /** Simulation status (demo only; a real transport never calls this). */
   onStatus(handler: (status: SimulationStatus) => void): () => void;
   onConnection(handler: (state: ConnectionState) => void): () => void;
+  /**
+   * Treat the network as down (true) or back (false). Fed by the browser's offline/online
+   * events, and by the demo's "Drop the connection" switch so the safety net can be tried.
+   */
+  setDisconnected(disconnected: boolean): void;
   close(): void;
 }
 

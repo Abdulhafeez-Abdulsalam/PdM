@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatMeasurement, toDisplay } from "./units";
+import { formatMeasurement, fromDisplay, toDisplay } from "./units";
 
 describe("unit conversion", () => {
   it("keeps SI values unchanged", () => {
@@ -29,6 +29,18 @@ describe("unit conversion", () => {
   it("converts wall thickness and vibration to inches", () => {
     expect(toDisplay(25.4, "length", "imperial").value).toBeCloseTo(1);
     expect(toDisplay(25.4, "vibration_velocity", "oilfield")).toEqual({ value: expect.closeTo(1), unit: "in/s" });
+  });
+
+  it("converts typed values back to SI exactly (round trip)", () => {
+    for (const [v, q, sys] of [
+      [585, "temperature", "imperial"],
+      [12.5, "pressure", "oilfield"],
+      [4.2, "vibration_velocity", "imperial"],
+      [30, "temperature_difference", "imperial"],
+    ] as const) {
+      expect(fromDisplay(toDisplay(v, q, sys).value, q, sys)).toBeCloseTo(v, 9);
+    }
+    expect(fromDisplay(212, "temperature", "imperial")).toBeCloseTo(100, 9);
   });
 
   it("formats with precision that fits the size", () => {

@@ -151,6 +151,8 @@
     "speedValue": "{{speed}}×",
     "chaos": "Chaos mode",
     "chaosHint": "Data gaps, bad quality, alarm floods",
+    "dropConnection": "Drop the connection",
+    "dropConnectionHint": "Pretend the network is down, to try what happens to typed work",
     "startStoryline": "Start demo storyline",
     "storyline": "Storyline: {{asset}}",
     "phases": {
@@ -485,7 +487,9 @@
   },
   "common": {
     "close": "Close",
-    "cancel": "Cancel"
+    "cancel": "Cancel",
+    "done": "Done:",
+    "notDone": "Not done:"
   },
   "toast": {
     "dismiss": "Dismiss message"
@@ -538,7 +542,7 @@
       "planned": "Plan",
       "scheduled": "Schedule…",
       "approved": "Approve",
-      "in_progress": "Start work",
+      "in_progress": "Start work…",
       "reopen": "Reopen — needs more work",
       "completed": "Close out…",
       "verified": "Verify",
@@ -555,6 +559,48 @@
       "end": "Dropped on {{column}}.",
       "cancel": "Move cancelled."
     }
+  },
+  "field": {
+    "myJobs": "My jobs",
+    "assignedTo_one": "{{count}} open job assigned to {{name}}",
+    "assignedTo_other": "{{count}} open jobs assigned to {{name}}",
+    "noJobs": "No open jobs assigned to you",
+    "noJobsHint": "Jobs appear here once a planner schedules work for you. To see a technician's day, switch role to Field Technician.",
+    "group": {
+      "in_progress": "In progress",
+      "approved": "Ready to start",
+      "scheduled": "Waiting for approval"
+    },
+    "due": "Due {{date}}",
+    "progress": "{{done}} of {{total}} done",
+    "back": "My jobs",
+    "plannedStart": "Planned start {{time}}",
+    "whyRaised": "Why was this raised? See the prediction",
+    "offlineKept": "No connection. Everything you've entered is kept on this device — submit once you're back online.",
+    "restored": "We kept what you entered earlier on this job.",
+    "waitingApproval": "Waiting for the plant manager's approval. You can read the job, but not start it yet.",
+    "finished": "This job is {{status}}. Nothing more to do here.",
+    "safetyTitle": "Safety checks",
+    "safetyHint": "Before you start, confirm each check on site. Work can't start until all are ticked.",
+    "startWork": "Start work",
+    "confirmSafetyFirst": "Tick every safety check to start.",
+    "waitingForConnection": "Waiting for a connection…",
+    "workTitle": "Steps and readings",
+    "stepRequired": "Tick this step before completing the job.",
+    "readingRequired": "Enter this reading as a number.",
+    "expectedBetween": "Expected {{low}}–{{high}} {{unit}}",
+    "expectedBelow": "Expected below {{high}} {{unit}}",
+    "outsideRange": "Outside the expected range — describe it in your findings.",
+    "closeOutTitle": "Close out",
+    "hoursHint": "Filled in from when you started. Correct it if needed.",
+    "completeJob": "Complete job",
+    "checklistTitle": "Checklist",
+    "checklistKind": {
+      "safety": "Safety",
+      "step": "Step",
+      "reading": "Reading"
+    },
+    "openTask": "Open as field task"
   },
   "woDialogs": {
     "scheduleTitle": "Schedule work",

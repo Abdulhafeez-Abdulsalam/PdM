@@ -3,6 +3,7 @@
  * and drop, the card menus, and the work-order page buttons.
  */
 import type { WorkOrder, WorkOrderStatus } from "@pdm/contracts";
+import { useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
 import type { WorkOrderDialog } from "./WorkOrderDialogs";
 import { useWorkOrderActions } from "./use-work-order-actions";
@@ -10,9 +11,13 @@ import { useWorkOrderActions } from "./use-work-order-actions";
 export function useMove() {
   const { transition } = useWorkOrderActions();
   const [dialog, setDialog] = useState<WorkOrderDialog>(null);
+  const navigate = useNavigate();
 
   const move = (wo: WorkOrder, to: WorkOrderStatus) => {
-    if (to === "completed") setDialog({ kind: "closeOut", workOrder: wo });
+    // Starting needs the safety checks, and completing needs the checklist and close-out:
+    // both happen on the field task page.
+    if (to === "completed" || (to === "in_progress" && wo.status === "approved"))
+      void navigate({ to: "/field/tasks/$taskId", params: { taskId: wo.id }, search: (prev) => prev });
     else if (to === "cancelled") setDialog({ kind: "cancel", workOrder: wo });
     else if (to === "scheduled")
       setDialog({ kind: "schedule", workOrder: wo }); // always confirm when and who

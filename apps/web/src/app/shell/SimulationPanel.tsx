@@ -1,5 +1,5 @@
 /** Demo controls for the mock backend: simulated clock, speed, chaos mode, storyline. */
-import { useSimulationControl, useSimulationStatus } from "@pdm/api-client";
+import { useApiContext, useConnectionState, useSimulationControl, useSimulationStatus } from "@pdm/api-client";
 import { SIM_SPEEDS, type SimSpeed } from "@pdm/contracts";
 import { Button, Select } from "@pdm/ui";
 import { Play } from "lucide-react";
@@ -18,6 +18,8 @@ export function SimulationPanel() {
   const { t } = useTranslation();
   const status = useSimulationStatus();
   const control = useSimulationControl();
+  const { transport } = useApiContext();
+  const offline = useConnectionState() === "offline";
 
   return (
     <section aria-labelledby="sim-title" className="m-2 rounded-lg border border-dashed border-line p-3 text-xs">
@@ -25,6 +27,14 @@ export function SimulationPanel() {
         {t("simulation.title")}
         <span className="rounded bg-sunken px-1.5 py-0.5 font-normal normal-case">{t("simulation.demoMode")}</span>
       </h2>
+      {/* Outside the status check: while disconnected no status arrives, and this must stay reachable. */}
+      <label className="mb-2 flex items-start gap-2" title={t("simulation.dropConnectionHint")}>
+        <input type="checkbox" className="mt-0.5" checked={offline} onChange={(e) => transport.setDisconnected(e.target.checked)} />
+        <span>
+          {t("simulation.dropConnection")}
+          <span className="block text-fg-muted">{t("simulation.dropConnectionHint")}</span>
+        </span>
+      </label>
       {!status ? (
         <p className="text-fg-muted">…</p>
       ) : (

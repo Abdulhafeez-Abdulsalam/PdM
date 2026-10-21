@@ -72,4 +72,22 @@ describe("api client over the worker transport", () => {
     stopB();
     expect(sent.some((m) => m.kind === "live" && m.message.type === "unsubscribe_tags")).toBe(true);
   });
+
+  it("fails fast while disconnected, sends nothing, and recovers when the connection returns", async () => {
+    const { api, transport, sent } = setup();
+    const states: string[] = [];
+    transport.onConnection((s) => states.push(s));
+
+    const inFlight = api.request("risks.top", { limit: 3 });
+    transport.setDisconnected(true);
+    await expect(inFlight).rejects.toMatchObject({ code: "unavailable" });
+
+    const before = sent.length;
+    await expect(api.request("risks.top", { limit: 3 })).rejects.toMatchObject({ code: "unavailable" });
+    expect(sent.length).toBe(before);
+
+    transport.setDisconnected(false);
+    expect((await api.request("risks.top", { limit: 3 })).items).toHaveLength(3);
+    expect(states).toEqual(["connecting", "offline", "connecting"]);
+  });
 });

@@ -15,6 +15,13 @@ function makeQueryClient() {
         // Retry once for temporary problems; never for definite answers like "not found".
         retry: (failures, error) => failures < 1 && !(error instanceof ApiRequestError && DEFINITE.has(error.code)),
         refetchOnWindowFocus: false,
+        // Our transport decides what "offline" means (ADR-0007), so don't let the cache pause on its own.
+        networkMode: "always",
+      },
+      mutations: {
+        // Never queue a submit to send later by itself: it fails, the form keeps its values,
+        // and the person presses Submit again once back online (ADR-0007).
+        networkMode: "always",
       },
     },
   });

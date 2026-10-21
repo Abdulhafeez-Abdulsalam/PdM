@@ -22,6 +22,8 @@ const PredictionConsolePage = lazyRouteComponent(() => import("../features/predi
 const PredictionPage = lazyRouteComponent(() => import("../features/predictions/PredictionPage"), "PredictionPage");
 const MaintenancePage = lazyRouteComponent(() => import("../features/maintenance/MaintenancePage"), "MaintenancePage");
 const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/WorkOrderPage"), "WorkOrderPage");
+const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
+const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
 import { NotFoundPage } from "../features/module-page/NotFoundPage";
@@ -56,6 +58,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   alarms: AlarmsPage,
   predictive: PredictionConsolePage,
   maintenance: MaintenancePage,
+  field: FieldPage,
 };
 
 const moduleRoutes = MODULES.map((m) =>
@@ -96,7 +99,22 @@ const workOrderRoute = createRoute({
   component: WorkOrderPage,
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, ...moduleRoutes, assetRoute, assetTabRoute, predictionRoute, workOrderRoute]);
+/** One field task (a work order as the technician works through it). */
+const taskRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/field/tasks/$taskId",
+  component: TaskPage,
+});
+
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  ...moduleRoutes,
+  assetRoute,
+  assetTabRoute,
+  predictionRoute,
+  workOrderRoute,
+  taskRoute,
+]);
 
 /** Tests pass an in-memory history; the app uses the browser's address bar. */
 export function createAppRouter(history: RouterHistory = createBrowserHistory()) {

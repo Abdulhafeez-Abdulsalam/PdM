@@ -43,10 +43,12 @@ export type DisplayUnit =
 interface Conversion {
   unit: DisplayUnit;
   convert: (si: number) => number;
+  /** The way back, for values a person types in their own units. */
+  invert: (shown: number) => number;
 }
 
-const same = (unit: DisplayUnit): Conversion => ({ unit, convert: (v) => v });
-const linear = (unit: DisplayUnit, factor: number): Conversion => ({ unit, convert: (v) => v * factor });
+const same = (unit: DisplayUnit): Conversion => ({ unit, convert: (v) => v, invert: (v) => v });
+const linear = (unit: DisplayUnit, factor: number): Conversion => ({ unit, convert: (v) => v * factor, invert: (v) => v / factor });
 
 /** Exact or standard factors. Gas volume uses 1 Sm³ = 35.3147 scf (same reference conditions assumed — see design system §6). */
 const F = {
@@ -59,7 +61,7 @@ const F = {
   kjToBtu: 0.947817,
 };
 
-const fahrenheit: Conversion = { unit: "degF", convert: (c) => (c * 9) / 5 + 32 };
+const fahrenheit: Conversion = { unit: "degF", convert: (c) => (c * 9) / 5 + 32, invert: (f) => ((f - 32) * 5) / 9 };
 
 const RULES: Record<Quantity, Record<UnitSystem, Conversion>> = {
   temperature: { si: same("degC"), imperial: fahrenheit, oilfield: fahrenheit },
@@ -93,6 +95,11 @@ export function conversionFor(quantity: Quantity, system: UnitSystem): Conversio
 export function toDisplay(value: number, quantity: Quantity, system: UnitSystem): { value: number; unit: DisplayUnit } {
   const c = conversionFor(quantity, system);
   return { value: c.convert(value), unit: c.unit };
+}
+
+/** Convert a value typed in the user's units back to SI, for sending to the server. */
+export function fromDisplay(value: number, quantity: Quantity, system: UnitSystem): number {
+  return conversionFor(quantity, system).invert(value);
 }
 
 /** Sensible number of decimals for a value's size, e.g. 0.0123 → 4, 587.3 → 1, 165000 → 0. */

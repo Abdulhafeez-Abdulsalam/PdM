@@ -7,6 +7,8 @@ import {
   FailureModeCode,
   WorkOrderPriority,
   canTransition,
+  type ChecklistItem,
+  type ChecklistResult,
   type CloseOut,
   type CloseOutWorkOrderRequest,
   type CreateWorkOrderRequest,
@@ -18,6 +20,7 @@ import {
   type WorkOrderStatus,
   type WorkOrderType,
 } from "@pdm/contracts";
+import { applyResults, checklistFor, nominalValue, requireDone } from "./checklists";
 import { DAY, HOUR, iso } from "./clock";
 import { DETECTION_PROGRESS, rawProgress, timeAtProgress } from "./faults";
 import type { AssetRecord } from "./model";
@@ -153,6 +156,20 @@ function closeOutFrom(rng: Rng, history: readonly WorkOrderEvent[], technicianId
   };
 }
 
+/** Seeded work orders: safety confirmed once work started, everything done once completed. */
+function seededChecklist(world: World, type: WorkOrderType, asset: AssetRecord, status: WorkOrderStatus): ChecklistItem[] {
+  const checklist = checklistFor(type, asset);
+  const started = ["in_progress", "completed", "verified", "closed"].includes(status);
+  const finished = ["completed", "verified", "closed"].includes(status);
+  for (const item of checklist) {
+    if (item.kind === "safety" ? started : finished) {
+      item.done = true;
+      if (item.kind === "reading") item.value = nominalValue(item.tagId ? world.tags.get(item.tagId) : undefined);
+    }
+  }
+  return checklist;
+}
+
 function titleFor(rng: Rng, type: WorkOrderType, asset: AssetRecord): string {
   const name = asset.data.id;
   switch (type) {
@@ -239,6 +256,7 @@ export class WorkOrderStore {
         source: { kind: type === "predictive" ? "prediction" : "manual", refId: null },
         evidence: null,
         history,
+        checklist: seededChecklist(this.world, type, asset, status),
         closeOut: closeOutFrom(rng, history, assigneeId, type === "predictive"),
       });
     }
@@ -274,6 +292,7 @@ export class WorkOrderStore {
         source: { kind: "prediction", refId: predictionId(fault) },
         evidence: null,
         history,
+        checklist: seededChecklist(this.world, "predictive", asset, status),
         closeOut: null,
       });
       overlays.set(predictionId(fault), { status: "actioned", workOrderId: id });
@@ -281,7 +300,8 @@ export class WorkOrderStore {
   }
 
   create(request: CreateWorkOrderRequest, createdBy: string, now: number): WorkOrder {
-    if (!this.world.assets.has(request.assetId)) throw new ApiFailure("not_found", `Asset ${request.assetId} not found`);
+    const asset = this.world.assets.get(request.assetId);
+    if (!asset) throw new ApiFailure("not_found", `Asset ${request.assetId} not found`);
     const number = this.nextNumber++;
     const wo: WorkOrder = {
       ...request,
@@ -292,6 +312,7 @@ export class WorkOrderStore {
       createdBy,
       scheduledStart: null,
       history: [{ at: iso(now), by: createdBy, from: null, to: "requested", note: null }],
+      checklist: checklistFor(request.type, asset),
       closeOut: null,
     };
     this.orders.push(wo);
@@ -319,6 +340,10 @@ export class WorkOrderStore {
     } else if (request.assigneeId) {
       wo.assigneeId = request.assigneeId;
     }
+    if (request.checklist) applyResults(wo.checklist, request.checklist);
+    if (wo.status === "approved" && request.to === "in_progress") {
+      requireDone(wo.checklist, ["safety"], "Confirm every safety check before starting");
+    }
     this.record(wo, request.to, by, now, request.note ?? null);
     return wo;
   }
@@ -327,10 +352,21 @@ export class WorkOrderStore {
   closeOut(request: CloseOutWorkOrderRequest, by: string, now: number): WorkOrder {
     const wo = this.get(request.workOrderId);
     if (wo.status !== "in_progress") throw new ApiFailure("conflict", `Only work in progress can be closed out (this one is ${wo.status})`);
-    const { workOrderId: _id, ...fields } = request;
+    const { workOrderId: _id, checklist, ...fields } = request;
+    applyResults(wo.checklist, checklist);
+    requireDone(wo.checklist, ["safety", "step", "reading"], "Finish the required checklist items first");
     wo.closeOut = { ...fields, completedAt: iso(now), completedBy: by };
     this.record(wo, "completed", by, now, null);
     return wo;
+  }
+
+  /** Every line done, readings at normal values — for when the simulation does the work itself. */
+  completedChecklist(id: string): ChecklistResult[] {
+    return this.get(id).checklist.map((item) => ({
+      itemId: item.id,
+      done: true,
+      value: item.kind === "reading" ? nominalValue(item.tagId ? this.world.tags.get(item.tagId) : undefined) : null,
+    }));
   }
 
   /** Used by the storyline; goes through the history like any other change. */

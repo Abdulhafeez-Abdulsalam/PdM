@@ -4,6 +4,7 @@ import {
   ALARM_PRIORITY_HEALTH,
   AlarmPriority,
   ClientMessage,
+  CloseOutWorkOrderRequest,
   HistoryRequest,
   Prediction,
   RulEstimate,
@@ -15,6 +16,7 @@ import {
   WorkOrderStatus,
   canTransition,
   endpoints,
+  isChecklistItemDone,
   pathParams,
   pickIntervalSeconds,
 } from "./index";
@@ -145,6 +147,28 @@ describe("work-order lifecycle", () => {
     const path = ["requested", "triaged", "planned", "scheduled", "approved", "in_progress"] as const;
     for (let i = 1; i < path.length; i++) expect(canTransition(path[i - 1]!, path[i]!)).toBe(true);
     expect(canTransition("completed", "verified") && canTransition("verified", "closed")).toBe(true);
+  });
+});
+
+describe("work-order checklist", () => {
+  it("counts a reading as done once it has a value, other lines once ticked", () => {
+    expect(isChecklistItemDone({ kind: "reading", done: false, value: 4.2 })).toBe(true);
+    expect(isChecklistItemDone({ kind: "reading", done: true, value: null })).toBe(false);
+    expect(isChecklistItemDone({ kind: "safety", done: true, value: null })).toBe(true);
+    expect(isChecklistItemDone({ kind: "step", done: false, value: null })).toBe(false);
+  });
+
+  it("lets a close-out leave out the checklist (it defaults to none)", () => {
+    const parsed = CloseOutWorkOrderRequest.parse({
+      workOrderId: "wo-1",
+      failureMode: "VIB",
+      cause: "2.4",
+      remedy: "replace",
+      findings: "Bearing worn, replaced.",
+      laborHours: 3,
+      predictionVerdict: null,
+    });
+    expect(parsed.checklist).toEqual([]);
   });
 });
 

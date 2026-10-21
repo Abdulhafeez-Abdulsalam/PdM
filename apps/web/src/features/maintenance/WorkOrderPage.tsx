@@ -3,10 +3,10 @@
  * were, what was found, and every step of its history.
  */
 import { useApiQuery } from "@pdm/api-client";
-import type { WorkOrder } from "@pdm/contracts";
+import { isChecklistItemDone, type WorkOrder } from "@pdm/contracts";
 import { Button, EmptyState, Skeleton } from "@pdm/ui";
 import { Link, useParams } from "@tanstack/react-router";
-import { SearchX } from "lucide-react";
+import { Check, Circle, SearchX } from "lucide-react";
 import { useEffect, useMemo, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate, makeTimeFormatter } from "../../shared/format";
@@ -113,6 +113,7 @@ function WorkOrderView({ wo }: { wo: WorkOrder }) {
           </ol>
         </Card>
 
+        <Checklist wo={wo} />
         {wo.evidence && <Evidence wo={wo} />}
         {wo.closeOut && <CloseOutCard wo={wo} name={name} />}
       </div>
@@ -144,6 +145,53 @@ function Source({ wo }: { wo: WorkOrder }) {
     );
   }
   return <>{t(`workOrderPage.sourceKind.${kind}`)}</>;
+}
+
+/** Safety checks, steps and readings — filled in on the field task page, shown here read-only. */
+function Checklist({ wo }: { wo: WorkOrder }) {
+  const { t } = useTranslation();
+  const units = usePreferences((p) => p.units);
+  const tags = useApiQuery("assets.tags", { assetId: wo.assetId });
+  const byId = new Map((tags.data?.items ?? []).map((tg) => [tg.id, tg]));
+  if (wo.checklist.length === 0) return null;
+  return (
+    <Card title={t("field.checklistTitle")} className="lg:col-span-2">
+      <ul className="flex flex-col gap-1.5 text-sm">
+        {wo.checklist.map((item) => {
+          const done = isChecklistItemDone(item);
+          const tag = item.tagId ? byId.get(item.tagId) : undefined;
+          const shown = item.value !== null && tag ? toDisplay(item.value, tag.quantity, units) : null;
+          return (
+            <li key={item.id} className="flex items-start gap-2">
+              {done ? (
+                <Check aria-hidden className="mt-0.5 size-4 shrink-0" />
+              ) : (
+                <Circle aria-hidden className="mt-0.5 size-4 shrink-0 text-fg-muted" />
+              )}
+              <span className="sr-only">{done ? t("common.done") : t("common.notDone")}</span>
+              <span className="text-xs text-fg-muted">{t(`field.checklistKind.${item.kind}`)}</span>
+              <span className="flex-1">{item.label}</span>
+              {shown && (
+                <span className="tabular-nums">
+                  {formatMeasurement(shown.value)} {t(`unitSymbol.${shown.unit}`)}
+                </span>
+              )}
+            </li>
+          );
+        })}
+      </ul>
+      {["approved", "in_progress"].includes(wo.status) && (
+        <Link
+          to="/field/tasks/$taskId"
+          params={{ taskId: wo.id }}
+          search={(prev) => prev}
+          className="mt-3 inline-block text-sm text-accent hover:underline"
+        >
+          {t("field.openTask")}
+        </Link>
+      )}
+    </Card>
+  );
 }
 
 /** The readings when the work was raised, in the user's units. */

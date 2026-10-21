@@ -8,5 +8,9 @@ import MockBackendWorker from "@pdm/mock-data/worker?worker";
 
 export function createBackend(): ApiContextValue {
   const transport = new WorkerTransport(new MockBackendWorker());
+  // The browser knows when the network goes away (Wi-Fi off, out of coverage); pass that on.
+  if (!navigator.onLine) transport.setDisconnected(true);
+  window.addEventListener("offline", () => transport.setDisconnected(true));
+  window.addEventListener("online", () => transport.setDisconnected(false));
   return { transport, api: createApiClient(transport), live: new LiveClient(transport) };
 }

@@ -95,6 +95,41 @@ export const CloseOut = z.object({
 });
 export type CloseOut = z.infer<typeof CloseOut>;
 
+/**
+ * One line of a work order's checklist (spec §6.14: "checklists with required fields").
+ *  - safety:  confirmed before work may start (permit, isolation/LOTO, gas test)
+ *  - step:    a task to tick off while working
+ *  - reading: a measurement to enter, e.g. bearing vibration taken with a hand-held meter
+ */
+export const ChecklistItemKind = z.enum(["safety", "step", "reading"]);
+export type ChecklistItemKind = z.infer<typeof ChecklistItemKind>;
+
+export const ChecklistItem = z.object({
+  id: z.string().min(1),
+  kind: ChecklistItemKind,
+  label: z.string().min(3).max(200),
+  required: z.boolean(),
+  /** Reading items: the tag being measured. Its quantity gives the unit and its alert limits the expected range. */
+  tagId: Id.nullable(),
+  done: z.boolean(),
+  /** Reading items: the value entered, in the tag's canonical unit. */
+  value: z.number().nullable(),
+});
+export type ChecklistItem = z.infer<typeof ChecklistItem>;
+
+/** What the technician sends back for one checklist line. */
+export const ChecklistResult = z.object({
+  itemId: z.string().min(1),
+  done: z.boolean(),
+  value: z.number().nullable(),
+});
+export type ChecklistResult = z.infer<typeof ChecklistResult>;
+
+/** Is this line finished? A reading counts once a value is entered. */
+export function isChecklistItemDone(item: Pick<ChecklistItem, "kind" | "done" | "value">): boolean {
+  return item.kind === "reading" ? item.value !== null : item.done;
+}
+
 export const WorkOrder = z.object({
   id: Id,
   /** Human-friendly number, e.g. "WO-10482". */
@@ -115,6 +150,8 @@ export const WorkOrder = z.object({
   evidence: EvidenceSnapshot.nullable(),
   /** Oldest first. */
   history: z.array(WorkOrderEvent),
+  /** Safety checks, steps and readings, in the order they're done. */
+  checklist: z.array(ChecklistItem).max(30),
   closeOut: CloseOut.nullable(),
 });
 export type WorkOrder = z.infer<typeof WorkOrder>;
@@ -144,7 +181,10 @@ export const WorkOrderListParams = PageParams.extend({
 });
 export type WorkOrderListParams = z.infer<typeof WorkOrderListParams>;
 
-/** Move a work order to another status. Scheduling needs a start time and someone assigned. */
+/**
+ * Move a work order to another status. Scheduling needs a start time and someone assigned.
+ * Starting work (approved → in_progress) needs every safety check confirmed in `checklist`.
+ */
 export const TransitionWorkOrderRequest = z
   .object({
     workOrderId: Id,
@@ -152,6 +192,7 @@ export const TransitionWorkOrderRequest = z
     note: z.string().trim().max(1000).optional(),
     scheduledStart: Timestamp.optional(),
     assigneeId: Id.optional(),
+    checklist: z.array(ChecklistResult).max(30).optional(),
   })
   .refine((r) => r.to !== "completed", { error: "Use close-out to complete a work order", path: ["to"] })
   .refine((r) => r.to !== "cancelled" || (r.note?.length ?? 0) >= 5, {
@@ -160,5 +201,9 @@ export const TransitionWorkOrderRequest = z
   });
 export type TransitionWorkOrderRequest = z.infer<typeof TransitionWorkOrderRequest>;
 
-export const CloseOutWorkOrderRequest = CloseOut.omit({ completedAt: true, completedBy: true }).extend({ workOrderId: Id });
+/** Finishing the work: the close-out plus the checklist results. Every required line must be done. */
+export const CloseOutWorkOrderRequest = CloseOut.omit({ completedAt: true, completedBy: true }).extend({
+  workOrderId: Id,
+  checklist: z.array(ChecklistResult).max(30).default([]),
+});
 export type CloseOutWorkOrderRequest = z.infer<typeof CloseOutWorkOrderRequest>;

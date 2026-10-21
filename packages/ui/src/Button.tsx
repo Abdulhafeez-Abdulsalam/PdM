@@ -3,7 +3,8 @@ import { cx } from "./cx";
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "primary" | "secondary" | "ghost" | "danger";
-  size?: "sm" | "md";
+  /** lg = 48 px tall, the touch-target size for field pages (design system §5). */
+  size?: "sm" | "md" | "lg";
 }
 
 const VARIANTS = {
@@ -21,7 +22,7 @@ export function Button({ variant = "secondary", size = "md", className, type = "
       className={cx(
         "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-colors",
         "disabled:cursor-not-allowed disabled:opacity-50",
-        size === "sm" ? "h-8 px-2.5 text-xs" : "h-10 px-4 text-sm",
+        { sm: "h-8 px-2.5 text-xs", md: "h-10 px-4 text-sm", lg: "h-12 px-5 text-base" }[size],
         VARIANTS[variant],
         className,
       )}
