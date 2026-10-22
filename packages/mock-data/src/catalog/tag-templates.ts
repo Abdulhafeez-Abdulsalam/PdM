@@ -31,8 +31,11 @@ export interface TagTemplate {
   limits?: readonly [alert: number, alarm: number, trip: number];
   /** Scales with the asset's size (power, current, flow). Default false. */
   scaled?: boolean;
-  /** Special signal sources. "ambient" = the site's air temperature. */
-  source?: "ambient";
+  /**
+   * Special signal sources. "ambient" = the site's air temperature; the others come from the PV
+   * model in signals.ts: inverter AC and DC power, module temperature, soiling loss.
+   */
+  source?: "ambient" | "pv_ac" | "pv_dc" | "module_t" | "soiling";
 }
 
 const vib = (name: string, base: number, description = "Bearing vibration velocity"): TagTemplate => ({
@@ -779,8 +782,9 @@ export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
 
   // ─── Solar ──────────────────────────────────────────────────────────────────
   inverter: [
-    { name: "AC_POWER", description: "AC active power", quantity: "power", base: 3500, load: 1, noise: 0.004, scaled: true },
-    { name: "DC_POWER", description: "DC input power", quantity: "power", base: 3570, load: 1, noise: 0.004, scaled: true },
+    // From the PV model (signals.ts): sunlight, panel temperature, soiling and clipping. Base = AC rating.
+    { name: "AC_POWER", description: "AC active power", quantity: "power", base: 3500, source: "pv_ac", noise: 0.004, scaled: true },
+    { name: "DC_POWER", description: "DC input power", quantity: "power", base: 3570, source: "pv_dc", noise: 0.004, scaled: true },
     { name: "DC_V", description: "DC input voltage", quantity: "voltage", base: 1150, load: 0.15, noise: 0.004 },
     { name: "AC_V", description: "AC output voltage", quantity: "voltage", base: 690, idle: "hold", noise: 0.003 },
     {
@@ -860,8 +864,7 @@ export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
       quantity: "temperature",
       base: 45,
       idle: "ambient",
-      load: 0.5,
-      ambient: 0.1,
+      source: "module_t",
       noise: 0.01,
     },
   ],
@@ -943,6 +946,6 @@ export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
     { name: "GHI", description: "Global horizontal irradiance", quantity: "irradiance", base: 1000, load: 1, noise: 0.01 },
     { name: "POA", description: "Plane-of-array irradiance", quantity: "irradiance", base: 1080, load: 1, noise: 0.01 },
     { name: "AMB_T", description: "Ambient air temperature", quantity: "temperature", base: 0, source: "ambient", noise: 0 },
-    { name: "SOILING", description: "Soiling loss", quantity: "percent", base: 2, idle: "hold", noise: 0.05, wander: 0.3 },
+    { name: "SOILING", description: "Soiling loss", quantity: "percent", base: 2, idle: "hold", source: "soiling", noise: 0.02, wander: 0 },
   ],
 };

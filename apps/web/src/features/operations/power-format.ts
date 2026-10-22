@@ -1,4 +1,4 @@
-/** Number formats shared by the gas-to-power screens. */
+/** Number formats shared by the operations screens. */
 import type { Quantity } from "@pdm/contracts";
 import { formatNumber } from "../../shared/format";
 import type { UnitSystem } from "../../shared/preferences";
@@ -8,6 +8,12 @@ import { toDisplay } from "../../shared/units";
 export function formatMw(kw: number): string {
   const mw = kw / 1000;
   return `${formatNumber(mw, Math.abs(mw) < 10 ? 1 : 0)} MW`;
+}
+
+/** kWh → "1,234 MWh" (or "0.8 MWh"). */
+export function formatMwh(kwh: number): string {
+  const mwh = kwh / 1000;
+  return `${formatNumber(mwh, Math.abs(mwh) < 10 ? 1 : 0)} MWh`;
 }
 
 type T = (key: string, options?: Record<string, unknown>) => string;

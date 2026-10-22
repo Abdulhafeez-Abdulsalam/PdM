@@ -8,6 +8,7 @@
 import { z } from "zod";
 import { OperatingStatus } from "./assets";
 import { Id, ScopeId, Timestamp } from "./common";
+import { BessPerformance, InverterPerformance, StringPerformance } from "./solar";
 
 // ─── Gas turbines ────────────────────────────────────────────────────────────
 
@@ -296,6 +297,9 @@ export type PowerOperations = z.infer<typeof PowerOperations>;
 export const AssetPerformance = z.discriminatedUnion("kind", [
   z.object({ kind: z.literal("gas_turbine"), turbine: GasTurbineRow }),
   z.object({ kind: z.literal("transformer"), dga: TransformerDga }),
+  z.object({ kind: z.literal("inverter"), inverter: InverterPerformance }),
+  z.object({ kind: z.literal("pv_string"), string: StringPerformance }),
+  z.object({ kind: z.literal("bess"), bess: BessPerformance }),
   z.object({ kind: z.literal("none") }),
 ]);
 export type AssetPerformance = z.infer<typeof AssetPerformance>;

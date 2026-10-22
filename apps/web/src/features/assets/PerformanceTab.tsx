@@ -1,7 +1,7 @@
 /**
  * Asset 360 → Performance: each kind of equipment shows its own measures. So far: gas
- * turbines (efficiency against a clean machine, inspection hours) and transformers (oil
- * analysis). Solar and oil & gas equipment join in the next chunks.
+ * turbines (efficiency against a clean machine, inspection hours), transformers (oil
+ * analysis), and solar inverters, strings and batteries. Oil & gas equipment joins next.
  */
 import { useApiQuery } from "@pdm/api-client";
 import { EOH_PER_START, HGP_INTERVAL_EOH, type Asset, type GasTurbineRow, type TransformerDga } from "@pdm/contracts";
@@ -14,10 +14,17 @@ import { ConditionLabel, GasTable } from "../operations/DgaSection";
 import { DuvalTriangle } from "../operations/DuvalTriangle";
 import { InspectionCell } from "../operations/InspectionCell";
 import { formatIn, signed } from "../operations/power-format";
+import { BessPerformanceView, InverterPerformanceView, StringPerformanceView } from "../operations/SolarPerformance";
 import { TurbineTrend } from "../operations/TurbineTrend";
 
 /** Classes with a Performance tab. */
-export const PERFORMANCE_CLASSES: ReadonlySet<Asset["assetClass"]> = new Set(["gas_turbine", "transformer"]);
+export const PERFORMANCE_CLASSES: ReadonlySet<Asset["assetClass"]> = new Set([
+  "gas_turbine",
+  "transformer",
+  "inverter",
+  "pv_string",
+  "bess",
+]);
 
 export function PerformanceTab({ asset }: { asset: Asset }) {
   const { t } = useTranslation();
@@ -26,6 +33,9 @@ export function PerformanceTab({ asset }: { asset: Asset }) {
   if (!perf.data) return <p className="text-health-warning">{t("widget.failed")}</p>;
   if (perf.data.kind === "gas_turbine") return <TurbinePerformance row={perf.data.turbine} />;
   if (perf.data.kind === "transformer") return <TransformerPerformance dga={perf.data.dga} />;
+  if (perf.data.kind === "inverter") return <InverterPerformanceView data={perf.data.inverter} />;
+  if (perf.data.kind === "pv_string") return <StringPerformanceView data={perf.data.string} />;
+  if (perf.data.kind === "bess") return <BessPerformanceView data={perf.data.bess} />;
   return <p className="text-fg-muted">{t("performance.none")}</p>;
 }
 

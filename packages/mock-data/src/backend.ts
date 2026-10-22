@@ -32,6 +32,7 @@ import { DETECTION_PROGRESS, rawProgress } from "./faults";
 import { CommentStore, documentsFor, relatedFor } from "./asset-info";
 import { fleetCompare } from "./comparison";
 import { assetPerformance, powerOperations, turbineTrend } from "./operations";
+import { solarOperations } from "./solar";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -248,6 +249,15 @@ export class MockBackend {
       assetPerformance({ world: this.world, chaos: this.chaos, now: this.now() }, this.snapshot(), this.asset(assetId)),
     "operations.power": ({ scopeId, siteId }) =>
       powerOperations({
+        world: this.world,
+        chaos: this.chaos,
+        snapshot: this.snapshot(),
+        now: this.now(),
+        siteId,
+        inScope: this.inScope(scopeId),
+      }),
+    "operations.solar": ({ scopeId, siteId }) =>
+      solarOperations({
         world: this.world,
         chaos: this.chaos,
         snapshot: this.snapshot(),

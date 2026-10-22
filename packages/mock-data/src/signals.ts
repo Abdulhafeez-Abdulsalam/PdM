@@ -4,7 +4,8 @@
  * chart of last month and a live reading now always agree.
  */
 import type { DataQuality, HistoryPoint } from "@pdm/contracts";
-import { iso } from "./clock";
+import type { TagTemplate } from "./catalog/tag-templates";
+import { DAY, iso } from "./clock";
 import { faultOffset, progress } from "./faults";
 import type { AssetRecord, TagRecord } from "./model";
 import { gaussNoise, hashNoise, smoothNoise } from "./random";
@@ -156,6 +157,125 @@ export function operating(world: World, asset: AssetRecord, t: number, planned =
   }
 }
 
+// ─── Solar ───────────────────────────────────────────────────────────────────
+//
+// A simple PV model, the same idea real plants use for "expected power":
+//
+//   DC power = DC rating × (sunlight on the panels ÷ 1000 W/m²) × temperature factor × (1 − soiling)
+//   AC power = min(AC rating, DC power × inverter efficiency)          ← the min is "clipping"
+//
+// Panels lose about 0.4% of their output for every °C above 25 °C, and in full sun they run
+// about 30 °C hotter than the air. Arrays have more DC capacity than the inverter can pass
+// (here 1.3×), so around clear noons the inverter tops out and the extra is "clipped".
+
+export const DC_AC_RATIO = 1.3;
+export const TEMP_COEFF_PER_C = -0.004;
+export const INVERTER_EFFICIENCY = 0.982;
+/** Sunlight on the tilted panels at clear-sky noon, W/m² (they catch more than flat ground). */
+const POA_PEAK = 1080;
+
+/** Plane-of-array irradiance: sunlight on the tilted panels, W/m². */
+export function poa(world: World, siteId: string, t: number): number {
+  return POA_PEAK * irradiance(world, siteId, t);
+}
+
+/** Back-of-module temperature, °C. */
+export function moduleTempC(world: World, siteId: string, t: number): number {
+  return ambientC(world, siteId, t) + 0.028 * poa(world, siteId, t);
+}
+
+/**
+ * Dust on the panels, as a loss in %. It builds up at a steady rate per site (deserts fastest)
+ * and is washed off on a regular cycle (cleaning crews, or rain), so it's a saw-tooth.
+ */
+const SOILING: Record<string, { ratePctPerDay: number; cycleDays: number }> = {
+  PCS: { ratePctPerDay: 0.1, cycleDays: 50 },
+  SPV: { ratePctPerDay: 0.3, cycleDays: 36 },
+  WSS: { ratePctPerDay: 0.25, cycleDays: 40 },
+};
+const SOILING_DEFAULT = { ratePctPerDay: 0.15, cycleDays: 45 };
+
+export interface SoilingState {
+  pct: number;
+  ratePctPerDay: number;
+  /** When the panels were last cleaned (ms). */
+  lastCleaned: number;
+}
+
+export function soilingState(world: World, siteId: string, t: number): SoilingState {
+  const { ratePctPerDay, cycleDays } = SOILING[siteId] ?? SOILING_DEFAULT;
+  const seed = world.sites.get(siteId)?.seed ?? 0;
+  const phase = hashNoise(seed ^ 0x5011, 0) * cycleDays;
+  const days = t / DAY - phase;
+  const since = ((days % cycleDays) + cycleDays) % cycleDays;
+  return { pct: 0.3 + ratePctPerDay * since, ratePctPerDay, lastCleaned: t - since * DAY };
+}
+
+/** The steps from sunlight to one inverter's AC output at time t, kW (no faults, no noise). */
+export function pvBreakdown(world: World, asset: AssetRecord, t: number) {
+  const acRated = asset.tags.find((x) => x.template.name === "AC_POWER")?.base ?? 0;
+  const dcRated = acRated * DC_AC_RATIO;
+  const site = asset.data.siteId;
+  const sun = dcRated * (poa(world, site, t) / 1000);
+  const afterTemp = sun * (1 + TEMP_COEFF_PER_C * (moduleTempC(world, site, t) - 25));
+  const dc = afterTemp * (1 - soilingState(world, site, t).pct / 100);
+  const beforeClip = dc * INVERTER_EFFICIENCY;
+  const ac = Math.min(acRated, beforeClip);
+  return { acRated, dcRated, sun, afterTemp, dc, beforeClip, ac };
+}
+
+function solarSource(world: World, tag: TagRecord, t: number, source: NonNullable<TagTemplate["source"]>): number {
+  const site = tag.asset.data.siteId;
+  switch (source) {
+    case "pv_ac":
+      return pvBreakdown(world, tag.asset, t).ac;
+    case "pv_dc": {
+      // When clipping, the inverter moves off its best operating point and takes less DC.
+      const b = pvBreakdown(world, tag.asset, t);
+      return Math.min(b.dc, b.acRated / INVERTER_EFFICIENCY);
+    }
+    case "module_t":
+      return moduleTempC(world, site, t);
+    case "soiling":
+      return soilingState(world, site, t).pct;
+    default:
+      return 0;
+  }
+}
+
+const childrenCache = new WeakMap<World, Map<string, AssetRecord[]>>();
+
+/** Assets whose parent is this asset (an inverter's strings). */
+export function childrenOf(world: World, assetId: string): readonly AssetRecord[] {
+  let map = childrenCache.get(world);
+  if (!map) {
+    map = new Map();
+    for (const a of world.assets.values()) {
+      if (!a.data.parentAssetId) continue;
+      const list = map.get(a.data.parentAssetId) ?? [];
+      list.push(a);
+      map.set(a.data.parentAssetId, list);
+    }
+    childrenCache.set(world, map);
+  }
+  return map.get(assetId) ?? [];
+}
+
+/** Share of an inverter's output lost to faults on the strings feeding it (0–1). */
+export function stringLoss(world: World, inverter: AssetRecord, t: number): number {
+  const strings = childrenOf(world, inverter.data.id);
+  if (strings.length === 0) return 0;
+  let lost = 0;
+  for (const s of strings) {
+    for (const f of world.faultsOf(s.data.id)) {
+      const p = progress(f, t);
+      if (p === 0) continue;
+      for (const e of f.type.effects) if (e.tag === "POWER") lost += (e.atFailure ?? 0.2) * p * p;
+    }
+  }
+  return Math.min(1, lost / strings.length);
+}
+
 // ─── Tag values ──────────────────────────────────────────────────────────────
 
 /**
@@ -171,6 +291,9 @@ export function expectedValue(world: World, tag: TagRecord, t: number, planned =
 function modelValue(world: World, tag: TagRecord, t: number, { r, L }: Operating): number {
   const asset = tag.asset;
   const tpl = tag.template;
+  // Power from the PV model stops when the inverter does; temperatures and soiling don't.
+  if (tpl.source === "pv_ac" || tpl.source === "pv_dc") return r * solarSource(world, tag, t, tpl.source);
+  if (tpl.source === "module_t" || tpl.source === "soiling") return solarSource(world, tag, t, tpl.source);
   const loadShare = tpl.load ?? 0;
   const running = tag.base * (1 - loadShare + loadShare * L);
   const idle = tpl.idle === "ambient" ? ambientC(world, asset.data.siteId, t) : tpl.idle === "hold" ? running : (tpl.idle ?? 0);
@@ -208,6 +331,8 @@ export function tagValue(world: World, chaos: ChaosWindows, tag: TagRecord, t: n
     value += noiseScale * noise * gaussNoise(tag.seed, tSec);
     value += noiseScale * (tpl.wander ?? 0.3 * noise) * smoothNoise(tag.seed + 1, tSec, 6 * HOUR_S);
     value += faultOffset(tag, world.faultsOf(asset.data.id), t);
+    // An inverter makes less when strings feeding it are underperforming.
+    if (tpl.source === "pv_ac" || tpl.source === "pv_dc") value -= modelValue(world, tag, t, op) * stringLoss(world, asset, t);
   }
 
   let quality: DataQuality = "good";

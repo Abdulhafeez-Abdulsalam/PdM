@@ -23,6 +23,7 @@ import { AddCommentRequest, AssetComment, AssetDocument, RelatedAssets } from ".
 import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
 import { AssetPerformance, PowerOperations, PowerOperationsRequest, TurbineTrend, TurbineTrendRequest } from "./operations";
+import { SolarOperations, SolarOperationsRequest } from "./solar";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
@@ -155,6 +156,13 @@ export const endpoints = {
     description: "A gas turbine's heat rate and compressor efficiency against their ambient-corrected baseline, with washes and trips",
     input: TurbineTrendRequest,
     output: TurbineTrend,
+  }),
+  "operations.solar": endpoint({
+    method: "GET",
+    path: "/operations/solar",
+    description: "Solar plants: power vs expected, performance ratio, loss waterfall, inverters, strings, batteries, cleaning advice",
+    input: SolarOperationsRequest,
+    output: SolarOperations,
   }),
   "assets.documents": endpoint({
     method: "GET",

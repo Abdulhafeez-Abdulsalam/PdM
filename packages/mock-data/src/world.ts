@@ -340,14 +340,19 @@ function assignFaults(world: World, now: number): void {
 }
 
 /**
- * A few hand-placed conditions so the gas-to-power screens have something to show besides the
+ * A few hand-placed conditions so the operations screens have something to show besides the
  * storyline: a gas turbine whose compressor is fouling now, one that was washed five days ago
- * (its trend shows the rise and the recovery), and a transformer with a growing hot spot.
+ * (its trend shows the rise and the recovery), a transformer with a growing hot spot, and at
+ * the first solar plant an inverter whose cooling is failing, a string with failed bypass
+ * diodes, and a battery whose cells are drifting apart.
  */
 const PLANT_SCENERY: readonly { assetId: string; faultTypeId: string; startDaysAgo: number; days: number; resolvedDaysAgo?: number }[] = [
   { assetId: "EBC-GT-101", faultTypeId: "compressor_fouling", startDaysAgo: 16, days: 30 },
   { assetId: "ANP-GT-102", faultTypeId: "compressor_fouling", startDaysAgo: 19, days: 30, resolvedDaysAgo: 5 },
   { assetId: "ANP-TX-104", faultTypeId: "transformer_gassing", startDaysAgo: 70, days: 110 },
+  { assetId: "PCS-INV-117", faultTypeId: "inverter_cooling", startDaysAgo: 30, days: 55 },
+  { assetId: "PCS-STR-150", faultTypeId: "string_underperformance", startDaysAgo: 40, days: 60 },
+  { assetId: "PCS-BESS-102", faultTypeId: "cell_imbalance", startDaysAgo: 50, days: 100 },
 ];
 
 function addPlantScenery(world: World, now: number): void {

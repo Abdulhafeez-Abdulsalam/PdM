@@ -23,6 +23,7 @@ import { useGlobalSearch } from "../../shared/time-range";
 import { LineChart } from "../../shared/widgets/LineChart";
 import { DgaSection } from "./DgaSection";
 import { InspectionCell } from "./InspectionCell";
+import { OperationsNav } from "./OperationsNav";
 import { efficiencyPct, formatIn, formatMw, signed } from "./power-format";
 import { TurbineTrend } from "./TurbineTrend";
 
@@ -63,6 +64,7 @@ export function PowerPage() {
         <h1 className="text-2xl font-semibold">{t("power.title")}</h1>
         <p className="text-fg-muted">{t("power.intro")}</p>
       </header>
+      <OperationsNav />
 
       {data.isPending ? (
         <Skeleton className="h-96" />

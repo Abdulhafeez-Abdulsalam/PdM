@@ -29,6 +29,7 @@ const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenan
 const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
+const SolarPage = lazyRouteComponent(() => import("../features/operations/SolarPage"), "SolarPage");
 const LiveLoadPage = lazyRouteComponent(() => import("../features/diagnostics/LiveLoadPage"), "LiveLoadPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
@@ -75,13 +76,20 @@ const moduleRoutes = MODULES.filter((m) => m.id !== "operations").map((m) =>
   }),
 );
 
-/** Operations has one page per industry; gas-to-power is the first built, so it's where /operations goes for now. */
+/** Operations has one page per industry; /operations opens the first in its menu (gas-to-power). */
 const operationsRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/operations",
   beforeLoad: ({ search }) => {
     throw redirect({ to: "/operations/power", search });
   },
+});
+
+/** Solar operations. */
+const solarRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/operations/solar",
+  component: SolarPage,
 });
 
 /** Gas-to-power operations. */
@@ -168,6 +176,7 @@ const routeTree = rootRoute.addChildren([
   ...moduleRoutes,
   operationsRoute,
   powerRoute,
+  solarRoute,
   compareRoute,
   assetRoute,
   assetTabRoute,
