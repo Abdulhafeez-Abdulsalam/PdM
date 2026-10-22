@@ -16,6 +16,7 @@ All decisions below were made on 2026-10-10.
 | 8 | Maps / charts libraries | ECharts or Highcharts; MapLibre or Mapbox | **ECharts, MapLibre** | Free and open-source; Highcharts and Mapbox need paid licences. See [ADR-0003](adr/0003-open-source-charts-and-maps.md). |
 | 9 | Visual regression testing | Chromatic | **Playwright screenshot tests** run locally | Chromatic needs an external account. |
 | 10 | Build depth | All phases | **All of Phase 1 built properly first**, later phases in later sessions | Avoids 16 half-working modules. |
+| 11 | 3D plant model | 3D plant/site model with orbit and fly controls, section views, measurement (§6.8) | **Left out.** The digital twin is 2D: process diagrams, solar layout, pipeline route, replay | Needs a 3D library (~600 KB) and 3D models of the plants that we don't have; the 2D views cover most of the need. Decided 2026-10-22 while planning Phase 3. |
 
 ## Acceptance criteria — updated
 
