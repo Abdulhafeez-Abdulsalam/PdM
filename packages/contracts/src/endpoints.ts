@@ -20,6 +20,7 @@ import {
   UnshelveAlarmRequest,
 } from "./alarms";
 import { Asset, AssetListParams } from "./assets";
+import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
@@ -124,6 +125,13 @@ export const endpoints = {
     description: "One asset — the Asset 360 header",
     input: z.object({ assetId: Id }),
     output: Asset,
+  }),
+  "assets.compare": endpoint({
+    method: "GET",
+    path: "/assets/compare",
+    description: "Assets of one class ranked on one measure, with outliers flagged",
+    input: FleetCompareRequest,
+    output: FleetCompareResponse,
   }),
   "assets.tags": endpoint({
     method: "GET",

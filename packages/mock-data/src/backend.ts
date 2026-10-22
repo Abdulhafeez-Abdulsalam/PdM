@@ -28,6 +28,7 @@ import {
 } from "@pdm/contracts";
 import { z } from "zod";
 import { AlarmEngine } from "./alarms";
+import { fleetCompare } from "./comparison";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -222,6 +223,18 @@ export class MockBackend {
     "assets.get": ({ assetId }) => {
       const asset = this.asset(assetId);
       return toAsset(asset, condition(this.snapshot(), asset));
+    },
+    "assets.compare": ({ assetClass, scopeId, measure }) => {
+      if (scopeId) this.scope(scopeId);
+      return fleetCompare({
+        world: this.world,
+        chaos: this.chaos,
+        snapshot: this.snapshot(),
+        now: this.now(),
+        assetClass,
+        measure,
+        inScope: this.inScope(scopeId),
+      });
     },
     "assets.tags": ({ assetId }) => ({ items: this.asset(assetId).tags.map((t) => t.tag) }),
 

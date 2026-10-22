@@ -17,6 +17,7 @@ import { CommandCenterPage } from "../features/command-center/CommandCenterPage"
 // Pages other than the home page load their code only when first visited (code-splitting).
 const AssetPage = lazyRouteComponent(() => import("../features/assets/AssetPage"), "AssetPage");
 const AssetRegistryPage = lazyRouteComponent(() => import("../features/assets/AssetRegistryPage"), "AssetRegistryPage");
+const ComparePage = lazyRouteComponent(() => import("../features/assets/ComparePage"), "ComparePage");
 const AlarmsPage = lazyRouteComponent(() => import("../features/alarms/AlarmsPage"), "AlarmsPage");
 const AlarmAnalyticsPage = lazyRouteComponent(() => import("../features/alarms/AlarmAnalyticsPage"), "AlarmAnalyticsPage");
 const PredictionConsolePage = lazyRouteComponent(() => import("../features/predictions/PredictionConsolePage"), "PredictionConsolePage");
@@ -72,6 +73,13 @@ const moduleRoutes = MODULES.map((m) =>
     component: BUILT[m.id as ModuleId] ?? (() => <ModulePage moduleId={m.id as ModuleId} />),
   }),
 );
+
+/** Fleet comparison. A fixed path, so it wins over /assets/$assetId. */
+const compareRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/assets/compare",
+  component: ComparePage,
+});
 
 /** /assets/GT-101 → /assets/GT-101/overview */
 const assetRoute = createRoute({
@@ -141,6 +149,7 @@ const liveLoadRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   ...moduleRoutes,
+  compareRoute,
   assetRoute,
   assetTabRoute,
   predictionRoute,

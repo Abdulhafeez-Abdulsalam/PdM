@@ -744,6 +744,51 @@
       "pattern": "Pattern"
     }
   },
+  "assetsNav": {
+    "label": "Asset pages",
+    "registry": "Asset registry",
+    "compare": "Compare"
+  },
+  "compare": {
+    "title": "Fleet comparison",
+    "intro": "Compare identical equipment side by side. One pump at 6 mm/s means little on its own; one pump at 6 mm/s when its sisters read 2 mm/s is worth a look.",
+    "classLabel": "Equipment type",
+    "classOption": "{{name}} ({{count}})",
+    "measureLabel": "Compare on",
+    "measure": {
+      "health": "Health score (0–100)",
+      "anomaly": "Anomaly score (0–1)",
+      "rul": "Remaining life (middle estimate)"
+    },
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "chartTitle": "Ranked, worst to best",
+    "summary": "{{count}} assets. Middle value (median) {{median}}. {{outliers}} stand apart from the rest (a robust score beyond ±{{threshold}}).",
+    "chartLabel": "{{measure}} for every {{name}}",
+    "chartAria": "{{label}}: {{count}} assets ranked worst to best, {{outliers}} outliers. The table below lists every value.",
+    "axisWorst": "Worst",
+    "axisBest": "Best",
+    "median": "Median {{value}}",
+    "tooltipRank": "#{{rank}} of {{count}}",
+    "nothingToPlot": "No values to compare right now.",
+    "tableTitle": "All assets",
+    "tableCaption": "Assets ranked worst to best, with how far each is from the fleet",
+    "onlyOutliers": "Only outliers ({{count}})",
+    "noValue": "No value",
+    "notRunning": "Not running ({{status}})",
+    "showingFirst": "Showing the first {{shown}} of {{total}}.",
+    "col": {
+      "rank": "#",
+      "deviation": "Distance from fleet",
+      "flag": "Stands out?"
+    },
+    "outlier": {
+      "high": "Unusually high",
+      "low": "Unusually low"
+    },
+    "worseThanFleet": "worse than the fleet",
+    "betterThanFleet": "better than the fleet"
+  },
   "field": {
     "myJobs": "My jobs",
     "assignedTo_one": "{{count}} open job assigned to {{name}}",

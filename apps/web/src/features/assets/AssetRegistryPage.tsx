@@ -10,6 +10,7 @@ import { Link } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { AssetsNav } from "./AssetsNav";
 import { formatNumber } from "../../shared/format";
 import { useGlobalSearch } from "../../shared/time-range";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
@@ -61,6 +62,7 @@ export function AssetRegistryPage() {
         <h1 className="text-2xl font-semibold">{t("modules.assets.name")}</h1>
         <p className="text-fg-muted">{t("assets.registryIntro")}</p>
       </header>
+      <AssetsNav />
 
       <div className="flex flex-wrap items-end gap-3">
         <label

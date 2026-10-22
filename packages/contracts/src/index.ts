@@ -8,6 +8,7 @@ export * from "./assets";
 export * from "./timeseries";
 export * from "./predictions";
 export * from "./anomalies";
+export * from "./comparison";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

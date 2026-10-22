@@ -27,6 +27,7 @@ test("every screen passes axe in every theme", async ({ page }) => {
   const screens: [string, Role][] = [
     ["/command-center", "plant_manager"],
     ["/assets", "reliability_engineer"],
+    ["/assets/compare?class=pump&measure=anomaly", "reliability_engineer"],
     ["/assets/CBC-GT-101", "reliability_engineer"],
     ["/assets/CBC-GT-101/telemetry", "reliability_engineer"],
     ["/assets/CBC-GT-101/health", "reliability_engineer"],

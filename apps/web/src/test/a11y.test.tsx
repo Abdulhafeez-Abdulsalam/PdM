@@ -30,6 +30,7 @@ const ASSET = "CBC-GT-101";
 const SCREENS: [string, RoleId][] = [
   ["/command-center", "plant_manager"],
   ["/assets", "reliability_engineer"],
+  ["/assets/compare?class=pump&measure=anomaly", "reliability_engineer"],
   [`/assets/${ASSET}`, "reliability_engineer"],
   [`/assets/${ASSET}/telemetry`, "reliability_engineer"],
   [`/assets/${ASSET}/health`, "reliability_engineer"],
