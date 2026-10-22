@@ -31,6 +31,7 @@ import { AlarmEngine } from "./alarms";
 import { DETECTION_PROGRESS, rawProgress } from "./faults";
 import { CommentStore, documentsFor, relatedFor } from "./asset-info";
 import { fleetCompare } from "./comparison";
+import { assetPerformance, powerOperations, turbineTrend } from "./operations";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -243,6 +244,19 @@ export class MockBackend {
         inScope: this.inScope(scopeId),
       });
     },
+    "assets.performance": ({ assetId }) =>
+      assetPerformance({ world: this.world, chaos: this.chaos, now: this.now() }, this.snapshot(), this.asset(assetId)),
+    "operations.power": ({ scopeId, siteId }) =>
+      powerOperations({
+        world: this.world,
+        chaos: this.chaos,
+        snapshot: this.snapshot(),
+        now: this.now(),
+        siteId,
+        inScope: this.inScope(scopeId),
+      }),
+    "operations.turbineTrend": ({ assetId, days }) =>
+      turbineTrend({ world: this.world, chaos: this.chaos, now: this.now() }, this.asset(assetId), days),
     "assets.documents": ({ assetId }) => ({ items: documentsFor(this.asset(assetId), this.now()) }),
     "assets.related": ({ assetId }) => relatedFor(this.world, this.snapshot(), this.asset(assetId)),
     "assets.comments": ({ assetId }) => {

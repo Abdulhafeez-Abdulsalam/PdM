@@ -28,6 +28,7 @@ const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/W
 const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenance/ScheduleBoardPage"), "ScheduleBoardPage");
 const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
+const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
 const LiveLoadPage = lazyRouteComponent(() => import("../features/diagnostics/LiveLoadPage"), "LiveLoadPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
@@ -66,13 +67,29 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   field: FieldPage,
 };
 
-const moduleRoutes = MODULES.map((m) =>
+const moduleRoutes = MODULES.filter((m) => m.id !== "operations").map((m) =>
   createRoute({
     getParentRoute: () => rootRoute,
     path: m.path,
     component: BUILT[m.id as ModuleId] ?? (() => <ModulePage moduleId={m.id as ModuleId} />),
   }),
 );
+
+/** Operations has one page per industry; gas-to-power is the first built, so it's where /operations goes for now. */
+const operationsRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/operations",
+  beforeLoad: ({ search }) => {
+    throw redirect({ to: "/operations/power", search });
+  },
+});
+
+/** Gas-to-power operations. */
+const powerRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/operations/power",
+  component: PowerPage,
+});
 
 /** Fleet comparison. A fixed path, so it wins over /assets/$assetId. */
 const compareRoute = createRoute({
@@ -149,6 +166,8 @@ const liveLoadRoute = createRoute({
 const routeTree = rootRoute.addChildren([
   indexRoute,
   ...moduleRoutes,
+  operationsRoute,
+  powerRoute,
   compareRoute,
   assetRoute,
   assetTabRoute,

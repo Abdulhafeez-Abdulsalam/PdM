@@ -334,6 +334,7 @@
       "overview": "Overview",
       "telemetry": "Telemetry",
       "health": "Health & prediction",
+      "performance": "Performance",
       "alarms": "Alarms",
       "maintenance": "Maintenance",
       "documents": "Documents",
@@ -1201,5 +1202,169 @@
     "title": "Page not found",
     "body": "There's no page at this address.",
     "home": "Go to your home page"
+  },
+  "chart": {
+    "legend": "Legend",
+    "showTable": "Show as table",
+    "showChart": "Show as chart",
+    "time": "Time"
+  },
+  "power": {
+    "title": "Gas-to-power operations",
+    "intro": "Is each plant making what the grid asked for, how well does it use its fuel, and what's wearing it down?",
+    "notInScope": "That plant isn't in the area you've picked. Choose another plant or widen the area.",
+    "noPlants": "There are no gas-to-power plants in the area you've picked.",
+    "plantsTitle": "Plants",
+    "kind": {
+      "combined_cycle": "Combined cycle",
+      "peaker": "Peaking plant"
+    },
+    "unitsRunning": "{{running}} of {{total}} units running",
+    "ofDispatch": "of {{dispatch}} asked for",
+    "shortfall": "{{mw}} short of dispatch",
+    "capacity": "Capacity",
+    "availability": "Availability, {{days}} days",
+    "capacityFactor": "Capacity factor, {{days}} days",
+    "plantHeatRate": "Plant heat rate",
+    "efficiency": "{{pct}} % efficient",
+    "washesRecommended_one": "{{count}} gas turbine needs a water wash",
+    "washesRecommended_other": "{{count}} gas turbines need a water wash",
+    "transformersOfConcern_one": "{{count}} transformer's oil needs a look",
+    "transformersOfConcern_other": "{{count}} transformers' oil needs a look",
+    "outputTitle": "{{name}}: output and dispatch",
+    "outputIntro": "Dispatch is what the grid operator asked for: what the plant said it could make at the day's air temperature. A gap means lost output.",
+    "outputLabel": "Plant output and dispatch over the last 48 hours, in MW",
+    "outputSummary": "Now {{output}} against {{dispatch}} asked for. Largest shortfall: {{gap}}, at {{when}}.",
+    "series": {
+      "output": "Output",
+      "dispatch": "Dispatch"
+    },
+    "turbinesTitle": "Gas turbines",
+    "turbinesIntro": "Heat rate is fuel in per kWh out: lower is better. Each turbine is compared with a clean machine at the same air temperature and load (its baseline), so a hot afternoon isn't mistaken for wear.",
+    "noTurbines": "This plant has no gas turbines.",
+    "col": {
+      "unit": "Unit",
+      "output": "Output",
+      "heatRate": "Heat rate",
+      "heatRateDev": "Heat rate vs baseline",
+      "compEffDev": "Compressor efficiency vs baseline",
+      "spread": "Exhaust temperature spread",
+      "inspection": "Next inspection",
+      "trend": "Trend"
+    },
+    "ofCapacity": "of {{capacity}}",
+    "baseline": "baseline {{value}}",
+    "washRecommended": "Water wash advised",
+    "pts": "{{value}} pts",
+    "showTrend": "Show trend",
+    "inspection": {
+      "hot_gas_path": "Hot gas path",
+      "major": "Major overhaul"
+    },
+    "inEoh": "in {{eoh}} EOH",
+    "dueSoon": "Due soon: about {{date}}",
+    "dueAbout": "About {{date}}",
+    "notAccumulating": "Out of service: not adding hours",
+    "trendTitle": "{{id}}: efficiency over 14 days",
+    "trendIntro": "Dirt building up on the compressor blades makes heat rate creep up and compressor efficiency creep down. An offline water wash brings both back.",
+    "event": {
+      "water_wash": "Water wash",
+      "repair": "Repair",
+      "trip": "Trip"
+    },
+    "trend": {
+      "heatRateTitle": "Heat rate above baseline (%)",
+      "heatRateSeries": "Heat rate vs baseline",
+      "heatRateLabel": "{{id}} heat rate compared with its baseline, hourly, last {{days}} days",
+      "compEffTitle": "Compressor efficiency vs baseline (percentage points)",
+      "compEffSeries": "Compressor efficiency vs baseline",
+      "compEffLabel": "{{id}} compressor efficiency compared with its baseline, hourly, last {{days}} days",
+      "washTrigger": "Wash trigger",
+      "noData": "The turbine didn't run in this period.",
+      "summary": "Now {{latest}}; worst {{worst}} on {{when}}. Water washes in the period: {{washes}}."
+    }
+  },
+  "dga": {
+    "title": "Transformer oil analysis",
+    "intro": "Faults inside a transformer break the oil down into gases. How much gas there is gives the condition (1 normal to 4 act now); which gases, plotted on the Duval triangle, say what kind of fault.",
+    "none": "This plant has no transformers.",
+    "triangleLabel": "Duval triangle with each transformer's latest oil sample",
+    "summaryAllNormal": "All {{count}} transformers are condition 1 (normal). Their points sit where healthy oil usually does.",
+    "summaryConcern": "Needs a look: {{list}}.",
+    "tableCaption": "Latest oil sample of each transformer",
+    "sampled": "Sampled {{date}}",
+    "setBy": "set by {{gas}}",
+    "conditionNote": "Conditions follow IEEE C57.104 (2008): the worst single gas, or the total, sets it.",
+    "gasesCaption": "Dissolved gases in the latest sample, ppm",
+    "sourceOnline": "Lab, and the online monitor",
+    "sourceLab": "Lab",
+    "axisCh4": "100 % methane (CH₄)",
+    "axisC2h4": "ethylene (C₂H₄)",
+    "axisC2h2": "acetylene (C₂H₂)",
+    "tooltipMix": "CH₄ {{ch4}} % · C₂H₄ {{c2h4}} % · C₂H₂ {{c2h2}} %",
+    "col": {
+      "transformer": "Transformer",
+      "condition": "Condition",
+      "tdcg": "Total gas (ppm)",
+      "perDay": "Change per day (ppm)",
+      "zone": "Duval zone",
+      "gas": "Gas",
+      "ppm": "ppm",
+      "source": "Measured by",
+      "sampled": "Sampled"
+    },
+    "condition": {
+      "1": "Condition 1 · normal",
+      "2": "Condition 2 · watch",
+      "3": "Condition 3 · act soon",
+      "4": "Condition 4 · act now"
+    },
+    "gas": {
+      "H2": "Hydrogen (H₂)",
+      "CH4": "Methane (CH₄)",
+      "C2H6": "Ethane (C₂H₆)",
+      "C2H4": "Ethylene (C₂H₄)",
+      "C2H2": "Acetylene (C₂H₂)",
+      "CO": "Carbon monoxide (CO)",
+      "TDCG": "Total combustible gas"
+    },
+    "gasMeaning": {
+      "H2": "partial discharge, any fault",
+      "CH4": "low-temperature overheating",
+      "C2H6": "low-temperature overheating",
+      "C2H4": "hot spots, rising with temperature",
+      "C2H2": "arcing, very hot spots",
+      "CO": "overheated paper insulation"
+    },
+    "zone": {
+      "PD": "PD · partial discharge",
+      "T1": "T1 · hot spot under 300 °C",
+      "T2": "T2 · hot spot 300–700 °C",
+      "T3": "T3 · hot spot over 700 °C",
+      "D1": "D1 · sparking",
+      "D2": "D2 · arcing",
+      "DT": "DT · heat and discharge mixed"
+    }
+  },
+  "performance": {
+    "none": "No performance measures for this kind of equipment yet.",
+    "washAdvice": "Fouling has pushed this turbine past the wash trigger: plan an offline compressor water wash at the next low-demand window.",
+    "heatRate": "Heat rate (last hour)",
+    "compEff": "Compressor efficiency (last hour)",
+    "vsBaseline": "{{value}} vs baseline",
+    "trendTitle": "Efficiency over 14 days",
+    "eohTitle": "Operating hours and inspections",
+    "eohIntro": "Equivalent operating hours (EOH) count fired hours plus {{perStart}} for every start, because heating up and cooling down wear the hot parts too. The hot parts are inspected every {{interval}} EOH; every second inspection is a major overhaul.",
+    "eohTotal": "EOH since commissioning",
+    "eohSince": "EOH since last inspection",
+    "starts": "Starts since commissioning",
+    "startsSince": "Starts since last inspection",
+    "perDay": "EOH added per day (typical)",
+    "next": "Next inspection",
+    "latestSample": "Latest oil sample, {{date}}",
+    "duvalTitle": "Where the gases point",
+    "duvalLabel": "Duval triangle with {{id}}'s last oil samples, joined oldest to newest",
+    "duvalSummary": "The last {{count}} samples, oldest to newest: from {{from}} to {{to}}.",
+    "samplesTitle": "Oil samples"
   }
 }

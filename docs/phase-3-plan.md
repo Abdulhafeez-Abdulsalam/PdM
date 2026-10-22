@@ -1,6 +1,6 @@
 # Phase 3 plan: domain depth
 
-*Agreed 2026-10-22. Nothing here is built yet.*
+*Agreed 2026-10-22. Progress: chunk 1 done (2026-10-22).*
 
 Phase 1 built the foundation and Phase 2 the predictive core. Phase 3 ("domain depth" in the spec, §6.3, §6.7, §6.8) is where the app starts to speak each industry's language: a gas turbine engineer, a solar plant manager and a pipeline integrity engineer each get screens built around *their* questions, and the reliability engineer gets real analysis tools.
 
@@ -22,7 +22,7 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 
 | # | Chunk | What you'd see | Notes |
 |---|---|---|---|
-| 1 | **Gas-to-power operations** (`/operations/power`) | Plant output vs dispatch, availability, capacity factor; gas turbine heat rate and compressor efficiency vs an ambient-corrected baseline (the storyline's fouling and water-wash recovery shows up here); EOH counters and hot-gas-path inspection forecast; transformer gas analysis on a Duval triangle | The demo storyline lives on a gas turbine, so this makes it shine |
+| 1 ✅ | **Gas-to-power operations** (`/operations/power`) | Plant output vs dispatch, availability, capacity factor; gas turbine heat rate and compressor efficiency vs an ambient-corrected baseline (the storyline's fouling and water-wash recovery shows up here); EOH counters and hot-gas-path inspection forecast; transformer gas analysis on a Duval triangle | The demo storyline lives on a gas turbine, so this makes it shine |
 | 2 | **Solar operations** (`/operations/solar`) | Power vs expected, performance ratio, the loss waterfall (irradiance → soiling → temperature → inverter → clipping…); inverter heat map; underperforming strings; soiling and a cleaning recommender; BESS state of charge and health | The biggest fleet (768 strings) and the most visual |
 | 3 | **Oil & gas operations** (`/operations/oil-gas`) | Upstream: ESP diagnostics and production vs decline curve. Midstream: pipeline wall thickness and corrosion rates, compressor stations. Downstream: exchanger fouling, PSV and inspection schedules (API 510/570/653) | Uses health and anomaly measures at first; gains MTBF/MTTR once chunk 4 exists |
 | 4 | **Reliability KPIs** (`/reliability`) | MTBF, MTTR, availability per class and site; Pareto of failure modes; bad actors and repeat failures; Asset 360 *Failures* tab | Built from the ISO 14224 close-outs; becomes the Reliability Engineer's home page |
@@ -31,6 +31,8 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 | 7 | **Rotating-equipment diagnostics** | Asset 360 *Vibration* tab: frequency spectrum with fault-frequency markers (1×, 2×, bearing frequencies BPFO/BPFI), a waterfall (spectra over time), an orbit plot | The mock must generate spectra with real fault signatures |
 | 8 | **Digital twin (2D)** (`/twin`) | A process diagram per unit with live values and alarm colours, clicking through to Asset 360; solar farm layout (block → inverter → string); pipeline route by distance with anomalies; a time slider to replay the last days | Ties everything together; needs the earlier chunks' data |
 | 9 | **Phase 3 review** | Like the Phase 2 review: criteria re-tested, gaps listed, real-browser checks | |
+
+**What chunk 1 added beyond the table:** a reusable line chart (also for solar's power vs expected); transformer gases come from monthly lab oil samples (the online monitor covers H₂, C₂H₂ and CO); three hand-placed plant conditions so the page always has something to show (a fouling turbine, one washed five days ago, a gassing transformer); and an air-temperature effect on gas turbine power and heat rate, so "ambient-corrected" means something. See [learning note 18](learning/18-gas-to-power-heat-rate-hours-and-oil.md).
 
 Asset 360 gets its *Performance* tab in chunks 1–3 (each class shows its own measures), *Failures* in chunk 4 and *Twin* in chunk 8.
 

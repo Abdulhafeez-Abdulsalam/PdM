@@ -56,13 +56,14 @@ export type Module = (typeof MODULES)[number];
 export type ModuleId = Module["id"];
 
 /** The phase currently being built. Modules from later phases show as "planned" in demo mode. */
-export const CURRENT_PHASE = 2;
+export const CURRENT_PHASE = 3;
 
 /** Modules with a real screen (the rest show a placeholder). */
 export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
   "command-center",
   "assets",
   "alarms",
+  "operations",
   "predictive",
   "maintenance",
   "field",

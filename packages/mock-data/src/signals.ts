@@ -118,9 +118,13 @@ function batterySoc(h: number): number {
   return 0.2;
 }
 
-export function operating(world: World, asset: AssetRecord, t: number): Operating {
+/**
+ * How much the asset is running, and at what load. `planned` ignores trips: what the asset
+ * was meant to be doing (used for the dispatch target).
+ */
+export function operating(world: World, asset: AssetRecord, t: number, planned = false): Operating {
   if (asset.staticStatus === "maintenance" || asset.staticStatus === "standby") return { r: 0, L: 0 };
-  if (world.faultsOf(asset.data.id).some((f) => progress(f, t) >= 1)) return { r: 0, L: 0 }; // tripped
+  if (!planned && world.faultsOf(asset.data.id).some((f) => progress(f, t) >= 1)) return { r: 0, L: 0 }; // tripped
 
   const { def, seed } = asset.site;
   const tSec = t / 1000;
@@ -154,6 +158,28 @@ export function operating(world: World, asset: AssetRecord, t: number): Operatin
 
 // ─── Tag values ──────────────────────────────────────────────────────────────
 
+/**
+ * What a healthy asset's tag should read at time t, given its load and the air temperature:
+ * the model without noise or faults. It's the "ambient-corrected baseline" that real plants
+ * build by fitting clean history; here we know the true model, so we use it directly.
+ * `planned` ignores trips (what the asset was meant to be doing).
+ */
+export function expectedValue(world: World, tag: TagRecord, t: number, planned = false): number {
+  return modelValue(world, tag, t, operating(world, tag.asset, t, planned));
+}
+
+function modelValue(world: World, tag: TagRecord, t: number, { r, L }: Operating): number {
+  const asset = tag.asset;
+  const tpl = tag.template;
+  const loadShare = tpl.load ?? 0;
+  const running = tag.base * (1 - loadShare + loadShare * L);
+  const idle = tpl.idle === "ambient" ? ambientC(world, asset.data.siteId, t) : tpl.idle === "hold" ? running : (tpl.idle ?? 0);
+  // Air temperature shifts a running machine's value (a hot day cuts a gas turbine's output);
+  // a stopped one with a fixed idle value (power = 0) stays at it.
+  const fixedIdle = tpl.idle === undefined || typeof tpl.idle === "number";
+  return idle + (running - idle) * r + (fixedIdle ? r : 1) * tag.base * (tpl.ambient ?? 0) * ambientNorm(world, asset.data.siteId, t);
+}
+
 /** The value of a tag at time t, or null when there is no data (offline asset, chaos gap). */
 export function tagValue(world: World, chaos: ChaosWindows, tag: TagRecord, t: number): Reading | null {
   const asset = tag.asset;
@@ -172,13 +198,9 @@ export function tagValue(world: World, chaos: ChaosWindows, tag: TagRecord, t: n
   } else if (tag.flatline) {
     return { value: tag.base, quality: "uncertain" };
   } else {
-    const { r, L } = operating(world, asset, t);
-    const loadShare = tpl.load ?? 0;
-    const running = tag.base * (1 - loadShare + loadShare * L);
-    const idle = tpl.idle === "ambient" ? ambientC(world, asset.data.siteId, t) : tpl.idle === "hold" ? running : (tpl.idle ?? 0);
-    value = idle + (running - idle) * r;
-
-    value += tag.base * (tpl.ambient ?? 0) * ambientNorm(world, asset.data.siteId, t);
+    const op = operating(world, asset, t);
+    const { r } = op;
+    value = modelValue(world, tag, t, op);
     // A stopped machine with a fixed idle value (power = 0) reads flat; only running signals are noisy.
     const flatWhenIdle = tpl.idle === undefined || typeof tpl.idle === "number";
     const noiseScale = scaleAbs * (flatWhenIdle ? r : 1);

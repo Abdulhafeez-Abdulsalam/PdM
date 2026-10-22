@@ -13,7 +13,7 @@ import {
   type User,
 } from "@pdm/contracts";
 import { ASSET_CLASSES } from "./catalog/asset-catalog";
-import { FAULT_TYPES, type FaultType } from "./catalog/fault-types";
+import { FAULT_TYPES, faultTypeById, type FaultType } from "./catalog/fault-types";
 import { FIRST_NAMES, LAST_NAMES, ROLE_TITLES } from "./catalog/people";
 import { REGIONS, SITES, STORYLINE_ASSET_ID } from "./catalog/sites";
 import { TAG_TEMPLATES, type TagTemplate } from "./catalog/tag-templates";
@@ -70,6 +70,7 @@ export function buildWorld(seed: number, now: number): World {
   buildUsers(world);
   buildHierarchy(world, now);
   assignFaults(world, now);
+  addPlantScenery(world, now);
   return world;
 }
 
@@ -334,6 +335,34 @@ function assignFaults(world: World, now: number): void {
       resolvedAt: null,
       rulBias: rng.between(-0.15, 0.15),
       dataQuality: rng.chance(0.2) ? makeDqFlag(rng, asset, type) : null,
+    });
+  }
+}
+
+/**
+ * A few hand-placed conditions so the gas-to-power screens have something to show besides the
+ * storyline: a gas turbine whose compressor is fouling now, one that was washed five days ago
+ * (its trend shows the rise and the recovery), and a transformer with a growing hot spot.
+ */
+const PLANT_SCENERY: readonly { assetId: string; faultTypeId: string; startDaysAgo: number; days: number; resolvedDaysAgo?: number }[] = [
+  { assetId: "EBC-GT-101", faultTypeId: "compressor_fouling", startDaysAgo: 16, days: 30 },
+  { assetId: "ANP-GT-102", faultTypeId: "compressor_fouling", startDaysAgo: 19, days: 30, resolvedDaysAgo: 5 },
+  { assetId: "ANP-TX-104", faultTypeId: "transformer_gassing", startDaysAgo: 70, days: 110 },
+];
+
+function addPlantScenery(world: World, now: number): void {
+  for (const s of PLANT_SCENERY) {
+    const asset = world.assets.get(s.assetId);
+    if (!asset || asset.staticStatus !== "normal" || world.faultsOf(s.assetId).length > 0) continue;
+    const start = now - s.startDaysAgo * DAY;
+    world.addFault({
+      type: faultTypeById(s.faultTypeId),
+      asset,
+      start,
+      failAt: start + s.days * DAY,
+      resolvedAt: s.resolvedDaysAgo === undefined ? null : now - s.resolvedDaysAgo * DAY,
+      rulBias: 0,
+      dataQuality: null,
     });
   }
 }

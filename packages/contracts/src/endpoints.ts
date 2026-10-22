@@ -22,6 +22,7 @@ import {
 import { AddCommentRequest, AssetComment, AssetDocument, RelatedAssets } from "./asset-info";
 import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
+import { AssetPerformance, PowerOperations, PowerOperationsRequest, TurbineTrend, TurbineTrendRequest } from "./operations";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
@@ -133,6 +134,27 @@ export const endpoints = {
     description: "Assets of one class ranked on one measure, with outliers flagged",
     input: FleetCompareRequest,
     output: FleetCompareResponse,
+  }),
+  "assets.performance": endpoint({
+    method: "GET",
+    path: "/assets/:assetId/performance",
+    description: "The asset's own performance measures (gas turbine efficiency and inspection hours, transformer oil analysis)",
+    input: z.object({ assetId: Id }),
+    output: AssetPerformance,
+  }),
+  "operations.power": endpoint({
+    method: "GET",
+    path: "/operations/power",
+    description: "Gas-to-power plants: output vs dispatch, availability, heat rate; one plant's turbines and transformers",
+    input: PowerOperationsRequest,
+    output: PowerOperations,
+  }),
+  "operations.turbineTrend": endpoint({
+    method: "GET",
+    path: "/operations/power/turbines/:assetId/trend",
+    description: "A gas turbine's heat rate and compressor efficiency against their ambient-corrected baseline, with washes and trips",
+    input: TurbineTrendRequest,
+    output: TurbineTrend,
   }),
   "assets.documents": endpoint({
     method: "GET",

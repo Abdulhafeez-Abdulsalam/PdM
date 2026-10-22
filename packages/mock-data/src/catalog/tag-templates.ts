@@ -59,7 +59,17 @@ const brgTemp = (name: string, base: number): TagTemplate => ({
 export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
   // ─── Gas-to-power ───────────────────────────────────────────────────────────
   gas_turbine: [
-    { name: "POWER", description: "Gross active power", quantity: "power", base: 165_000, load: 1, noise: 0.004, scaled: true },
+    // Hot air is thin: a gas turbine makes less power and burns more fuel per kWh on a hot day.
+    {
+      name: "POWER",
+      description: "Gross active power",
+      quantity: "power",
+      base: 165_000,
+      load: 1,
+      ambient: -0.05,
+      noise: 0.004,
+      scaled: true,
+    },
     { name: "SPEED", description: "Shaft speed", quantity: "rotational_speed", base: 3000, noise: 0.0005 },
     {
       name: "EXH_TEMP",
@@ -116,6 +126,7 @@ export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
       description: "Net heat rate",
       quantity: "heat_rate",
       base: 9750,
+      ambient: 0.012,
       noise: 0.003,
       bad: "high",
       limits: [0.03, 0.05, 0.08],

@@ -16,9 +16,20 @@ import { AlarmsTab, MaintenanceTab } from "./HistoryTabs";
 import { HealthTab } from "./HealthTab";
 import { CommentsTab, DocumentsTab, RelatedTab } from "./InfoTabs";
 import { OverviewTab } from "./OverviewTab";
+import { PERFORMANCE_CLASSES, PerformanceTab } from "./PerformanceTab";
 import { TelemetryTab } from "./TelemetryTab";
 
-export const ASSET_TABS = ["overview", "telemetry", "health", "alarms", "maintenance", "documents", "related", "comments"] as const;
+export const ASSET_TABS = [
+  "overview",
+  "telemetry",
+  "health",
+  "performance",
+  "alarms",
+  "maintenance",
+  "documents",
+  "related",
+  "comments",
+] as const;
 export type AssetTab = (typeof ASSET_TABS)[number];
 
 export function AssetPage() {
@@ -45,14 +56,16 @@ export function AssetPage() {
 
   const site = sites.data?.items.find((s) => s.id === asset.data?.siteId);
   const area = path.data?.items.find((n) => n.level === "area");
-  const current = (ASSET_TABS as readonly string[]).includes(tab) ? (tab as AssetTab) : "overview";
+  // Performance only for the kinds of equipment that have performance measures so far.
+  const tabs = ASSET_TABS.filter((tb) => tb !== "performance" || (asset.data && PERFORMANCE_CLASSES.has(asset.data.assetClass)));
+  const current = (tabs as readonly string[]).includes(tab) ? (tab as AssetTab) : "overview";
 
   return (
     <div className="mx-auto flex max-w-[1600px] flex-col gap-4">
       {asset.data ? <AssetHeader asset={asset.data} siteName={site?.name} areaName={area?.name} /> : <Skeleton className="h-28" />}
 
       <nav aria-label={t("assets.tabsLabel")} className="flex gap-1 overflow-x-auto border-b border-line">
-        {ASSET_TABS.map((tb) => (
+        {tabs.map((tb) => (
           <Link
             key={tb}
             to="/assets/$assetId/$tab"
@@ -74,6 +87,7 @@ export function AssetPage() {
           overview: <OverviewTab asset={asset.data} siteTimeZone={site?.timezone} />,
           telemetry: <TelemetryTab asset={asset.data} siteTimeZone={site?.timezone} />,
           health: <HealthTab asset={asset.data} />,
+          performance: <PerformanceTab asset={asset.data} />,
           alarms: <AlarmsTab asset={asset.data} siteTimeZone={site?.timezone} />,
           maintenance: <MaintenanceTab asset={asset.data} />,
           documents: <DocumentsTab asset={asset.data} />,
