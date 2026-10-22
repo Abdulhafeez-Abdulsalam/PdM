@@ -19,6 +19,7 @@ import {
   ShelveAlarmRequest,
   UnshelveAlarmRequest,
 } from "./alarms";
+import { AddCommentRequest, AssetComment, AssetDocument, RelatedAssets } from "./asset-info";
 import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
 import { Briefing } from "./briefing";
@@ -132,6 +133,34 @@ export const endpoints = {
     description: "Assets of one class ranked on one measure, with outliers flagged",
     input: FleetCompareRequest,
     output: FleetCompareResponse,
+  }),
+  "assets.documents": endpoint({
+    method: "GET",
+    path: "/assets/:assetId/documents",
+    description: "Manuals, P&IDs, datasheets, procedures, OEM bulletins and certificates for an asset",
+    input: z.object({ assetId: Id }),
+    output: list(AssetDocument),
+  }),
+  "assets.related": endpoint({
+    method: "GET",
+    path: "/assets/:assetId/related",
+    description: "Parent, parts, same-area equipment and sister assets (same type, same site)",
+    input: z.object({ assetId: Id }),
+    output: RelatedAssets,
+  }),
+  "assets.comments": endpoint({
+    method: "GET",
+    path: "/assets/:assetId/comments",
+    description: "The discussion about an asset, newest first",
+    input: z.object({ assetId: Id }),
+    output: list(AssetComment),
+  }),
+  "assets.addComment": endpoint({
+    method: "POST",
+    path: "/assets/:assetId/comments",
+    description: "Add a comment; people named with @Full Name are mentioned",
+    input: AddCommentRequest,
+    output: AssetComment,
   }),
   "assets.tags": endpoint({
     method: "GET",

@@ -5,6 +5,7 @@ export * from "./hierarchy";
 export * from "./quantities";
 export * from "./tags";
 export * from "./assets";
+export * from "./asset-info";
 export * from "./timeseries";
 export * from "./predictions";
 export * from "./anomalies";

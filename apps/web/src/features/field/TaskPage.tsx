@@ -34,7 +34,7 @@ import { useSimNow } from "../../shared/sim-time";
 import { formatMeasurement, fromDisplay, toDisplay } from "../../shared/units";
 import { PriorityLabel } from "../maintenance/PriorityLabel";
 import { useWorkOrderActions } from "../maintenance/use-work-order-actions";
-import { clearDraft, readDraft, useKeepDraft } from "./draft";
+import { clearDraft, readDraft, useKeepDraft } from "../../shared/drafts";
 
 export function TaskPage() {
   const { t } = useTranslation();

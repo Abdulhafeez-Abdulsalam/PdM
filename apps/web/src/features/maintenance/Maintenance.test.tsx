@@ -1,10 +1,18 @@
 import { createMockBackend } from "@pdm/mock-data";
 import { screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
+import userEvent, { PointerEventsCheckLevel } from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { usePreferences } from "../../shared/preferences";
 import { useToasts } from "../../shared/toast";
 import { TEST_SEED, TEST_START, renderApp } from "../../test/render-app";
+
+/**
+ * The board has a few hundred cards, so thousands of elements. Two test-library costs grow
+ * with that: "find by role" works out every element's role, and every click first checks the
+ * whole chain of parents for "pointer-events: none". On the board the tests use text lookups
+ * for menu items and skip that check, which took them from over 20 s under load to a few.
+ */
+const boardUser = () => userEvent.setup({ pointerEventsCheck: PointerEventsCheckLevel.Never });
 
 beforeEach(() => {
   usePreferences.setState({ role: "maintenance_planner", theme: "light", units: "si" });
@@ -27,22 +35,22 @@ describe("work-order board", () => {
   });
 
   it("lets a planner triage a request from the card's Move to… menu", async () => {
-    const user = userEvent.setup();
+    const user = boardUser();
     const wo = probe().request("workOrders.list", { status: ["requested"], sort: "priority", limit: 1 }).items[0]!;
     const { backend } = renderApp("/maintenance");
     const card = await screen.findByRole("article", { name: `${wo.number}: ${wo.title}` });
     await user.click(within(card).getByRole("button", { name: `Move to… ${wo.number}` }));
-    await user.click(await screen.findByRole("button", { name: "Triage" }));
+    await user.click(await screen.findByText("Triage", { selector: "button" }));
     await waitFor(() => expect(backend.request("workOrders.get", { workOrderId: wo.id }).status).toBe("triaged"));
   });
 
   it("asks when and who before scheduling", async () => {
-    const user = userEvent.setup();
+    const user = boardUser();
     const wo = probe().request("workOrders.list", { status: ["planned"], limit: 1 }).items[0]!;
     const { backend } = renderApp("/maintenance");
     const card = await screen.findByRole("article", { name: `${wo.number}: ${wo.title}` });
     await user.click(within(card).getByRole("button", { name: `Move to… ${wo.number}` }));
-    await user.click(await screen.findByRole("button", { name: "Schedule…" }));
+    await user.click(await screen.findByText("Schedule…", { selector: "button" }));
     const dialog = await screen.findByRole("dialog", { name: "Schedule work" });
     const assignee = within(dialog).getByLabelText(/Assign to/) as HTMLSelectElement;
     await waitFor(() => expect(assignee.options.length).toBeGreaterThan(1));

@@ -1,31 +1,48 @@
-/** A work order on the board: what, where, who, when — plus its allowed moves. */
+/**
+ * A work order on the board: what, where, who, when — plus its allowed moves.
+ *
+ * Memoised: with a few hundred cards on the board, re-drawing all of them whenever anything
+ * changes (a dialog opening, the clock ticking) made the board slow. Its props are kept
+ * stable, so React skips cards whose work order hasn't changed.
+ */
+import { useSimulationSelector } from "@pdm/api-client";
 import type { User, WorkOrder, WorkOrderStatus } from "@pdm/contracts";
 import { Popover, cx } from "@pdm/ui";
 import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { Link } from "@tanstack/react-router";
 import { ArrowRightLeft, CalendarClock, GripVertical, User as UserIcon } from "lucide-react";
+import { memo } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "../../shared/format";
-import { moveLabelKey } from "./lifecycle";
+import { usePreferences } from "../../shared/preferences";
+import { allowedMoves, moveLabelKey } from "./lifecycle";
 import { PriorityLabel } from "./PriorityLabel";
 
 interface Props {
   wo: WorkOrder;
   assignee: User | undefined;
-  moves: WorkOrderStatus[];
-  now: number;
-  onMove: (to: WorkOrderStatus) => void;
+  /** Must be stable (the same function every render), or the memo is wasted. */
+  onMove: (wo: WorkOrder, to: WorkOrderStatus) => void;
 }
 
-export function WorkOrderCard({ wo, assignee, moves, now, onMove }: Props) {
+export const WorkOrderCard = memo(function WorkOrderCard({ wo, assignee, onMove }: Props) {
   const { t } = useTranslation();
+  const role = usePreferences((p) => p.role);
+  const moves = allowedMoves(role, wo);
+  // Reads only the yes/no answer, so the card re-renders when it becomes overdue, not every second.
+  const overdue = useSimulationSelector(
+    (s) =>
+      s !== null &&
+      wo.dueAt !== null &&
+      Date.parse(wo.dueAt) < Date.parse(s.simTime) &&
+      !["completed", "verified", "closed"].includes(wo.status),
+  );
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: wo.id,
     data: { wo },
     disabled: moves.length === 0,
   });
-  const overdue = wo.dueAt !== null && Date.parse(wo.dueAt) < now && !["completed", "verified", "closed"].includes(wo.status);
 
   return (
     <article
@@ -95,7 +112,11 @@ export function WorkOrderCard({ wo, assignee, moves, now, onMove }: Props) {
           <ul aria-label={t("board.moveTo")}>
             {moves.map((to) => (
               <li key={to}>
-                <button type="button" onClick={() => onMove(to)} className="w-full rounded px-2 py-1.5 text-left text-sm hover:bg-sunken">
+                <button
+                  type="button"
+                  onClick={() => onMove(wo, to)}
+                  className="w-full rounded px-2 py-1.5 text-left text-sm hover:bg-sunken"
+                >
                   {t(moveLabelKey(wo.status, to))}
                 </button>
               </li>
@@ -105,4 +126,4 @@ export function WorkOrderCard({ wo, assignee, moves, now, onMove }: Props) {
       )}
     </article>
   );
-}
+});

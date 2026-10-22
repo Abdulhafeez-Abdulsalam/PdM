@@ -28,6 +28,8 @@ import {
 } from "@pdm/contracts";
 import { z } from "zod";
 import { AlarmEngine } from "./alarms";
+import { DETECTION_PROGRESS, rawProgress } from "./faults";
+import { CommentStore, documentsFor, relatedFor } from "./asset-info";
 import { fleetCompare } from "./comparison";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
@@ -66,6 +68,7 @@ export class MockBackend {
   readonly alarms: AlarmEngine;
   readonly workOrders: WorkOrderStore;
   readonly storyline: Storyline;
+  readonly comments: CommentStore;
   private readonly overlays = new Map<string, PredictionOverlay>();
   private readonly log: TimelineEvent[] = [];
   private readonly hubs = new Set<LiveHub>();
@@ -84,6 +87,10 @@ export class MockBackend {
       this.addLog({ kind: "operator_action", t: iso(t), assetId: alarm.assetId, title, detail: null, severity: null, refId: alarm.id }),
     );
     this.storyline = new Storyline(this.world, this.workOrders, this.overlays, (e) => this.addLog({ ...e, assetId: STORYLINE_ASSET_ID }));
+    // A short discussion on assets with a well-developed fault (only those: the comments talk
+    // about readings creeping up, which would be odd on a healthy asset).
+    const discussed = this.world.faults.filter((f) => rawProgress(f, start) >= DETECTION_PROGRESS).map((f) => f.asset.data.id);
+    this.comments = new CommentStore(this.world, start, [...new Set(discussed)].slice(0, 12));
     this.validateOutput = options.validateOutput ?? true;
     this.role = options.role ?? "executive";
   }
@@ -236,6 +243,13 @@ export class MockBackend {
         inScope: this.inScope(scopeId),
       });
     },
+    "assets.documents": ({ assetId }) => ({ items: documentsFor(this.asset(assetId), this.now()) }),
+    "assets.related": ({ assetId }) => relatedFor(this.world, this.snapshot(), this.asset(assetId)),
+    "assets.comments": ({ assetId }) => {
+      this.asset(assetId);
+      return { items: this.comments.list(assetId) };
+    },
+    "assets.addComment": (request) => this.comments.add(request, this.me().id, this.now()),
     "assets.tags": ({ assetId }) => ({ items: this.asset(assetId).tags.map((t) => t.tag) }),
 
     "timeseries.history": ({ tagIds, from, to, maxPoints }) => {

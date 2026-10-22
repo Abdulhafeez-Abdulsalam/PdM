@@ -335,7 +335,10 @@
       "telemetry": "Telemetry",
       "health": "Health & prediction",
       "alarms": "Alarms",
-      "maintenance": "Maintenance"
+      "maintenance": "Maintenance",
+      "documents": "Documents",
+      "related": "Related",
+      "comments": "Comments"
     },
     "serial": "S/N {{serial}}",
     "commissioned": "in service since {{date}}",
@@ -788,6 +791,70 @@
     },
     "worseThanFleet": "worse than the fleet",
     "betterThanFleet": "better than the fleet"
+  },
+  "docs": {
+    "title": "Documents",
+    "note": "Records from the document management system. In this demo there are records only; a real system opens the file from here.",
+    "kindLabel": "Show",
+    "tableLabel": "Document list",
+    "allKinds": "All documents ({{count}})",
+    "kind": {
+      "manual": "Manual",
+      "pid": "P&ID (piping and instrument diagram)",
+      "datasheet": "Datasheet",
+      "procedure": "Procedure",
+      "oem_bulletin": "Maker's service bulletin",
+      "certificate": "Inspection certificate"
+    },
+    "scope": {
+      "class": "For every asset of this type · {{size}} MB",
+      "asset": "For this asset · {{size}} MB"
+    },
+    "source": {
+      "oem": "Equipment maker",
+      "site": "Site"
+    },
+    "col": {
+      "title": "Title",
+      "kind": "Type",
+      "number": "Document number",
+      "revision": "Rev.",
+      "issued": "Issued",
+      "from": "From"
+    }
+  },
+  "related": {
+    "partOf": "Part of",
+    "noParent": "Not part of a larger piece of equipment.",
+    "parts_one": "Parts ({{count}})",
+    "parts_other": "Parts ({{count}})",
+    "noParts": "No parts tracked separately.",
+    "sisters_one": "Sister assets: {{count}} other {{name}} at this site",
+    "sisters_other": "Sister assets: {{count}} other {{name}} assets at this site",
+    "noSisters": "No other equipment of this type at this site.",
+    "compare": "Compare with all of them",
+    "sameArea_one": "In the same area ({{count}})",
+    "sameArea_other": "In the same area ({{count}})",
+    "sameAreaHint": "Equipment nearby: a fault here can affect them, and theirs can affect this one.",
+    "nothingNearby": "Nothing else in this area.",
+    "showing": "Showing the {{shown}} in worst health of {{total}}."
+  },
+  "comments": {
+    "title_one": "Comments ({{count}})",
+    "title_other": "Comments ({{count}})",
+    "none": "No comments yet",
+    "noneHint": "Start the discussion: what have you noticed about this asset?",
+    "by": "Comment by {{name}}",
+    "mentionsYou": "Mentions you",
+    "add": "Add a comment",
+    "yourComment": "Your comment",
+    "help": "Mention someone with @Full Name, or pick them below. {{left}} characters left.",
+    "empty": "Write something first.",
+    "mention": "Mention someone",
+    "choosePerson": "Choose a person…",
+    "post": "Post comment",
+    "posted": "Comment posted.",
+    "restored": "We kept what you were writing."
   },
   "field": {
     "myJobs": "My jobs",

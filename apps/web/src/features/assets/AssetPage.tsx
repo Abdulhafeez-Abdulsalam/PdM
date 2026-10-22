@@ -1,6 +1,7 @@
 /**
  * Asset 360 (spec §6.2) — "the centerpiece". Header with identity, health and remaining life,
- * then tabs. Phase 1 tabs: Overview, Telemetry, Health & prediction, Alarms, Maintenance.
+ * then tabs: Overview, Telemetry, Health & prediction, Alarms, Maintenance, Documents,
+ * Related, Comments.
  * The tab is part of the URL: /assets/CBC-GT-101/telemetry.
  */
 import { useApiQuery } from "@pdm/api-client";
@@ -13,10 +14,11 @@ import { useTranslation } from "react-i18next";
 import { formatDate, formatNumber } from "../../shared/format";
 import { AlarmsTab, MaintenanceTab } from "./HistoryTabs";
 import { HealthTab } from "./HealthTab";
+import { CommentsTab, DocumentsTab, RelatedTab } from "./InfoTabs";
 import { OverviewTab } from "./OverviewTab";
 import { TelemetryTab } from "./TelemetryTab";
 
-export const ASSET_TABS = ["overview", "telemetry", "health", "alarms", "maintenance"] as const;
+export const ASSET_TABS = ["overview", "telemetry", "health", "alarms", "maintenance", "documents", "related", "comments"] as const;
 export type AssetTab = (typeof ASSET_TABS)[number];
 
 export function AssetPage() {
@@ -74,6 +76,9 @@ export function AssetPage() {
           health: <HealthTab asset={asset.data} />,
           alarms: <AlarmsTab asset={asset.data} siteTimeZone={site?.timezone} />,
           maintenance: <MaintenanceTab asset={asset.data} />,
+          documents: <DocumentsTab asset={asset.data} />,
+          related: <RelatedTab asset={asset.data} />,
+          comments: <CommentsTab asset={asset.data} />,
         }[current]}
     </div>
   );

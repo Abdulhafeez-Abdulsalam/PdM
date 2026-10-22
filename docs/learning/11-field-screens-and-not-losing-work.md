@@ -33,7 +33,7 @@ The test for this is a **round trip**: convert there and back and you must get t
 
 The original spec wanted full offline sync. We cut that (ADR-0007). We kept one promise: **a dropped connection never wipes typed work.** Here is how it's kept, in three small pieces:
 
-1. **Copy every keystroke to session storage** ([draft.ts](../../apps/web/src/features/field/draft.ts)). `sessionStorage` is a small key–value store in the browser that lives as long as the tab. A reload doesn't clear it, but closing the tab does.
+1. **Copy every keystroke to session storage** ([drafts.ts](../../apps/web/src/shared/drafts.ts)). `sessionStorage` is a small key–value store in the browser that lives as long as the tab. A reload doesn't clear it, but closing the tab does.
 2. **Don't send while offline.** The submit buttons are disabled and say *"Waiting for a connection…"*. We also told TanStack Query `networkMode: "always"`. Otherwise it would quietly *queue* a submit and fire it later by itself, which is a hidden form of offline sync, exactly what we decided not to build.
 3. **Clear the draft only after the server says yes.** If the submit fails, nothing is lost and the person just presses the button again.
 

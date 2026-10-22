@@ -4,15 +4,15 @@
  * Keyboard and screen-reader users get the same through each card's "Move to…" menu, and
  * dnd-kit announces drag-and-drop progress.
  */
-import type { WorkOrder } from "@pdm/contracts";
+import type { WorkOrder, WorkOrderStatus } from "@pdm/contracts";
 import { DndContext, KeyboardSensor, PointerSensor, useDroppable, useSensor, useSensors, type DragEndEvent } from "@dnd-kit/core";
 import { cx } from "@pdm/ui";
+import { useCallback, useLayoutEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { usePreferences } from "../../shared/preferences";
-import { useSimNow } from "../../shared/sim-time";
 import { useToasts } from "../../shared/toast";
 import { useUsers } from "../../shared/users";
-import { BOARD_COLUMNS, allowedMoves, resolveDrop, type BoardColumn } from "./lifecycle";
+import { BOARD_COLUMNS, resolveDrop, type BoardColumn } from "./lifecycle";
 import { WorkOrderCard } from "./WorkOrderCard";
 import { WorkOrderDialogs } from "./WorkOrderDialogs";
 import { useMove } from "./use-move";
@@ -20,10 +20,16 @@ import { useMove } from "./use-move";
 export function WorkOrderBoard({ orders }: { orders: readonly WorkOrder[] }) {
   const { t } = useTranslation();
   const role = usePreferences((p) => p.role);
-  const { now } = useSimNow();
   const { byId } = useUsers();
   const toast = useToasts((s) => s.show);
   const { move, dialog, closeDialog, openDialog } = useMove();
+  // One function for every card, for the life of the board: `move` itself is rebuilt each
+  // render, so cards call it through a ref that always holds the latest one.
+  const moveRef = useRef(move);
+  useLayoutEffect(() => {
+    moveRef.current = move;
+  });
+  const onMove = useCallback((wo: WorkOrder, to: WorkOrderStatus) => moveRef.current(wo, to), []);
   // A small move threshold so clicking the grip without dragging doesn't start a drag.
   const sensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 6 } }), useSensor(KeyboardSensor));
 
@@ -69,16 +75,7 @@ export function WorkOrderBoard({ orders }: { orders: readonly WorkOrder[] }) {
         <div className="-mx-4 flex gap-3 overflow-x-auto px-4 pb-2">
           {BOARD_COLUMNS.map((column) => (
             <Column key={column.id} column={column} orders={orders.filter((o) => column.statuses.includes(o.status))}>
-              {(wo) => (
-                <WorkOrderCard
-                  key={wo.id}
-                  wo={wo}
-                  assignee={wo.assigneeId ? byId.get(wo.assigneeId) : undefined}
-                  moves={allowedMoves(role, wo)}
-                  now={now}
-                  onMove={(to) => move(wo, to)}
-                />
-              )}
+              {(wo) => <WorkOrderCard key={wo.id} wo={wo} assignee={wo.assigneeId ? byId.get(wo.assigneeId) : undefined} onMove={onMove} />}
             </Column>
           ))}
         </div>
