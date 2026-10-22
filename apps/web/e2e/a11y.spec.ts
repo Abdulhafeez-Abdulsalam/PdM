@@ -1,15 +1,26 @@
 /**
  * Acceptance criterion F in a real browser: every screen, in all three themes, checked by
  * axe-core including colour contrast (which the jsdom test in src/test/a11y.test.tsx can't do).
+ *
+ * One test per screen: each stays well within its time limit, and a failure names the screen.
+ * (It used to be one test for everything, which ran past 10 minutes on a busy machine.)
  */
 import AxeBuilder from "@axe-core/playwright";
-import type { Page } from "@playwright/test";
 import { expect, open, test, type Role, type Theme } from "./helpers";
 
 const THEMES: Theme[] = ["light", "dark", "control-room"];
 
-/** Real ids from the running demo (they depend on the date, so they're looked up, not hard-coded). */
-async function ids(page: Page) {
+/** Real ids from the running demo. They depend on the date, so they're looked up, not hard-coded. */
+interface Ids {
+  prediction: string;
+  task: string;
+  workOrder: string;
+}
+
+let ids: Ids;
+
+test.beforeAll(async ({ browser }) => {
+  const page = await browser.newPage();
   await open(page, "/predictive", { role: "reliability_engineer" });
   const prediction = (await page.locator('main a[href^="/predictive/PRED-"]').first().getAttribute("href"))!;
   await open(page, "/field", { role: "field_technician" });
@@ -18,44 +29,43 @@ async function ids(page: Page) {
     .getByRole("link")
     .first()
     .getAttribute("href"))!;
-  return { prediction, task, workOrder: task.replace("/field/tasks/", "/maintenance/") };
-}
+  ids = { prediction, task, workOrder: task.replace("/field/tasks/", "/maintenance/") };
+  await page.close();
+});
 
-test("every screen passes axe in every theme", async ({ page }) => {
-  test.setTimeout(10 * 60_000);
-  const { prediction, task, workOrder } = await ids(page);
-  const screens: [string, Role][] = [
-    ["/command-center", "plant_manager"],
-    ["/assets", "reliability_engineer"],
-    ["/assets/compare?class=pump&measure=anomaly", "reliability_engineer"],
-    ["/assets/CBC-GT-101", "reliability_engineer"],
-    ["/assets/CBC-GT-101/telemetry", "reliability_engineer"],
-    ["/assets/CBC-GT-101/health", "reliability_engineer"],
-    ["/assets/CBC-GT-101/alarms", "reliability_engineer"],
-    ["/assets/CBC-GT-101/maintenance", "reliability_engineer"],
-    ["/assets/CBC-GT-101/documents", "reliability_engineer"],
-    ["/assets/CBC-GT-101/related", "reliability_engineer"],
-    ["/assets/CBC-GT-101/comments", "reliability_engineer"],
-    ["/alarms", "control_room_operator"],
-    ["/alarms?view=timeline", "control_room_operator"],
-    ["/alarms/analytics", "control_room_operator"],
-    ["/predictive", "reliability_engineer"],
-    ["/predictive/anomalies", "condition_analyst"],
-    [prediction, "reliability_engineer"],
-    ["/maintenance", "maintenance_planner"],
-    ["/maintenance?view=list", "maintenance_planner"],
-    ["/maintenance?view=calendar", "maintenance_planner"],
-    ["/maintenance/schedule", "maintenance_planner"],
-    [workOrder, "maintenance_planner"],
-    ["/field", "field_technician"],
-    [task, "field_technician"],
-    ["/reliability", "reliability_engineer"],
-  ];
+const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
+  ["Command Center", () => "/command-center", "plant_manager"],
+  ["Asset registry", () => "/assets", "reliability_engineer"],
+  ["Fleet comparison", () => "/assets/compare?class=pump&measure=anomaly", "reliability_engineer"],
+  ["Asset 360: overview", () => "/assets/CBC-GT-101", "reliability_engineer"],
+  ["Asset 360: telemetry", () => "/assets/CBC-GT-101/telemetry", "reliability_engineer"],
+  ["Asset 360: health", () => "/assets/CBC-GT-101/health", "reliability_engineer"],
+  ["Asset 360: alarms", () => "/assets/CBC-GT-101/alarms", "reliability_engineer"],
+  ["Asset 360: maintenance", () => "/assets/CBC-GT-101/maintenance", "reliability_engineer"],
+  ["Asset 360: documents", () => "/assets/CBC-GT-101/documents", "reliability_engineer"],
+  ["Asset 360: related", () => "/assets/CBC-GT-101/related", "reliability_engineer"],
+  ["Asset 360: comments", () => "/assets/CBC-GT-101/comments", "reliability_engineer"],
+  ["Alarm list", () => "/alarms", "control_room_operator"],
+  ["Event timeline", () => "/alarms?view=timeline", "control_room_operator"],
+  ["Alarm performance", () => "/alarms/analytics", "control_room_operator"],
+  ["Prediction console", () => "/predictive", "reliability_engineer"],
+  ["Anomalies", () => "/predictive/anomalies", "condition_analyst"],
+  ["Prediction page", (i) => i.prediction, "reliability_engineer"],
+  ["Maintenance board", () => "/maintenance", "maintenance_planner"],
+  ["Maintenance list", () => "/maintenance?view=list", "maintenance_planner"],
+  ["Maintenance calendar", () => "/maintenance?view=calendar", "maintenance_planner"],
+  ["Schedule board", () => "/maintenance/schedule", "maintenance_planner"],
+  ["Work order page", (i) => i.workOrder, "maintenance_planner"],
+  ["My jobs", () => "/field", "field_technician"],
+  ["Field task", (i) => i.task, "field_technician"],
+  ["Coming-later page", () => "/reliability", "reliability_engineer"],
+];
 
-  const failures: string[] = [];
-  for (const [url, role] of screens) {
+for (const [name, url, role] of SCREENS) {
+  test(`${name} passes axe in every theme`, async ({ page }) => {
+    const failures: string[] = [];
     for (const theme of THEMES) {
-      await open(page, url, { role, theme });
+      await open(page, url(ids), { role, theme });
       const check = () => new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
       let { violations } = await check();
       // A finding must still be there a second later: once, a check caught the page mid-way
@@ -64,8 +74,8 @@ test("every screen passes axe in every theme", async ({ page }) => {
         await page.waitForTimeout(1000);
         ({ violations } = await check());
       }
-      for (const v of violations) failures.push(`${url} [${theme}] ${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+      for (const v of violations) failures.push(`[${theme}] ${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
     }
-  }
-  expect(failures).toEqual([]);
-});
+    expect(failures).toEqual([]);
+  });
+}

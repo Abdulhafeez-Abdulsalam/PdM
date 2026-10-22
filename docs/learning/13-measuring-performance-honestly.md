@@ -44,8 +44,8 @@ Result on a low-end machine (4× slower): the slowest tap went from 0.72 s to ab
 
 ## 5. Accessibility tests at two levels
 
-- **Every commit:** `src/test/a11y.test.tsx` runs axe on 18 screens in jsdom. It's fast, but jsdom can't see colours.
-- **On demand, in Chrome:** `e2e/a11y.spec.ts` runs axe on 17 screens × 3 themes, including colour contrast.
+- **Every commit:** `src/test/a11y.test.tsx` runs axe on every screen in jsdom. It's fast, but jsdom can't see colours.
+- **On demand, in Chrome:** `e2e/a11y.spec.ts` runs axe on every screen × 3 themes, including colour contrast, one test per screen.
 - **Watch the check fail first:** a test feeds axe a button with no name and expects it to complain. A checker that never complains might be checking nothing.
 
 ## 6. Exercises

@@ -9,7 +9,7 @@ The quality chunk, done after the [Phase 2 review](phase-2-review.md), turns the
 | Command | What it runs | When |
 |---|---|---|
 | `npm run check` | Formatting, types, lint, and all unit and component tests (including axe on every screen in jsdom, and the colour-contrast test) | Before every commit |
-| `npm run e2e` | Builds the app, serves it on port 4174, and runs Playwright in the installed Chrome: accessibility in all themes, user journeys, and the performance test (~5 minutes) | Before a release or after big changes |
+| `npm run e2e` | Builds the app, serves it on port 4174, and runs Playwright in the installed Chrome: accessibility in all themes, user journeys, and the performance test (about 10 minutes on a quiet machine) | Before a release or after big changes |
 
 `npm run e2e` writes a report to `apps/web/playwright-report/index.html`; the performance numbers are in each test's annotations.
 
@@ -42,10 +42,10 @@ Before trusting any number, four problems in the *measurement* were found and fi
 | Level | Test | Covers |
 |---|---|---|
 | Every colour | `packages/ui/src/tokens.test.ts` | Every text and health colour on every background, every theme, ≥ 4.5 : 1 |
-| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on 18 screens, each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
-| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on 17 screens × 3 themes |
+| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on every screen (26 as of the Phase 2 pages), each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
+| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on every screen × 3 themes (25 screens), one test per screen so a failure names the screen |
 
-**Result:** 0 violations on all 18 screens in jsdom, and on all 17 screens × 3 themes in Chrome, after the Phase 2 review's colour and label fixes.
+**Result:** 0 violations on every screen in jsdom, and on all 25 screens × 3 themes in Chrome (re-run 2026-10-22, after the missing Phase 2 pages were added).
 
 Automated checks find perhaps a third of accessibility problems. Keyboard order, sensible wording when read aloud, and screen-reader testing still need a person; that's a task for the final testing phase.
 
