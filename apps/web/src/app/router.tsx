@@ -30,6 +30,7 @@ const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage")
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
 const SolarPage = lazyRouteComponent(() => import("../features/operations/SolarPage"), "SolarPage");
+const OilGasPage = lazyRouteComponent(() => import("../features/operations/OilGasPage"), "OilGasPage");
 const LiveLoadPage = lazyRouteComponent(() => import("../features/diagnostics/LiveLoadPage"), "LiveLoadPage");
 import { ErrorPage } from "../features/module-page/ErrorPage";
 import { ModulePage } from "../features/module-page/ModulePage";
@@ -83,6 +84,13 @@ const operationsRoute = createRoute({
   beforeLoad: ({ search }) => {
     throw redirect({ to: "/operations/power", search });
   },
+});
+
+/** Oil & gas operations (?part=upstream|midstream|downstream). */
+const oilGasRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/operations/oil-gas",
+  component: OilGasPage,
 });
 
 /** Solar operations. */
@@ -177,6 +185,7 @@ const routeTree = rootRoute.addChildren([
   operationsRoute,
   powerRoute,
   solarRoute,
+  oilGasRoute,
   compareRoute,
   assetRoute,
   assetTabRoute,

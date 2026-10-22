@@ -24,6 +24,7 @@ import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
 import { AssetPerformance, PowerOperations, PowerOperationsRequest, TurbineTrend, TurbineTrendRequest } from "./operations";
 import { SolarOperations, SolarOperationsRequest } from "./solar";
+import { OilGasOperations, OilGasRequest } from "./oil-gas";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
@@ -149,6 +150,13 @@ export const endpoints = {
     description: "Gas-to-power plants: output vs dispatch, availability, heat rate; one plant's turbines and transformers",
     input: PowerOperationsRequest,
     output: PowerOperations,
+  }),
+  "operations.oilGas": endpoint({
+    method: "GET",
+    path: "/operations/oil-gas",
+    description: "Oil & gas: wells and their pumps with the decline curve, pipeline integrity and compressors, exchangers and inspections",
+    input: OilGasRequest,
+    output: OilGasOperations,
   }),
   "operations.turbineTrend": endpoint({
     method: "GET",

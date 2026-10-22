@@ -32,6 +32,7 @@ import { DETECTION_PROGRESS, rawProgress } from "./faults";
 import { CommentStore, documentsFor, relatedFor } from "./asset-info";
 import { fleetCompare } from "./comparison";
 import { assetPerformance, powerOperations, turbineTrend } from "./operations";
+import { oilGasOperations } from "./oil-gas";
 import { solarOperations } from "./solar";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
@@ -263,6 +264,15 @@ export class MockBackend {
         snapshot: this.snapshot(),
         now: this.now(),
         siteId,
+        inScope: this.inScope(scopeId),
+      }),
+    "operations.oilGas": ({ scopeId, segment }) =>
+      oilGasOperations({
+        world: this.world,
+        chaos: this.chaos,
+        snapshot: this.snapshot(),
+        now: this.now(),
+        segment,
         inScope: this.inScope(scopeId),
       }),
     "operations.turbineTrend": ({ assetId, days }) =>

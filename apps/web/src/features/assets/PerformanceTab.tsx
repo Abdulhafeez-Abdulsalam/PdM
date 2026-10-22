@@ -1,7 +1,9 @@
 /**
  * Asset 360 → Performance: each kind of equipment shows its own measures. So far: gas
  * turbines (efficiency against a clean machine, inspection hours), transformers (oil
- * analysis), and solar inverters, strings and batteries. Oil & gas equipment joins next.
+ * analysis), solar inverters, strings and batteries, and oil & gas wells, pumps, compressors,
+ * exchangers and the steel that gets inspected (pipelines, vessels, tanks, relief valves).
+ * Equipment at other kinds of site shows "no measures yet" (e.g. a compressor at a power plant).
  */
 import { useApiQuery } from "@pdm/api-client";
 import { EOH_PER_START, HGP_INTERVAL_EOH, type Asset, type GasTurbineRow, type TransformerDga } from "@pdm/contracts";
@@ -14,6 +16,13 @@ import { ConditionLabel, GasTable } from "../operations/DgaSection";
 import { DuvalTriangle } from "../operations/DuvalTriangle";
 import { InspectionCell } from "../operations/InspectionCell";
 import { formatIn, signed } from "../operations/power-format";
+import {
+  CompressorPerformanceView,
+  EspPerformanceView,
+  ExchangerPerformanceView,
+  IntegrityPerformanceView,
+  WellPerformanceView,
+} from "../operations/OilGasPerformance";
 import { BessPerformanceView, InverterPerformanceView, StringPerformanceView } from "../operations/SolarPerformance";
 import { TurbineTrend } from "../operations/TurbineTrend";
 
@@ -24,6 +33,14 @@ export const PERFORMANCE_CLASSES: ReadonlySet<Asset["assetClass"]> = new Set([
   "inverter",
   "pv_string",
   "bess",
+  "wellhead",
+  "esp",
+  "compressor",
+  "heat_exchanger",
+  "pipeline_segment",
+  "pressure_vessel",
+  "storage_tank",
+  "psv",
 ]);
 
 export function PerformanceTab({ asset }: { asset: Asset }) {
@@ -36,6 +53,11 @@ export function PerformanceTab({ asset }: { asset: Asset }) {
   if (perf.data.kind === "inverter") return <InverterPerformanceView data={perf.data.inverter} />;
   if (perf.data.kind === "pv_string") return <StringPerformanceView data={perf.data.string} />;
   if (perf.data.kind === "bess") return <BessPerformanceView data={perf.data.bess} />;
+  if (perf.data.kind === "well") return <WellPerformanceView data={perf.data.well} />;
+  if (perf.data.kind === "esp") return <EspPerformanceView data={perf.data.esp} />;
+  if (perf.data.kind === "compressor") return <CompressorPerformanceView data={perf.data.compressor} />;
+  if (perf.data.kind === "exchanger") return <ExchangerPerformanceView data={perf.data.exchanger} />;
+  if (perf.data.kind === "integrity") return <IntegrityPerformanceView data={perf.data.integrity} />;
   return <p className="text-fg-muted">{t("performance.none")}</p>;
 }
 

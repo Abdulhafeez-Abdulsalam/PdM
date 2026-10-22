@@ -344,7 +344,7 @@ function assignFaults(world: World, now: number): void {
  * storyline: a gas turbine whose compressor is fouling now, one that was washed five days ago
  * (its trend shows the rise and the recovery), a transformer with a growing hot spot, and at
  * the first solar plant an inverter whose cooling is failing, a string with failed bypass
- * diodes, and a battery whose cells are drifting apart.
+ * diodes, and a battery whose cells are drifting apart; plus a few oil & gas problems.
  */
 const PLANT_SCENERY: readonly { assetId: string; faultTypeId: string; startDaysAgo: number; days: number; resolvedDaysAgo?: number }[] = [
   { assetId: "EBC-GT-101", faultTypeId: "compressor_fouling", startDaysAgo: 16, days: 30 },
@@ -353,6 +353,11 @@ const PLANT_SCENERY: readonly { assetId: string; faultTypeId: string; startDaysA
   { assetId: "PCS-INV-117", faultTypeId: "inverter_cooling", startDaysAgo: 30, days: 55 },
   { assetId: "PCS-STR-150", faultTypeId: "string_underperformance", startDaysAgo: 40, days: 60 },
   { assetId: "PCS-BESS-102", faultTypeId: "cell_imbalance", startDaysAgo: 50, days: 100 },
+  // Oil & gas: an ESP that failed 20 days ago (its well is shut in), one running hot, and a
+  // pipeline compressor creeping towards surge.
+  { assetId: "PBU-ESP-103", faultTypeId: "esp_motor_overheating", startDaysAgo: 50, days: 30 },
+  { assetId: "PBU-ESP-107", faultTypeId: "esp_motor_overheating", startDaysAgo: 30, days: 40 },
+  { assetId: "GCM-CMP-105", faultTypeId: "surge_approach", startDaysAgo: 34, days: 45 },
 ];
 
 function addPlantScenery(world: World, now: number): void {

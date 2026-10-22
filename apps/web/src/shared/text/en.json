@@ -1370,7 +1370,8 @@
   "operationsNav": {
     "label": "Operations pages",
     "power": "Gas-to-power",
-    "solar": "Solar"
+    "solar": "Solar",
+    "oilGas": "Oil & gas"
   },
   "solar": {
     "title": "Solar operations",
@@ -1496,5 +1497,198 @@
     "bessNow": "Now",
     "socTitle": "Charge over 48 hours",
     "socLabel": "{{id}} charge over the last 48 hours, in %"
+  },
+  "oilGas": {
+    "title": "Oil & gas operations",
+    "intro": "Wells, pipelines and the refinery: are we producing what the reservoir allows, is the steel thick enough, and what needs cleaning or inspecting?",
+    "partsLabel": "Parts of the business",
+    "tableOf": "Table: {{name}}",
+    "part": {
+      "upstream": "Upstream",
+      "midstream": "Midstream",
+      "downstream": "Downstream"
+    },
+    "partWhat": {
+      "upstream": "Getting oil and gas out of the ground: wells and their pumps",
+      "midstream": "Moving it: pipelines and compressor stations",
+      "downstream": "Processing it: refinery equipment and inspections"
+    },
+    "card": {
+      "oil": "Oil {{value}}",
+      "wells": "{{producing}} of {{total}} wells producing",
+      "segments_one": "{{count}} pipeline segment",
+      "segments_other": "{{count}} pipeline segments",
+      "downstream": "Exchangers, vessels, tanks and relief valves",
+      "espsFlagged_one": "{{count}} well pump needs a look",
+      "espsFlagged_other": "{{count}} well pumps need a look",
+      "segmentsFlagged_one": "{{count}} segment with thin wall or poor protection",
+      "segmentsFlagged_other": "{{count}} segments with thin wall or poor protection",
+      "compressorsFlagged_one": "{{count}} compressor flagged",
+      "compressorsFlagged_other": "{{count}} compressors flagged",
+      "exchangersToClean_one": "{{count}} exchanger to clean within 30 days",
+      "exchangersToClean_other": "{{count}} exchangers to clean within 30 days",
+      "inspectionsDue_one": "{{count}} inspection overdue or due soon",
+      "inspectionsDue_other": "{{count}} inspections overdue or due soon"
+    },
+    "up": {
+      "declineTitle": "Production and the decline curve",
+      "declineIntro": "As a reservoir empties, its pressure drops and wells make a little less every month. Fitting a curve to the history shows the trend and forecasts it; days below the curve are oil lost to something else, like a failed pump.",
+      "declineLabel": "Daily oil rate over the last 180 days with the fitted decline curve and a 180-day forecast",
+      "fitSummary": "Fitted decline: {{pct}} % a year (fit quality r² = {{r2}}, where 1 is perfect).",
+      "noFit": "Not enough production to fit a decline curve.",
+      "actual": "Oil rate",
+      "fit": "Decline curve",
+      "today": "Today",
+      "oilNow": "Oil now",
+      "gasNow": "Gas now",
+      "waterCut": "Water cut",
+      "lost": "Lost to pump problems",
+      "espTitle": "Electric submersible pumps (ESPs)",
+      "espIntro": "An ESP is a long electric pump down the well that lifts the oil. Its motor temperature, current and intake pressure tell what's wrong before it fails.",
+      "liftsWell": "lifts {{id}}",
+      "wellsTitle": "Wells",
+      "wellsIntro": "Biggest losses first. Lost oil is what the well would make with its pump working as designed."
+    },
+    "col": {
+      "pump": "Pump",
+      "diagnosis": "Diagnosis",
+      "motorTemp": "Motor temperature",
+      "amps": "Motor current",
+      "intake": "Intake pressure",
+      "well": "Well",
+      "oil": "Oil rate",
+      "lost": "Lost oil",
+      "waterCut": "Water cut",
+      "decline": "Decline",
+      "segment": "Segment",
+      "wall": "Wall",
+      "rates": "Corrosion, long / short term",
+      "life": "Remaining life",
+      "cp": "Protection potential",
+      "status": "Status",
+      "compressor": "Compressor",
+      "flow": "Flow",
+      "polyEff": "Efficiency",
+      "surge": "Surge margin",
+      "exchanger": "Exchanger",
+      "effectiveness": "Effectiveness",
+      "last30": "Last 30 days",
+      "trend": "Trend",
+      "dp": "Tube pressure drop",
+      "clean": "Cleaning",
+      "equipment": "Equipment",
+      "rule": "Rule",
+      "last": "Last inspected",
+      "interval": "Interval",
+      "next": "Next due"
+    },
+    "diagnosis": {
+      "normal": "Normal",
+      "motor_hot": "Motor running hot",
+      "low_intake": "Low intake pressure",
+      "high_amps": "High motor current",
+      "stopped": "Stopped",
+      "no_data": "No data"
+    },
+    "diagnosisMeans": {
+      "normal": "Temperature, current and intake pressure are where they should be.",
+      "motor_hot": "The motor winding is past its temperature alert, so its insulation is ageing fast. Usually: less fluid flowing past to cool it, or a failing motor. Reduce the drive frequency and plan a workover.",
+      "low_intake": "The pump is drawing the well down faster than the reservoir refills it (pumping off), or gas is getting in. Slow it down.",
+      "high_amps": "The motor is working harder than usual: wear, sand, or heavier fluid.",
+      "stopped": "The pump isn't running, so its well is shut in and making nothing.",
+      "no_data": "No readings from this pump."
+    },
+    "lift": {
+      "esp": "Electric submersible pump",
+      "rod_pump": "Rod pump",
+      "natural": "Flows naturally"
+    },
+    "perYear": "{{pct}} %/yr",
+    "years": "{{value}} years",
+    "mmPerYear": "{{value}} mm/yr",
+    "mid": {
+      "profileTitle": "Wall thickness along the pipeline",
+      "profileIntro": "Measured by the latest in-line inspection. The dashed line is the minimum the pipe needs to hold its pressure safely ({{required}} mm, from Barlow's formula).",
+      "profileLabel": "Pipeline wall thickness by distance along the route, in mm",
+      "profileSummary": "{{count}} segments. Thinnest: {{thinnest}}; minimum required {{required}} mm.",
+      "throughput": "Gas moving now: {{value}}",
+      "wall": "Wall thickness",
+      "km": "km {{km}}",
+      "requiredLine": "Minimum required",
+      "segmentsTitle": "Pipeline segments",
+      "segmentsIntro": "Shortest remaining life first. Remaining life uses the worse of two corrosion rates: the long-term one (metal lost since new) and today's probe reading. Cathodic protection holds the pipe at a small negative voltage to stop it corroding; it should be at least −{{cp}} V.",
+      "kmRange": "km {{from}}–{{to}}",
+      "rates": "{{long}} / {{short}} mm/yr",
+      "compressorsTitle": "Compressor stations",
+      "compressorsIntro": "Compressors push the gas along. Efficiency below design wastes fuel; a small surge margin means the machine is close to surge, where gas flow reverses violently and can wreck it.",
+      "effOfDesign": "{{value}} % (design {{design}} %)"
+    },
+    "integrity": {
+      "ok": "OK",
+      "watch": "Watch",
+      "act": "Act: under 10 years left"
+    },
+    "compressorFlag": {
+      "ok": "OK",
+      "surge_close": "Close to surge",
+      "efficiency_low": "Efficiency low",
+      "stopped": "Not running"
+    },
+    "down": {
+      "exchangersTitle": "Heat exchangers",
+      "exchangersIntro": "Deposits build up inside exchangers and insulate the tubes, so less heat gets through (and the furnace burns more fuel to make up). Effectiveness compares the heat transferred with a clean exchanger; plan a clean before it falls below {{clean}} %.",
+      "ptsPer30d": "{{value}} pts/30 d",
+      "notFouling": "Not fouling",
+      "cleanNow": "Clean now",
+      "cleanIn_one": "In about {{count}} day",
+      "cleanIn_other": "In about {{count}} days",
+      "inspectionsTitle": "Inspection schedule",
+      "inspectionsIntro": "Industry codes set how often steel that holds pressure or product must be inspected: at most a fixed number of years, and sooner when it's corroding fast (half its remaining life).",
+      "showAll": "Show all {{count}}",
+      "noneDue": "Nothing is overdue or due in the next 90 days."
+    },
+    "code": {
+      "api_510": "API 510 vessel",
+      "api_653": "API 653 tank",
+      "api_576": "API 576 relief valve",
+      "ili": "Pipeline in-line inspection"
+    },
+    "codeMeans": {
+      "api_510": "Pressure vessels: internal inspection at least every 10 years, or at half the remaining life if that's sooner.",
+      "api_653": "Storage tanks: internal inspection at least every 20 years, or at half the remaining life if that's sooner.",
+      "api_576": "Relief valves are bench-tested every 3 years in dirty or corrosive service, otherwise every 5, and sooner if they leak.",
+      "ili": "Pipelines are inspected from the inside by a tool called a pig at least every 7 years, or at half the remaining life if that's sooner."
+    },
+    "basis": {
+      "max_interval": "the code's longest interval",
+      "half_life": "half the remaining life",
+      "leaking": "seat leaking: test now"
+    },
+    "inspStatus": {
+      "overdue": "overdue",
+      "due_soon": "due soon",
+      "ok": "scheduled"
+    },
+    "perf": {
+      "liftProblem": "Pump problem",
+      "lift": "Lifted by",
+      "wellDeclineIntro": "This well declines about {{pct}} % a year. Days far below the curve point at its pump.",
+      "wellDeclineLabel": "{{id}} daily oil rate with its fitted decline curve and forecast",
+      "diagnosisTitle": "What the readings say",
+      "lifts": "Lifts well",
+      "frequency": "Drive frequency",
+      "design": "Design {{value}} %",
+      "effTitle": "Effectiveness over 30 days",
+      "effLabel": "{{id}} effectiveness over the last 30 days, in %",
+      "cleanLine": "Plan a clean",
+      "wallTitle": "Wall thickness and remaining life",
+      "wallNow": "Measured now",
+      "wallNew": "When new",
+      "wallRequired": "Minimum required",
+      "longTerm": "Corrosion rate, long term",
+      "shortTerm": "Corrosion rate, probe now",
+      "lifeHow": "Remaining life = (measured − required) ÷ the worse of the two rates.",
+      "inspectionTitle": "Next inspection"
+    }
   }
 }

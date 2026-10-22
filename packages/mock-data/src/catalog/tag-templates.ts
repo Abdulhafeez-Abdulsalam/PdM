@@ -32,10 +32,11 @@ export interface TagTemplate {
   /** Scales with the asset's size (power, current, flow). Default false. */
   scaled?: boolean;
   /**
-   * Special signal sources. "ambient" = the site's air temperature; the others come from the PV
-   * model in signals.ts: inverter AC and DC power, module temperature, soiling loss.
+   * Special signal sources. "ambient" = the site's air temperature; "well" = an oil well's rate
+   * (decline and lift pump); the others come from the PV model in signals.ts: inverter AC and
+   * DC power, module temperature, soiling loss.
    */
-  source?: "ambient" | "pv_ac" | "pv_dc" | "module_t" | "soiling";
+  source?: "ambient" | "pv_ac" | "pv_dc" | "module_t" | "soiling" | "well";
 }
 
 const vib = (name: string, base: number, description = "Bearing vibration velocity"): TagTemplate => ({
@@ -556,8 +557,9 @@ export const TAG_TEMPLATES: Record<AssetClass, readonly TagTemplate[]> = {
     { name: "CHP", description: "Casing head pressure", quantity: "pressure", base: 18, idle: "hold", noise: 0.008 },
     { name: "WHT", description: "Wellhead temperature", quantity: "temperature", base: 68, idle: "ambient", ambient: 0.02, noise: 0.005 },
     { name: "CHOKE", description: "Choke opening", quantity: "percent", base: 45, idle: "hold", noise: 0, wander: 0 },
-    { name: "OIL_RATE", description: "Oil rate", quantity: "liquid_flow", base: 18, load: 0.3, noise: 0.02, scaled: true },
-    { name: "GAS_RATE", description: "Gas rate", quantity: "gas_flow", base: 85_000, load: 0.3, noise: 0.02, scaled: true },
+    // "well": the rate also follows the well's decline and its lift pump (signals.ts). Base = rate at the simulation start.
+    { name: "OIL_RATE", description: "Oil rate", quantity: "liquid_flow", base: 18, load: 0.3, source: "well", noise: 0.02, scaled: true },
+    { name: "GAS_RATE", description: "Gas rate", quantity: "gas_flow", base: 85_000, load: 0.3, source: "well", noise: 0.02, scaled: true },
     { name: "WATER_CUT", description: "Water cut", quantity: "percent", base: 35, idle: "hold", noise: 0.01 },
   ],
   separator: [

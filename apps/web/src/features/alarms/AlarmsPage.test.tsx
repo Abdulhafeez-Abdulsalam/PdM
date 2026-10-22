@@ -38,7 +38,10 @@ describe("alarm → work order (acceptance criterion C)", () => {
     const wo = backend.request("workOrders.list", { assetId: alarm.assetId, limit: 1 }).items[0]!;
     expect(wo.source).toEqual({ kind: "alarm", refId: alarm.id });
     expect(wo.evidence?.values.length).toBeGreaterThan(0); // snapshot of readings attached
-  });
+    // A long journey (the whole alarm list, a form, a create): 14–16 s on its own on the dev
+    // laptop, and past the 20 s default when the full suite runs in parallel. The real-browser
+    // journey in e2e/journeys.spec.ts checks the same flow against its 5 s budget.
+  }, 40_000);
 });
 
 describe("acknowledge and shelve", () => {

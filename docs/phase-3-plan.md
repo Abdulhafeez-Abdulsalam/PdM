@@ -1,6 +1,6 @@
 # Phase 3 plan: domain depth
 
-*Agreed 2026-10-22. Progress: chunks 1 and 2 done (2026-10-22).*
+*Agreed 2026-10-22. Progress: chunks 1–3 done (2026-10-22): the industry views are complete.*
 
 Phase 1 built the foundation and Phase 2 the predictive core. Phase 3 ("domain depth" in the spec, §6.3, §6.7, §6.8) is where the app starts to speak each industry's language: a gas turbine engineer, a solar plant manager and a pipeline integrity engineer each get screens built around *their* questions, and the reliability engineer gets real analysis tools.
 
@@ -24,7 +24,7 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 |---|---|---|---|
 | 1 ✅ | **Gas-to-power operations** (`/operations/power`) | Plant output vs dispatch, availability, capacity factor; gas turbine heat rate and compressor efficiency vs an ambient-corrected baseline (the storyline's fouling and water-wash recovery shows up here); EOH counters and hot-gas-path inspection forecast; transformer gas analysis on a Duval triangle | The demo storyline lives on a gas turbine, so this makes it shine |
 | 2 ✅ | **Solar operations** (`/operations/solar`) | Power vs expected, performance ratio, the loss waterfall (irradiance → soiling → temperature → inverter → clipping…); inverter heat map; underperforming strings; soiling and a cleaning recommender; BESS state of charge and health | The biggest fleet (768 strings) and the most visual |
-| 3 | **Oil & gas operations** (`/operations/oil-gas`) | Upstream: ESP diagnostics and production vs decline curve. Midstream: pipeline wall thickness and corrosion rates, compressor stations. Downstream: exchanger fouling, PSV and inspection schedules (API 510/570/653) | Uses health and anomaly measures at first; gains MTBF/MTTR once chunk 4 exists |
+| 3 ✅ | **Oil & gas operations** (`/operations/oil-gas`) | Upstream: ESP diagnostics and production vs decline curve. Midstream: pipeline wall thickness and corrosion rates, compressor stations. Downstream: exchanger fouling, PSV and inspection schedules (API 510/570/653) | Uses health and anomaly measures at first; gains MTBF/MTTR once chunk 4 exists |
 | 4 | **Reliability KPIs** (`/reliability`) | MTBF, MTTR, availability per class and site; Pareto of failure modes; bad actors and repeat failures; Asset 360 *Failures* tab | Built from the ISO 14224 close-outs; becomes the Reliability Engineer's home page |
 | 5 | **Weibull analysis and risk matrix** | Pick a failure mode and class: fitted Weibull curve with confidence band, β explained ("wearing out" vs "early failures"), reliability R(t) curve; a 5×5 risk matrix you can click into | Needs chunk 4's failure history |
 | 6 | **FMEA and root-cause analysis** | FMEA table with severity × occurrence × detection (RPN) per failure mode, linked to PM tasks; an RCA workspace with 5-Whys, a fishbone diagram, timeline and corrective actions | Turns analysis into action; links to work orders |
@@ -35,6 +35,8 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 **What chunk 1 added beyond the table:** a reusable line chart (also for solar's power vs expected); transformer gases come from monthly lab oil samples (the online monitor covers H₂, C₂H₂ and CO); three hand-placed plant conditions so the page always has something to show (a fouling turbine, one washed five days ago, a gassing transformer); and an air-temperature effect on gas turbine power and heat rate, so "ambient-corrected" means something. See [learning note 18](learning/18-gas-to-power-heat-rate-hours-and-oil.md).
 
 **What chunk 2 added beyond the table:** the inverter, module-temperature and soiling tags now come from a PV model (sunlight, panel heat, dust, clipping), so the loss waterfall adds up exactly; strings are compared with their sister strings; a cleaning advisor works out the cheapest wash interval; three hand-placed solar conditions at Pecos. See [learning note 19](learning/19-solar-expected-power-and-losses.md).
+
+**What chunk 3 added beyond the table:** well rates now decline (exponential, per well) and drop to zero when their pump fails, so lost oil is measurable; remaining life uses the worse of the long- and short-term corrosion rates; inspection intervals follow API 510/653/576 and pipeline in-line inspection rules with the half-life rule; a failed ESP, a hot ESP and a compressor near surge are hand-placed. Rod-pump dynamometer cards and API 570 process piping were left out (the data isn't in the simulation). See [learning note 20](learning/20-oil-and-gas-decline-corrosion-inspection.md).
 
 Asset 360 gets its *Performance* tab in chunks 1–3 (each class shows its own measures), *Failures* in chunk 4 and *Twin* in chunk 8.
 

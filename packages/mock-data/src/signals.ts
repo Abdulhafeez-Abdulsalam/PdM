@@ -276,6 +276,63 @@ export function stringLoss(world: World, inverter: AssetRecord, t: number): numb
   return Math.min(1, lost / strings.length);
 }
 
+// ─── Oil wells ───────────────────────────────────────────────────────────────
+//
+// A well's output falls year by year as the reservoir pressure drops (its "decline"), and it
+// stops if the pump lifting the oil fails. Each well pad has wellheads and lift pumps; the
+// first wellheads are paired with the ESPs, then the rod pumps, and the rest flow naturally.
+
+const YEAR = 365.25 * DAY;
+const liftCache = new WeakMap<World, Map<string, AssetRecord | null>>();
+
+/** The pump lifting this well's oil (an ESP or a rod pump), or null when it flows on its own. */
+export function liftOf(world: World, well: AssetRecord): AssetRecord | null {
+  let map = liftCache.get(world);
+  if (!map) {
+    map = new Map();
+    const byArea = new Map<string, AssetRecord[]>();
+    for (const a of world.assets.values()) {
+      if (!["wellhead", "esp", "rod_pump"].includes(a.data.assetClass)) continue;
+      const list = byArea.get(a.data.areaId) ?? [];
+      list.push(a);
+      byArea.set(a.data.areaId, list);
+    }
+    for (const list of byArea.values()) {
+      const sorted = [...list].sort((x, y) => x.data.id.localeCompare(y.data.id));
+      const wells = sorted.filter((a) => a.data.assetClass === "wellhead");
+      const lifts = [...sorted.filter((a) => a.data.assetClass === "esp"), ...sorted.filter((a) => a.data.assetClass === "rod_pump")];
+      wells.forEach((w, i) => map!.set(w.data.id, lifts[i] ?? null));
+    }
+    liftCache.set(world, map);
+  }
+  return map.get(well.data.id) ?? null;
+}
+
+/** Yearly exponential decline rate of a well (0.12–0.37: 12–37% a year). */
+export function declinePerYear(well: AssetRecord): number {
+  return 0.12 + 0.25 * hashNoise(well.seed ^ 0xdec, 0);
+}
+
+/** How the well's output compares with the start of the simulation: decline × the pump's state. */
+export function wellFactor(world: World, well: AssetRecord, t: number, withLift = true): number {
+  const decline = Math.exp((-declinePerYear(well) * (t - world.createdAt)) / YEAR);
+  return withLift ? decline * liftFactor(world, well, t) : decline;
+}
+
+/** 1 = the pump lifts as designed; less as it wears; 0 when it's stopped or failed (the well is shut in). */
+export function liftFactor(world: World, well: AssetRecord, t: number): number {
+  const lift = liftOf(world, well);
+  if (!lift) return 1;
+  if (lift.staticStatus === "maintenance" || lift.staticStatus === "standby") return 0;
+  let factor = 1;
+  for (const f of world.faultsOf(lift.data.id)) {
+    const p = progress(f, t);
+    if (p >= 1) return 0;
+    factor -= 0.2 * p * p;
+  }
+  return Math.max(0, factor);
+}
+
 // ─── Tag values ──────────────────────────────────────────────────────────────
 
 /**
@@ -288,7 +345,12 @@ export function expectedValue(world: World, tag: TagRecord, t: number, planned =
   return modelValue(world, tag, t, operating(world, tag.asset, t, planned));
 }
 
-function modelValue(world: World, tag: TagRecord, t: number, { r, L }: Operating): number {
+/** A well's rate if its pump were working as designed: decline only (no noise, no faults). */
+export function wellPotential(world: World, tag: TagRecord, t: number): number {
+  return modelValue(world, tag, t, operating(world, tag.asset, t), false);
+}
+
+function modelValue(world: World, tag: TagRecord, t: number, { r, L }: Operating, withLift = true): number {
   const asset = tag.asset;
   const tpl = tag.template;
   // Power from the PV model stops when the inverter does; temperatures and soiling don't.
@@ -300,7 +362,11 @@ function modelValue(world: World, tag: TagRecord, t: number, { r, L }: Operating
   // Air temperature shifts a running machine's value (a hot day cuts a gas turbine's output);
   // a stopped one with a fixed idle value (power = 0) stays at it.
   const fixedIdle = tpl.idle === undefined || typeof tpl.idle === "number";
-  return idle + (running - idle) * r + (fixedIdle ? r : 1) * tag.base * (tpl.ambient ?? 0) * ambientNorm(world, asset.data.siteId, t);
+  const value =
+    idle + (running - idle) * r + (fixedIdle ? r : 1) * tag.base * (tpl.ambient ?? 0) * ambientNorm(world, asset.data.siteId, t);
+  // A well's rates also follow its decline and its pump.
+  if (tpl.source !== "well") return value;
+  return value * (withLift ? wellFactor(world, asset, t) : wellFactor(world, asset, t, false));
 }
 
 /** The value of a tag at time t, or null when there is no data (offline asset, chaos gap). */

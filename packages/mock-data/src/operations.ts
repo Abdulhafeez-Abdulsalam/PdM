@@ -30,6 +30,7 @@ import type { AssetRecord, TagRecord } from "./model";
 import { gaussNoise, hashNoise } from "./random";
 import { expectedValue, operating, tagValue, type ChaosWindows } from "./signals";
 import type { Snapshot } from "./snapshot";
+import { oilGasPerformance } from "./oil-gas";
 import { bessPerformance, inverterPerformance, stringPerformance } from "./solar";
 import type { World } from "./world";
 
@@ -408,6 +409,8 @@ export function powerOperations(input: {
 export function assetPerformance(ctx: Context, snapshot: Snapshot, asset: AssetRecord): AssetPerformance {
   if (asset.data.assetClass === "gas_turbine") return { kind: "gas_turbine", turbine: turbineRow(ctx, snapshot, asset) };
   if (asset.data.assetClass === "transformer") return { kind: "transformer", dga: transformerDga(ctx.world, asset, ctx.now) };
+  const oilGas = oilGasPerformance({ ...ctx, snapshot }, asset);
+  if (oilGas) return oilGas;
   if (asset.site.def.businessLine === "solar") {
     if (asset.data.assetClass === "inverter") return { kind: "inverter", inverter: inverterPerformance(ctx, snapshot, asset) };
     if (asset.data.assetClass === "pv_string") return { kind: "pv_string", string: stringPerformance(ctx, snapshot, asset) };
