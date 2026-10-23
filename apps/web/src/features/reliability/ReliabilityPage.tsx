@@ -20,6 +20,7 @@ import { z } from "zod";
 import { formatNumber } from "../../shared/format";
 import { useGlobalSearch } from "../../shared/time-range";
 import { ColumnChart } from "../../shared/widgets/ColumnChart";
+import { ReliabilityNav } from "./ReliabilityNav";
 import { formatDuration } from "./reliability-format";
 
 const searchSchema = z.object({
@@ -56,6 +57,7 @@ export function ReliabilityPage() {
         <h1 className="text-2xl font-semibold">{t("modules.reliability.name")}</h1>
         <p className="text-fg-muted">{t("reliability.intro")}</p>
       </header>
+      <ReliabilityNav />
 
       <div className="flex flex-wrap items-end gap-3">
         <Select

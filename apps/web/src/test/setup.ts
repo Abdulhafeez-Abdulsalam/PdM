@@ -14,6 +14,8 @@ await Promise.all([
   import("../features/operations/SolarPage"),
   import("../features/operations/OilGasPage"),
   import("../features/reliability/ReliabilityPage"),
+  import("../features/reliability/WeibullPage"),
+  import("../features/reliability/RiskPage"),
   import("../features/alarms/AlarmsPage"),
   import("../features/alarms/AlarmAnalyticsPage"),
   import("../features/predictions/PredictionDetail"),

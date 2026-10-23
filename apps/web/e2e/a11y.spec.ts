@@ -73,6 +73,8 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["My jobs", () => "/field", "field_technician"],
   ["Field task", (i) => i.task, "field_technician"],
   ["Reliability", () => "/reliability?years=5", "reliability_engineer"],
+  ["Weibull analysis", () => "/reliability/weibull?class=pump&mode=VIB", "reliability_engineer"],
+  ["Risk matrix", () => "/reliability/risk?l=5&c=5", "reliability_engineer"],
   ["Asset 360: failures", () => "/assets/CBC-GT-101/failures", "reliability_engineer"],
   ["Coming-later page", () => "/twin", "control_room_operator"],
 ];

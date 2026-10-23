@@ -33,7 +33,8 @@ import { CommentStore, documentsFor, relatedFor } from "./asset-info";
 import { fleetCompare } from "./comparison";
 import { assetPerformance, powerOperations, turbineTrend } from "./operations";
 import { oilGasOperations } from "./oil-gas";
-import { assetFailures, reliabilitySummary } from "./reliability";
+import { allFailures, assetFailures, reliabilitySummary } from "./reliability";
+import { riskMatrix, weibullAnalysis } from "./weibull";
 import { solarOperations } from "./solar";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
@@ -286,6 +287,23 @@ export class MockBackend {
         inScope: this.inScope(request.scopeId),
       });
     },
+    "reliability.weibull": (request) =>
+      weibullAnalysis({
+        world: this.world,
+        failures: allFailures(this.world, this.workOrders),
+        now: this.now(),
+        request,
+        inScope: this.inScope(request.scopeId),
+      }),
+    "reliability.risk": (request) =>
+      riskMatrix({
+        world: this.world,
+        failures: allFailures(this.world, this.workOrders),
+        predictions: this.snapshot().predictions,
+        now: this.now(),
+        request,
+        inScope: this.inScope(request.scopeId),
+      }),
     "assets.failures": ({ assetId }) => assetFailures(this.world, this.workOrders, this.asset(assetId), this.now()),
     "operations.turbineTrend": ({ assetId, days }) =>
       turbineTrend({ world: this.world, chaos: this.chaos, now: this.now() }, this.asset(assetId), days),

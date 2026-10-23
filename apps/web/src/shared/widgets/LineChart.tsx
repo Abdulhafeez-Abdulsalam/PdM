@@ -40,6 +40,8 @@ export interface LineChartProps {
   includeZero?: boolean;
   /** Smallest left margin (px): give stacked charts the same one so their time axes line up. */
   minLeft?: number;
+  /** Label each line at its end (default with two or more lines). Off when the ends meet and would pile up. */
+  endLabels?: boolean;
   height?: number;
 }
 
@@ -79,6 +81,7 @@ export function LineChart({
   markers = [],
   includeZero = false,
   minLeft = PAD.left,
+  endLabels = true,
   height = 200,
 }: LineChartProps) {
   const { t } = useTranslation();
@@ -107,7 +110,8 @@ export function LineChart({
   const ticks = Array.from({ length: Math.round((y1 - y0) / step) + 1 }, (_, i) => y0 + i * step);
 
   const multi = series.length > 1;
-  const right = PAD.right + (multi ? DIRECT_LABEL_W : 0);
+  const labelEnds = multi && endLabels;
+  const right = PAD.right + (labelEnds ? DIRECT_LABEL_W : 0);
   // Room for the longest y-axis label (about 6.5 px a character at 11 px), so none is clipped.
   const left = Math.max(minLeft, 10 + 6.5 * Math.max(...ticks.map((v) => format(v).length)));
   const plotW = width - left - right;
@@ -271,7 +275,7 @@ export function LineChart({
                 strokeDasharray={s.dashed ? "6 4" : undefined}
               />
             ))}
-            {multi &&
+            {labelEnds &&
               ends.map((e) => (
                 <text
                   key={`end${e.s.id}`}

@@ -25,7 +25,15 @@ import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
 import { AssetPerformance, PowerOperations, PowerOperationsRequest, TurbineTrend, TurbineTrendRequest } from "./operations";
 import { SolarOperations, SolarOperationsRequest } from "./solar";
 import { OilGasOperations, OilGasRequest } from "./oil-gas";
-import { AssetFailures, ReliabilityRequest, ReliabilitySummary } from "./reliability";
+import {
+  AssetFailures,
+  ReliabilityRequest,
+  ReliabilitySummary,
+  RiskMatrix,
+  RiskRequest,
+  WeibullAnalysis,
+  WeibullRequest,
+} from "./reliability";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
@@ -165,6 +173,20 @@ export const endpoints = {
     description: "MTBF, MTTR and availability by class, the failure-mode Pareto, bad actors and failures per month",
     input: ReliabilityRequest,
     output: ReliabilitySummary,
+  }),
+  "reliability.weibull": endpoint({
+    method: "GET",
+    path: "/reliability/weibull",
+    description: "Weibull fit (β, η with 90 % bounds) for one class and failure mode, with the probability plot and reliability curve",
+    input: WeibullRequest,
+    output: WeibullAnalysis,
+  }),
+  "reliability.risk": endpoint({
+    method: "GET",
+    path: "/reliability/risk",
+    description: "5×5 risk matrix (likelihood of failing within a year × criticality) with the assets in a chosen cell",
+    input: RiskRequest,
+    output: RiskMatrix,
   }),
   "assets.failures": endpoint({
     method: "GET",

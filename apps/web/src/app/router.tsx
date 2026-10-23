@@ -29,6 +29,8 @@ const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenan
 const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
 const ReliabilityPage = lazyRouteComponent(() => import("../features/reliability/ReliabilityPage"), "ReliabilityPage");
+const WeibullPage = lazyRouteComponent(() => import("../features/reliability/WeibullPage"), "WeibullPage");
+const RiskPage = lazyRouteComponent(() => import("../features/reliability/RiskPage"), "RiskPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
 const SolarPage = lazyRouteComponent(() => import("../features/operations/SolarPage"), "SolarPage");
 const OilGasPage = lazyRouteComponent(() => import("../features/operations/OilGasPage"), "OilGasPage");
@@ -93,6 +95,20 @@ const oilGasRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/operations/oil-gas",
   component: OilGasPage,
+});
+
+/** Weibull analysis (?class=…&mode=…). A fixed path under the Reliability module. */
+const weibullRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/reliability/weibull",
+  component: WeibullPage,
+});
+
+/** The risk matrix (?l=…&c=… picks a cell). */
+const riskRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/reliability/risk",
+  component: RiskPage,
 });
 
 /** Solar operations. */
@@ -188,6 +204,8 @@ const routeTree = rootRoute.addChildren([
   powerRoute,
   solarRoute,
   oilGasRoute,
+  weibullRoute,
+  riskRoute,
   compareRoute,
   assetRoute,
   assetTabRoute,

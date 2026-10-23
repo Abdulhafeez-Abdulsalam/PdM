@@ -1,6 +1,6 @@
 # Phase 3 plan: domain depth
 
-*Agreed 2026-10-22. Progress: chunks 1–4 done (2026-10-23): the industry views and the reliability KPIs.*
+*Agreed 2026-10-22. Progress: chunks 1–5 done (2026-10-23): the industry views, reliability KPIs, Weibull analysis and the risk matrix.*
 
 Phase 1 built the foundation and Phase 2 the predictive core. Phase 3 ("domain depth" in the spec, §6.3, §6.7, §6.8) is where the app starts to speak each industry's language: a gas turbine engineer, a solar plant manager and a pipeline integrity engineer each get screens built around *their* questions, and the reliability engineer gets real analysis tools.
 
@@ -26,7 +26,7 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 | 2 ✅ | **Solar operations** (`/operations/solar`) | Power vs expected, performance ratio, the loss waterfall (irradiance → soiling → temperature → inverter → clipping…); inverter heat map; underperforming strings; soiling and a cleaning recommender; BESS state of charge and health | The biggest fleet (768 strings) and the most visual |
 | 3 ✅ | **Oil & gas operations** (`/operations/oil-gas`) | Upstream: ESP diagnostics and production vs decline curve. Midstream: pipeline wall thickness and corrosion rates, compressor stations. Downstream: exchanger fouling, PSV and inspection schedules (API 510/570/653) | Uses health and anomaly measures at first; gains MTBF/MTTR once chunk 4 exists |
 | 4 ✅ | **Reliability KPIs** (`/reliability`) | MTBF, MTTR, availability per class and site; Pareto of failure modes; bad actors and repeat failures; Asset 360 *Failures* tab | Built from the ISO 14224 close-outs; becomes the Reliability Engineer's home page |
-| 5 | **Weibull analysis and risk matrix** | Pick a failure mode and class: fitted Weibull curve with confidence band, β explained ("wearing out" vs "early failures"), reliability R(t) curve; a 5×5 risk matrix you can click into | Needs chunk 4's failure history |
+| 5 ✅ | **Weibull analysis and risk matrix** | Pick a failure mode and class: fitted Weibull curve with confidence band, β explained ("wearing out" vs "early failures"), reliability R(t) curve; a 5×5 risk matrix you can click into | Needs chunk 4's failure history |
 | 6 | **FMEA and root-cause analysis** | FMEA table with severity × occurrence × detection (RPN) per failure mode, linked to PM tasks; an RCA workspace with 5-Whys, a fishbone diagram, timeline and corrective actions | Turns analysis into action; links to work orders |
 | 7 | **Rotating-equipment diagnostics** | Asset 360 *Vibration* tab: frequency spectrum with fault-frequency markers (1×, 2×, bearing frequencies BPFO/BPFI), a waterfall (spectra over time), an orbit plot | The mock must generate spectra with real fault signatures |
 | 8 | **Digital twin (2D)** (`/twin`) | A process diagram per unit with live values and alarm colours, clicking through to Asset 360; solar farm layout (block → inverter → string); pipeline route by distance with anomalies; a time slider to replay the last days | Ties everything together; needs the earlier chunks' data |
@@ -39,6 +39,8 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 **What chunk 3 added beyond the table:** well rates now decline (exponential, per well) and drop to zero when their pump fails, so lost oil is measurable; remaining life uses the worse of the long- and short-term corrosion rates; inspection intervals follow API 510/653/576 and pipeline in-line inspection rules with the half-life rule; a failed ESP, a hot ESP and a compressor near surge are hand-placed. Rod-pump dynamometer cards and API 570 process piping were left out (the data isn't in the simulation). See [learning note 20](learning/20-oil-and-gas-decline-corrosion-inspection.md).
 
 **What chunk 4 added beyond the table:** five years of ISO 14224-coded failure history for every asset, generated from a Weibull life per failure mode and class (so chunk 5 can fit β and η and compare them with the true values), plus corrective work closed out in the app; a shared column chart; the Pareto shows shares and the running total on one % axis. The Command Center's MTBF tile is still a seeded figure; wiring it to this history is a small follow-up. See [learning note 21](learning/21-reliability-mtbf-mttr-pareto.md).
+
+**What chunk 5 added beyond the table:** maximum-likelihood fitting with suspensions and 90 % bounds from the likelihood's curvature, tested on data with a known answer and against the history's true β and η; Weibull paper with median ranks; R(t) with its band; the risk matrix uses each asset's failure history or an open prediction for likelihood, and criticality for consequence. See [learning note 22](learning/22-weibull-and-the-risk-matrix.md).
 
 Asset 360 gets its *Performance* tab in chunks 1–3 (each class shows its own measures), *Failures* in chunk 4 and *Twin* in chunk 8.
 

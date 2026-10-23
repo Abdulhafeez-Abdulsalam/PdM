@@ -1373,6 +1373,7 @@
     "label": "Operations pages",
     "power": "Gas-to-power",
     "solar": "Solar",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas"
   },
   "solar": {
@@ -1776,6 +1777,102 @@
       "remedy": "What was done",
       "repair": "Repair time",
       "downtime": "Out of service"
+    }
+  },
+  "reliabilityNav": {
+    "label": "Reliability pages",
+    "kpis": "KPIs",
+    "weibull": "Weibull analysis",
+    "risk": "Risk matrix"
+  },
+  "weibull": {
+    "title": "Weibull analysis",
+    "intro": "How does the chance of failure grow with running time, for one type of equipment and one way it fails? The answer decides whether replacing on a schedule helps.",
+    "modeLabel": "Failure mode",
+    "modeOption_one": "{{name}} ({{count}} failure)",
+    "modeOption_other": "{{name}} ({{count}} failures)",
+    "summaryLabel": "Fitted Weibull",
+    "data": "Fitted from {{failures}} times between failures and {{suspensions}} items still running (\"suspensions\": we know they lasted at least that long).",
+    "tooFew": "Too few failures of this mode to fit a curve (at least 5 are needed).",
+    "beta": "Shape β",
+    "eta": "Characteristic life η",
+    "between": "90 % sure: {{low}} to {{high}}",
+    "b10": "B10 life (10 % failed)",
+    "mttf": "Mean time to failure",
+    "pattern": {
+      "infant_mortality": "β below 1: early failures (infant mortality)",
+      "random": "β about 1: failures at random",
+      "wear_out": "β above 1: wear-out"
+    },
+    "patternMeans": {
+      "infant_mortality": "Failures are most likely soon after a repair or installation, then less likely. Look at installation, commissioning and part quality. Replacing on a schedule would make things worse: every new part starts in its riskiest period.",
+      "random": "Age doesn't matter: an old item is as likely to fail as a new one. Replacing on a schedule won't help; watch its condition instead, and fix it when the condition says so.",
+      "wear_out": "The longer it runs, the likelier it fails. Replacing or overhauling on a schedule works: about {{b10}} days would keep failures to roughly 1 in 10. Condition monitoring can stretch that safely."
+    },
+    "plotTitle": "Weibull probability plot",
+    "plotIntro": "Each dot is a failure; up is the estimated share failed by that age. On this special paper a Weibull is a straight line, so dots close to the line mean the fit is good. A bend or two different slopes suggests two failure causes mixed together.",
+    "plotLabel": "Weibull probability plot: running time in days on a log scale, share failed on a Weibull scale",
+    "plotSummary": "{{n}} failures. Fitted line: β {{beta}}, η {{eta}} days.",
+    "failuresPoints": "Failures",
+    "fittedLine": "Fitted Weibull",
+    "axisDays": "running time, days (log scale)",
+    "colDays": "Running time (days)",
+    "colFailed": "Estimated share failed",
+    "pointTip": "{{days}} days: {{pct}} % failed",
+    "curveTitle": "Reliability: the chance of still running",
+    "curveIntro": "R(t) is the chance an item survives to age t without this failure. The dashed lines are the 90 % band: with this much data, the true curve is very likely between them.",
+    "curveLabel": "Reliability against running time in days, with its 90 % band",
+    "curveSummary": "10 % have failed by {{b10}} days (B10); the average life is {{mttf}} days.",
+    "reliability": "Reliability",
+    "bandHigh": "90 % band, upper",
+    "bandLow": "90 % band, lower",
+    "b10Line": "B10: 10 % failed",
+    "dayN": "Day {{n}}"
+  },
+  "risk": {
+    "title": "Risk matrix",
+    "intro": "Every asset placed by how likely it is to fail within a year and how bad that would be. Risk = likelihood × consequence; work on the top-right first.",
+    "matrixTitle": "Likelihood × consequence",
+    "matrixIntro": "{{total}} assets. Pick a cell to list its assets.",
+    "caption": "Number of assets in each cell of the risk matrix",
+    "likelihood": {
+      "1": "Rare (under 5 %)",
+      "2": "Unlikely (5–20 %)",
+      "3": "Possible (20–50 %)",
+      "4": "Likely (50–80 %)",
+      "5": "Almost certain (80 %+)"
+    },
+    "consequence": {
+      "1": "Minor",
+      "2": "Moderate",
+      "3": "Major",
+      "4": "Severe",
+      "5": "Critical"
+    },
+    "level": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "extreme": "Extreme"
+    },
+    "cellExtra": "likelihood {{l}}, consequence {{c}}",
+    "axes": "Up: likelihood of failing within a year (from the asset's own failure history, or an open prediction if that says more). Across: consequence, the asset's criticality.",
+    "cellTitle_one": "Likelihood {{l}} × consequence {{c}}: {{count}} asset",
+    "cellTitle_other": "Likelihood {{l}} × consequence {{c}}: {{count}} assets",
+    "topTitle": "Riskiest assets",
+    "showRiskiest": "Show the riskiest",
+    "itemsIntro": "Each asset links to its failure history.",
+    "itemsCaption": "Assets with their likelihood, consequence and risk",
+    "empty": "No assets in this cell.",
+    "col": {
+      "chance": "Chance within a year",
+      "basis": "Based on",
+      "lc": "Likelihood × consequence",
+      "level": "Risk"
+    },
+    "basis": {
+      "prediction": "Open prediction",
+      "history": "Failure history"
     }
   }
 }
