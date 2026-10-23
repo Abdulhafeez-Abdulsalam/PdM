@@ -13,6 +13,7 @@ await Promise.all([
   import("../features/operations/PowerPage"),
   import("../features/operations/SolarPage"),
   import("../features/operations/OilGasPage"),
+  import("../features/reliability/ReliabilityPage"),
   import("../features/alarms/AlarmsPage"),
   import("../features/alarms/AlarmAnalyticsPage"),
   import("../features/predictions/PredictionDetail"),

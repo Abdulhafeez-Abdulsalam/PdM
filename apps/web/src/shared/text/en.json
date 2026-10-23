@@ -335,6 +335,7 @@
       "telemetry": "Telemetry",
       "health": "Health & prediction",
       "performance": "Performance",
+      "failures": "Failures",
       "alarms": "Alarms",
       "maintenance": "Maintenance",
       "documents": "Documents",
@@ -1207,7 +1208,8 @@
     "legend": "Legend",
     "showTable": "Show as table",
     "showChart": "Show as chart",
-    "time": "Time"
+    "time": "Time",
+    "category": "Category"
   },
   "power": {
     "title": "Gas-to-power operations",
@@ -1689,6 +1691,91 @@
       "shortTerm": "Corrosion rate, probe now",
       "lifeHow": "Remaining life = (measured − required) ÷ the worse of the two rates.",
       "inspectionTitle": "Next inspection"
+    }
+  },
+  "reliability": {
+    "intro": "How often does equipment fail, how long does it take to fix, and which failures and which assets cost the most? From five years of failures coded with ISO 14224.",
+    "period": "Period",
+    "years_1": "Last 12 months",
+    "years_3": "Last 3 years",
+    "years_5": "Last 5 years",
+    "classLabel": "Equipment type",
+    "allEquipment": "All equipment",
+    "kpisLabel": "Reliability for the period",
+    "kpi": {
+      "failures": "Failures",
+      "assets_one": "across {{count}} asset",
+      "assets_other": "across {{count}} assets",
+      "mtbf": "Time between failures (MTBF)",
+      "mtbfHow": "Operating hours ÷ failures, for all the assets together. Higher is better.",
+      "mttr": "Time to repair (MTTR)",
+      "mttrHow": "Average hands-on repair time per failure. Lower is better.",
+      "availability": "Availability",
+      "downtime": "{{hours}} h out of service",
+      "repeats": "Repeat failures",
+      "repeatsHow": "The same failure again on the same asset within 90 days: often a sign the first repair didn't fix the real cause."
+    },
+    "monthlyTitle": "Failures per month",
+    "monthlyIntro": "A rising trend is worth investigating before it shows in availability. The first and last months are only partly inside the period.",
+    "monthlyLabel": "Failures per calendar month",
+    "monthlySummary": "{{total}} failures in the period; the busiest month had {{peak}}.",
+    "paretoTitle": "Which failure modes matter most",
+    "paretoBy": "Rank by",
+    "by": {
+      "failures": "Number of failures",
+      "downtime": "Downtime"
+    },
+    "paretoIntro": "A Pareto chart: failure modes from biggest to smallest, with the running total. Usually a few modes cause most of the trouble; fix those first.",
+    "paretoLabel": "Failure modes ranked by {{by}}, share of the total and running total, in %",
+    "paretoSummary_one": "{{count}} of {{total}} failure modes makes 80 % of the total: {{modes}}.",
+    "paretoSummary_other": "{{count}} of {{total}} failure modes make 80 % of the total: {{modes}}.",
+    "noFailures": "No failures in the period.",
+    "share": "Share",
+    "cumulative": "Running total",
+    "classesTitle": "By type of equipment",
+    "classesIntro": "Pick a type to focus the page on it. Failure rate is failures per asset per year, so big and small fleets compare fairly.",
+    "tableOf": "Table: {{name}}",
+    "badTitle": "Bad actors",
+    "badIntro": "Assets failing at least {{ratio}} times as often as the average of their type. A small number of bad actors often causes a large share of the work; each deserves a root-cause analysis.",
+    "noBad": "No bad actors in the period.",
+    "col": {
+      "class": "Type",
+      "assets": "Assets",
+      "failures": "Failures",
+      "rate": "Failures per asset per year",
+      "mtbf": "MTBF",
+      "mttr": "MTTR",
+      "availability": "Availability",
+      "repeats": "Repeats",
+      "asset": "Asset",
+      "vsClass": "Rate vs its type",
+      "topMode": "Fails most by",
+      "downtime": "Downtime"
+    },
+    "times": "{{value}}×",
+    "hours": "{{value}} h",
+    "days": "{{value}} days"
+  },
+  "failuresTab": {
+    "compareTitle": "This asset against its type, last {{years}} years",
+    "compareIntro": "Every {{name}} in the company over the same years, for comparison.",
+    "compareCaption": "This asset's reliability measures beside its type's",
+    "measure": "Measure",
+    "thisAsset": "This asset",
+    "classAll_one": "All {{count}} of its type",
+    "classAll_other": "All {{count}} of its type",
+    "listTitle_one": "{{count}} failure",
+    "listTitle_other": "{{count}} failures",
+    "listCaption": "Failures of this asset, newest first",
+    "none": "No failures recorded.",
+    "repeat": "Repeat",
+    "col": {
+      "when": "Failed",
+      "mode": "Failure mode",
+      "cause": "Cause",
+      "remedy": "What was done",
+      "repair": "Repair time",
+      "downtime": "Out of service"
     }
   }
 }

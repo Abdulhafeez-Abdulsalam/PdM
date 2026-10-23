@@ -74,7 +74,7 @@ test("the plant manager approves work by dragging the card with the mouse", asyn
 const HOMES: [Role, string][] = [
   ["executive", "/command-center"],
   ["plant_manager", "/command-center"],
-  ["reliability_engineer", "/command-center"], // until Reliability (Phase 3) is built
+  ["reliability_engineer", "/reliability"],
   ["condition_analyst", "/predictive"],
   ["control_room_operator", "/command-center"],
   ["maintenance_planner", "/maintenance"],

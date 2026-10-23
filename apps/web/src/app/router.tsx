@@ -28,6 +28,7 @@ const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/W
 const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenance/ScheduleBoardPage"), "ScheduleBoardPage");
 const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
+const ReliabilityPage = lazyRouteComponent(() => import("../features/reliability/ReliabilityPage"), "ReliabilityPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
 const SolarPage = lazyRouteComponent(() => import("../features/operations/SolarPage"), "SolarPage");
 const OilGasPage = lazyRouteComponent(() => import("../features/operations/OilGasPage"), "OilGasPage");
@@ -65,6 +66,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   assets: AssetRegistryPage,
   alarms: AlarmsPage,
   predictive: PredictionConsolePage,
+  reliability: ReliabilityPage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };

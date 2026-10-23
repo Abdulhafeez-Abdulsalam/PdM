@@ -33,6 +33,7 @@ import { CommentStore, documentsFor, relatedFor } from "./asset-info";
 import { fleetCompare } from "./comparison";
 import { assetPerformance, powerOperations, turbineTrend } from "./operations";
 import { oilGasOperations } from "./oil-gas";
+import { assetFailures, reliabilitySummary } from "./reliability";
 import { solarOperations } from "./solar";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
@@ -275,6 +276,17 @@ export class MockBackend {
         segment,
         inScope: this.inScope(scopeId),
       }),
+    "reliability.summary": (request) => {
+      if (request.scopeId) this.scope(request.scopeId);
+      return reliabilitySummary({
+        world: this.world,
+        workOrders: this.workOrders,
+        now: this.now(),
+        request,
+        inScope: this.inScope(request.scopeId),
+      });
+    },
+    "assets.failures": ({ assetId }) => assetFailures(this.world, this.workOrders, this.asset(assetId), this.now()),
     "operations.turbineTrend": ({ assetId, days }) =>
       turbineTrend({ world: this.world, chaos: this.chaos, now: this.now() }, this.asset(assetId), days),
     "assets.documents": ({ assetId }) => ({ items: documentsFor(this.asset(assetId), this.now()) }),

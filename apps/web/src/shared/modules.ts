@@ -65,6 +65,7 @@ export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
   "alarms",
   "operations",
   "predictive",
+  "reliability",
   "maintenance",
   "field",
 ]);

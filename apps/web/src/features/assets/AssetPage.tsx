@@ -13,6 +13,7 @@ import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate, formatNumber } from "../../shared/format";
 import { AlarmsTab, MaintenanceTab } from "./HistoryTabs";
+import { FailuresTab } from "./FailuresTab";
 import { HealthTab } from "./HealthTab";
 import { CommentsTab, DocumentsTab, RelatedTab } from "./InfoTabs";
 import { OverviewTab } from "./OverviewTab";
@@ -24,6 +25,7 @@ export const ASSET_TABS = [
   "telemetry",
   "health",
   "performance",
+  "failures",
   "alarms",
   "maintenance",
   "documents",
@@ -88,6 +90,7 @@ export function AssetPage() {
           telemetry: <TelemetryTab asset={asset.data} siteTimeZone={site?.timezone} />,
           health: <HealthTab asset={asset.data} />,
           performance: <PerformanceTab asset={asset.data} />,
+          failures: <FailuresTab asset={asset.data} />,
           alarms: <AlarmsTab asset={asset.data} siteTimeZone={site?.timezone} />,
           maintenance: <MaintenanceTab asset={asset.data} />,
           documents: <DocumentsTab asset={asset.data} />,

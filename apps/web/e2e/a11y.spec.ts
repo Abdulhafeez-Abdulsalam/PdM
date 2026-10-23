@@ -72,7 +72,9 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Work order page", (i) => i.workOrder, "maintenance_planner"],
   ["My jobs", () => "/field", "field_technician"],
   ["Field task", (i) => i.task, "field_technician"],
-  ["Coming-later page", () => "/reliability", "reliability_engineer"],
+  ["Reliability", () => "/reliability?years=5", "reliability_engineer"],
+  ["Asset 360: failures", () => "/assets/CBC-GT-101/failures", "reliability_engineer"],
+  ["Coming-later page", () => "/twin", "control_room_operator"],
 ];
 
 for (const [name, url, role] of SCREENS) {

@@ -25,6 +25,7 @@ import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
 import { AssetPerformance, PowerOperations, PowerOperationsRequest, TurbineTrend, TurbineTrendRequest } from "./operations";
 import { SolarOperations, SolarOperationsRequest } from "./solar";
 import { OilGasOperations, OilGasRequest } from "./oil-gas";
+import { AssetFailures, ReliabilityRequest, ReliabilitySummary } from "./reliability";
 import { Briefing } from "./briefing";
 import { Id, PageParams, ScopeId, list, page } from "./common";
 import { EventListParams, TimelineEvent } from "./events";
@@ -157,6 +158,20 @@ export const endpoints = {
     description: "Oil & gas: wells and their pumps with the decline curve, pipeline integrity and compressors, exchangers and inspections",
     input: OilGasRequest,
     output: OilGasOperations,
+  }),
+  "reliability.summary": endpoint({
+    method: "GET",
+    path: "/reliability",
+    description: "MTBF, MTTR and availability by class, the failure-mode Pareto, bad actors and failures per month",
+    input: ReliabilityRequest,
+    output: ReliabilitySummary,
+  }),
+  "assets.failures": endpoint({
+    method: "GET",
+    path: "/assets/:assetId/failures",
+    description: "An asset's failure history (ISO 14224 coded) with its KPIs and its class's",
+    input: z.object({ assetId: Id }),
+    output: AssetFailures,
   }),
   "operations.turbineTrend": endpoint({
     method: "GET",

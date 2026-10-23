@@ -13,6 +13,7 @@ export * from "./comparison";
 export * from "./operations";
 export * from "./solar";
 export * from "./oil-gas";
+export * from "./reliability";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

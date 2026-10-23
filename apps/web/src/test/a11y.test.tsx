@@ -68,7 +68,10 @@ const SCREENS: [string, RoleId][] = [
   [`/maintenance/${workOrder.id}`, "maintenance_planner"],
   ["/field", "field_technician"],
   [`/field/tasks/${myJob.id}`, "field_technician"],
-  ["/reliability", "reliability_engineer"], // a "coming in a later phase" page
+  ["/reliability", "reliability_engineer"],
+  ["/reliability?years=5&class=pump", "reliability_engineer"],
+  [`/assets/${ASSET}/failures`, "reliability_engineer"],
+  ["/twin", "control_room_operator"], // a "coming in a later chunk" page
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */
