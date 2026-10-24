@@ -25,6 +25,11 @@ export function FailuresTab({ asset }: { asset: Asset }) {
         </h2>
         <p className="mb-2 text-sm text-fg-muted">{t("failuresTab.compareIntro", { name: t(`assetClass.${asset.assetClass}`) })}</p>
         <CompareTable own={kpis} cls={classKpis} />
+        <p className="mt-3 text-sm">
+          <Link to="/reliability/rca" search={{ asset: asset.id }} className="text-accent hover:underline">
+            {t("failuresTab.startRca")}
+          </Link>
+        </p>
       </section>
 
       <section aria-labelledby="fail-list" className="rounded-lg border border-line bg-surface p-4">

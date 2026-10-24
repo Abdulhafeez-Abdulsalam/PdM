@@ -37,7 +37,7 @@ import type { World } from "./world";
 const YEAR = 365.25 * DAY;
 
 /** One way a class fails: its ISO 14224 coding, Weibull life (β, η days) and median repair hours. */
-interface ModeLife {
+export interface ModeLife {
   mode: FailureModeCode;
   cause: FailureCauseCode;
   remedy: RemedyCode;
@@ -67,7 +67,7 @@ const m = (
  * β about 1: failures at random, no ageing (control and instrument faults).
  * β above 1: wear-out (bearings, seals, fouling): the longer it runs, the likelier it fails.
  */
-const LIVES: Record<AssetClass, readonly ModeLife[]> = {
+export const LIVES: Record<AssetClass, readonly ModeLife[]> = {
   pump: [
     m("VIB", "2.4", "replace", 2.2, 1100, 8),
     m("ELP", "1.1", "replace", 1.5, 900, 6),

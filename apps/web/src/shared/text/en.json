@@ -947,10 +947,12 @@
     "source": "Raised from",
     "fromPrediction": "Prediction {{id}}",
     "fromAlarm": "Alarm {{id}}",
+    "fromRca": "Root-cause analysis {{id}}",
     "sourceKind": {
       "manual": "Manual request",
       "alarm": "Alarm",
-      "prediction": "Prediction"
+      "prediction": "Prediction",
+      "rca": "Root-cause analysis"
     },
     "history": "History",
     "system": "System",
@@ -1374,6 +1376,7 @@
     "power": "Gas-to-power",
     "solar": "Solar",
     "oilGas": "Oil & gas",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas"
   },
   "solar": {
@@ -1761,6 +1764,7 @@
     "compareTitle": "This asset against its type, last {{years}} years",
     "compareIntro": "Every {{name}} in the company over the same years, for comparison.",
     "compareCaption": "This asset's reliability measures beside its type's",
+    "startRca": "Start a root-cause analysis for this asset",
     "measure": "Measure",
     "thisAsset": "This asset",
     "classAll_one": "All {{count}} of its type",
@@ -1783,7 +1787,9 @@
     "label": "Reliability pages",
     "kpis": "KPIs",
     "weibull": "Weibull analysis",
-    "risk": "Risk matrix"
+    "risk": "Risk matrix",
+    "fmea": "FMEA",
+    "rca": "Root-cause analysis"
   },
   "weibull": {
     "title": "Weibull analysis",
@@ -1874,5 +1880,130 @@
       "prediction": "Open prediction",
       "history": "Failure history"
     }
+  },
+  "fmea": {
+    "title": "FMEA",
+    "intro": "Failure mode and effects analysis: each way a type of equipment fails, scored for how bad it is, how often it happens and how likely we are to catch it first. The product (RPN) shows where maintenance effort pays most.",
+    "tableTitle": "{{name}}: failure modes",
+    "tableIntro": "Highest risk first. Act on anything with RPN {{rpn}} or more, and on any mode with severity {{severity}} or more whatever its RPN.",
+    "plan_one": "{{count}} asset of this type; {{preventive}} preventive work orders open for them.",
+    "plan_other": "{{count}} assets of this type; {{preventive}} preventive work orders open for them.",
+    "openPlan": "Open the maintenance list",
+    "caption": "Failure modes with severity, occurrence, detection, risk priority number and maintenance strategy",
+    "col": {
+      "mode": "Failure mode and cause",
+      "s": "S",
+      "o": "O",
+      "d": "D",
+      "rpn": "RPN",
+      "rate": "Failures per asset per year",
+      "strategy": "Maintenance strategy"
+    },
+    "severityFull": "Severity: how bad a failure would be (1–10)",
+    "occurrenceFull": "Occurrence: how often it happens, from the failure history (1–10)",
+    "detectionFull": "Detection: how hard it is to see coming (1 easy, 10 invisible)",
+    "monitored": "watched by a model",
+    "act": "(act on this)",
+    "failures_one": "{{count}} failure in 5 years",
+    "failures_other": "{{count}} failures in 5 years",
+    "strategy": {
+      "time_based": "Time-based maintenance",
+      "condition_based": "Condition-based maintenance",
+      "redesign": "Fix the design or installation",
+      "run_to_failure": "Run to failure"
+    },
+    "strategyWhy": {
+      "time_based": "It wears out: replace or overhaul on a schedule, around B10 ({{b10}} days).",
+      "condition_based": "Watch its condition and act when it changes; a schedule wouldn't match how it fails.",
+      "redesign": "It fails early after repair or installation: a schedule would make it worse. Improve the part, the fitting or the checks.",
+      "run_to_failure": "Cheap and harmless when it fails: let it, and fix it then."
+    },
+    "seeWeibull": "See its Weibull ({{pattern}})",
+    "scales": "S, O and D are each 1 to 10, so RPN runs from 1 to 1,000. Detection is lower (better) where a predictive model already watches for the mode."
+  },
+  "rca": {
+    "listTitle": "Root-cause analyses",
+    "intro": "Investigations into why something failed, so it doesn't happen again: the timeline, 5 Whys, a fishbone of possible causes, the root cause, and corrective actions that become work orders.",
+    "none": "No investigations yet.",
+    "col": {
+      "investigation": "Investigation",
+      "status": "Status",
+      "actions": "Actions",
+      "updated": "Last updated"
+    },
+    "status": {
+      "open": "Open",
+      "in_review": "In review",
+      "closed": "Closed"
+    },
+    "newTitle": "Start an investigation",
+    "newIntro": "Bad actors and repeat failures are the best candidates.",
+    "assetLabel": "Asset",
+    "assetHint": "The asset's ID, e.g. CBC-GT-101",
+    "titleLabel": "What are we investigating?",
+    "defaultTitle": "Repeated failures on {{id}}",
+    "start": "Start investigation",
+    "created": "Investigation {{id}} started",
+    "notFound": "Investigation {{id}} not found",
+    "backToList": "Back to all investigations",
+    "startedOn": "started {{date}}",
+    "save": "Save",
+    "saved": "Saved",
+    "sendForReview": "Send for review",
+    "close": "Close investigation",
+    "reopen": "Reopen",
+    "statusChanged": {
+      "open": "Investigation reopened",
+      "in_review": "Sent for review",
+      "closed": "Investigation closed"
+    },
+    "timelineTitle": "What happened",
+    "timelineIntro": "The asset's failures, work orders and predictions around the problem.",
+    "timelineEmpty": "Nothing recorded around this time.",
+    "event": {
+      "failure": "Failure",
+      "work_order": "Work order",
+      "alarm": "Alarm",
+      "prediction": "Prediction"
+    },
+    "whysTitle": "5 Whys",
+    "whysIntro": "Start from what happened and ask \"why?\" until the answer is something you can fix. Five is a rule of thumb, not a law.",
+    "whyN": "Why {{n}}",
+    "fishboneTitle": "Fishbone of possible causes",
+    "fishboneIntro": "Also called an Ishikawa diagram: the problem at the head, and six places causes usually hide. List everything plausible first, then test them.",
+    "fishboneLabel": "Fishbone diagram of possible causes",
+    "fishboneSummary": "{{total}} causes: {{list}}.",
+    "category": {
+      "people": "People",
+      "machine": "Machine",
+      "method": "Method",
+      "material": "Material",
+      "measurement": "Measurement",
+      "environment": "Environment"
+    },
+    "categoryHint": {
+      "people": "Skills, training, workload, communication",
+      "machine": "The equipment itself, its parts and tools",
+      "method": "Procedures, work instructions, the PM plan",
+      "material": "Spare parts, lubricants, process fluids",
+      "measurement": "Readings, instruments, what we didn't measure",
+      "environment": "Weather, heat, dust, the site around it"
+    },
+    "noCauses": "None listed yet.",
+    "removeCause": "Remove \"{{cause}}\"",
+    "addCauseTo": "Add a cause under {{name}}",
+    "add": "Add",
+    "rootTitle": "Root cause",
+    "rootLabel": "The root cause, in a sentence",
+    "rootHint": "Needed before the investigation can be closed.",
+    "actionsTitle": "Corrective actions",
+    "actionsIntro": "What will stop it happening again. Each action can raise a work order straight away.",
+    "noActions": "No actions yet.",
+    "noWo": "no work order",
+    "actionLabel": "New action",
+    "raiseWo": "Raise a work order",
+    "addAction": "Add action",
+    "actionWithWo": "Action added; work order {{id}} raised",
+    "actionAdded": "Action added"
   }
 }

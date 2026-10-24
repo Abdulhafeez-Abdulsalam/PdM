@@ -24,6 +24,7 @@ import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
 import { AssetPerformance, PowerOperations, PowerOperationsRequest, TurbineTrend, TurbineTrendRequest } from "./operations";
 import { SolarOperations, SolarOperationsRequest } from "./solar";
+import { AddActionRequest, CreateRcaRequest, Fmea, FmeaRequest, Rca, RcaSummary, UpdateRcaRequest } from "./rca";
 import { OilGasOperations, OilGasRequest } from "./oil-gas";
 import {
   AssetFailures,
@@ -187,6 +188,48 @@ export const endpoints = {
     description: "5×5 risk matrix (likelihood of failing within a year × criticality) with the assets in a chosen cell",
     input: RiskRequest,
     output: RiskMatrix,
+  }),
+  "reliability.fmea": endpoint({
+    method: "GET",
+    path: "/reliability/fmea",
+    description: "FMEA for one type of equipment: severity, occurrence, detection, RPN and maintenance strategy per failure mode",
+    input: FmeaRequest,
+    output: Fmea,
+  }),
+  "rca.list": endpoint({
+    method: "GET",
+    path: "/rca",
+    description: "Root-cause analyses, most recently updated first",
+    input: z.object({ assetId: Id.optional() }),
+    output: list(RcaSummary),
+  }),
+  "rca.get": endpoint({
+    method: "GET",
+    path: "/rca/:rcaId",
+    description: "One root-cause analysis with its timeline",
+    input: z.object({ rcaId: Id }),
+    output: Rca,
+  }),
+  "rca.create": endpoint({
+    method: "POST",
+    path: "/rca",
+    description: "Start a root-cause analysis for an asset (optionally from one of its failures)",
+    input: CreateRcaRequest,
+    output: Rca,
+  }),
+  "rca.update": endpoint({
+    method: "POST",
+    path: "/rca/:rcaId",
+    description: "Save the 5 whys, fishbone, root cause or status",
+    input: UpdateRcaRequest,
+    output: Rca,
+  }),
+  "rca.addAction": endpoint({
+    method: "POST",
+    path: "/rca/:rcaId/actions",
+    description: "Add a corrective action, optionally raising a work order for it",
+    input: AddActionRequest,
+    output: Rca,
   }),
   "assets.failures": endpoint({
     method: "GET",

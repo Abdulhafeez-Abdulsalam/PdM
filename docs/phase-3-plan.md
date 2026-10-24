@@ -1,6 +1,6 @@
 # Phase 3 plan: domain depth
 
-*Agreed 2026-10-22. Progress: chunks 1–5 done (2026-10-23): the industry views, reliability KPIs, Weibull analysis and the risk matrix.*
+*Agreed 2026-10-22. Progress: chunks 1–6 done (2026-10-24): the industry views and the reliability suite (KPIs, Weibull, risk matrix, FMEA, root-cause analysis).*
 
 Phase 1 built the foundation and Phase 2 the predictive core. Phase 3 ("domain depth" in the spec, §6.3, §6.7, §6.8) is where the app starts to speak each industry's language: a gas turbine engineer, a solar plant manager and a pipeline integrity engineer each get screens built around *their* questions, and the reliability engineer gets real analysis tools.
 
@@ -27,7 +27,7 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 | 3 ✅ | **Oil & gas operations** (`/operations/oil-gas`) | Upstream: ESP diagnostics and production vs decline curve. Midstream: pipeline wall thickness and corrosion rates, compressor stations. Downstream: exchanger fouling, PSV and inspection schedules (API 510/570/653) | Uses health and anomaly measures at first; gains MTBF/MTTR once chunk 4 exists |
 | 4 ✅ | **Reliability KPIs** (`/reliability`) | MTBF, MTTR, availability per class and site; Pareto of failure modes; bad actors and repeat failures; Asset 360 *Failures* tab | Built from the ISO 14224 close-outs; becomes the Reliability Engineer's home page |
 | 5 ✅ | **Weibull analysis and risk matrix** | Pick a failure mode and class: fitted Weibull curve with confidence band, β explained ("wearing out" vs "early failures"), reliability R(t) curve; a 5×5 risk matrix you can click into | Needs chunk 4's failure history |
-| 6 | **FMEA and root-cause analysis** | FMEA table with severity × occurrence × detection (RPN) per failure mode, linked to PM tasks; an RCA workspace with 5-Whys, a fishbone diagram, timeline and corrective actions | Turns analysis into action; links to work orders |
+| 6 ✅ | **FMEA and root-cause analysis** | FMEA table with severity × occurrence × detection (RPN) per failure mode, linked to PM tasks; an RCA workspace with 5-Whys, a fishbone diagram, timeline and corrective actions | Turns analysis into action; links to work orders |
 | 7 | **Rotating-equipment diagnostics** | Asset 360 *Vibration* tab: frequency spectrum with fault-frequency markers (1×, 2×, bearing frequencies BPFO/BPFI), a waterfall (spectra over time), an orbit plot | The mock must generate spectra with real fault signatures |
 | 8 | **Digital twin (2D)** (`/twin`) | A process diagram per unit with live values and alarm colours, clicking through to Asset 360; solar farm layout (block → inverter → string); pipeline route by distance with anomalies; a time slider to replay the last days | Ties everything together; needs the earlier chunks' data |
 | 9 | **Phase 3 review** | Like the Phase 2 review: criteria re-tested, gaps listed, real-browser checks | |
@@ -41,6 +41,8 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 **What chunk 4 added beyond the table:** five years of ISO 14224-coded failure history for every asset, generated from a Weibull life per failure mode and class (so chunk 5 can fit β and η and compare them with the true values), plus corrective work closed out in the app; a shared column chart; the Pareto shows shares and the running total on one % axis. The Command Center's MTBF tile is still a seeded figure; wiring it to this history is a small follow-up. See [learning note 21](learning/21-reliability-mtbf-mttr-pareto.md).
 
 **What chunk 5 added beyond the table:** maximum-likelihood fitting with suspensions and 90 % bounds from the likelihood's curvature, tested on data with a known answer and against the history's true β and η; Weibull paper with median ranks; R(t) with its band; the risk matrix uses each asset's failure history or an open prediction for likelihood, and criticality for consequence. See [learning note 22](learning/22-weibull-and-the-risk-matrix.md).
+
+**What chunk 6 added beyond the table:** FMEA occurrence comes from the real failure history and detection drops where a predictive model watches the mode; the strategy column follows RCM (run to failure, condition-based, time-based at B10, or fix the design); severity 9+ is acted on whatever its RPN. RCA keeps investigations in memory with an open → in review → closed flow enforced by the server; corrective actions raise work orders with a new `rca` source that links back. "Linked to PM tasks" is the strategy plus the count of open preventive work orders; generating PM tasks from FMEA is left for later. See [learning note 23](learning/23-fmea-and-root-cause-analysis.md).
 
 Asset 360 gets its *Performance* tab in chunks 1–3 (each class shows its own measures), *Failures* in chunk 4 and *Twin* in chunk 8.
 

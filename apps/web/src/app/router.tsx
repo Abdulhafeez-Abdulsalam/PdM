@@ -31,6 +31,9 @@ const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), 
 const ReliabilityPage = lazyRouteComponent(() => import("../features/reliability/ReliabilityPage"), "ReliabilityPage");
 const WeibullPage = lazyRouteComponent(() => import("../features/reliability/WeibullPage"), "WeibullPage");
 const RiskPage = lazyRouteComponent(() => import("../features/reliability/RiskPage"), "RiskPage");
+const FmeaPage = lazyRouteComponent(() => import("../features/reliability/FmeaPage"), "FmeaPage");
+const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
+const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
 const SolarPage = lazyRouteComponent(() => import("../features/operations/SolarPage"), "SolarPage");
 const OilGasPage = lazyRouteComponent(() => import("../features/operations/OilGasPage"), "OilGasPage");
@@ -109,6 +112,27 @@ const riskRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/reliability/risk",
   component: RiskPage,
+});
+
+/** FMEA for one type of equipment (?class=…). */
+const fmeaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/reliability/fmea",
+  component: FmeaPage,
+});
+
+/** Root-cause analyses (?asset=… fills in the new-investigation form). */
+const rcaListRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/reliability/rca",
+  component: RcaListPage,
+});
+
+/** One root-cause analysis. */
+const rcaRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/reliability/rca/$rcaId",
+  component: RcaPage,
 });
 
 /** Solar operations. */
@@ -206,6 +230,9 @@ const routeTree = rootRoute.addChildren([
   oilGasRoute,
   weibullRoute,
   riskRoute,
+  fmeaRoute,
+  rcaListRoute,
+  rcaRoute,
   compareRoute,
   assetRoute,
   assetTabRoute,

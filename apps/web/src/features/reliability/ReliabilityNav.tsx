@@ -1,4 +1,4 @@
-/** The Reliability module's pages: the KPIs, Weibull analysis and the risk matrix. */
+/** The Reliability module's pages: KPIs, Weibull analysis, the risk matrix, FMEA and root-cause analysis. */
 import { useTranslation } from "react-i18next";
 import { SubNav } from "../../shared/widgets/SubNav";
 
@@ -11,6 +11,8 @@ export function ReliabilityNav() {
         { to: "/reliability", label: t("reliabilityNav.kpis") },
         { to: "/reliability/weibull", label: t("reliabilityNav.weibull") },
         { to: "/reliability/risk", label: t("reliabilityNav.risk") },
+        { to: "/reliability/fmea", label: t("reliabilityNav.fmea") },
+        { to: "/reliability/rca", label: t("reliabilityNav.rca") },
       ]}
     />
   );

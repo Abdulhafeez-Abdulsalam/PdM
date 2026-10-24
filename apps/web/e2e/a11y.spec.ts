@@ -75,6 +75,9 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Reliability", () => "/reliability?years=5", "reliability_engineer"],
   ["Weibull analysis", () => "/reliability/weibull?class=pump&mode=VIB", "reliability_engineer"],
   ["Risk matrix", () => "/reliability/risk?l=5&c=5", "reliability_engineer"],
+  ["FMEA", () => "/reliability/fmea?class=gas_turbine", "reliability_engineer"],
+  ["Root-cause analyses", () => "/reliability/rca", "reliability_engineer"],
+  ["Root-cause analysis", () => "/reliability/rca/RCA-001", "reliability_engineer"],
   ["Asset 360: failures", () => "/assets/CBC-GT-101/failures", "reliability_engineer"],
   ["Coming-later page", () => "/twin", "control_room_operator"],
 ];

@@ -144,6 +144,13 @@ function Source({ wo }: { wo: WorkOrder }) {
       </Link>
     );
   }
+  if (kind === "rca" && refId) {
+    return (
+      <Link to="/reliability/rca/$rcaId" params={{ rcaId: refId }} className="text-accent hover:underline">
+        {t("workOrderPage.fromRca", { id: refId })}
+      </Link>
+    );
+  }
   return <>{t(`workOrderPage.sourceKind.${kind}`)}</>;
 }
 

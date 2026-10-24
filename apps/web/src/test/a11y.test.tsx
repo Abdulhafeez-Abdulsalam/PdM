@@ -72,6 +72,9 @@ const SCREENS: [string, RoleId][] = [
   ["/reliability?years=5&class=pump", "reliability_engineer"],
   ["/reliability/weibull?class=pump&mode=VIB", "reliability_engineer"],
   ["/reliability/risk?l=5&c=5", "reliability_engineer"],
+  ["/reliability/fmea?class=gas_turbine", "reliability_engineer"],
+  ["/reliability/rca?asset=CBC-GT-101", "reliability_engineer"],
+  ["/reliability/rca/RCA-001", "reliability_engineer"],
   [`/assets/${ASSET}/failures`, "reliability_engineer"],
   ["/twin", "control_room_operator"], // a "coming in a later chunk" page
 ];

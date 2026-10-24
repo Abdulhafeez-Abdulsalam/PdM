@@ -34,6 +34,7 @@ import { fleetCompare } from "./comparison";
 import { assetPerformance, powerOperations, turbineTrend } from "./operations";
 import { oilGasOperations } from "./oil-gas";
 import { allFailures, assetFailures, reliabilitySummary } from "./reliability";
+import { RcaStore, fmea } from "./rca";
 import { riskMatrix, weibullAnalysis } from "./weibull";
 import { solarOperations } from "./solar";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
@@ -74,6 +75,7 @@ export class MockBackend {
   readonly workOrders: WorkOrderStore;
   readonly storyline: Storyline;
   readonly comments: CommentStore;
+  readonly rcas: RcaStore;
   private readonly overlays = new Map<string, PredictionOverlay>();
   private readonly log: TimelineEvent[] = [];
   private readonly hubs = new Set<LiveHub>();
@@ -96,6 +98,12 @@ export class MockBackend {
     // about readings creeping up, which would be odd on a healthy asset).
     const discussed = this.world.faults.filter((f) => rawProgress(f, start) >= DETECTION_PROGRESS).map((f) => f.asset.data.id);
     this.comments = new CommentStore(this.world, start, [...new Set(discussed)].slice(0, 12));
+    this.rcas = new RcaStore(
+      this.world,
+      this.workOrders,
+      () => allFailures(this.world, this.workOrders),
+      () => this.snapshot().predictions,
+    );
     this.validateOutput = options.validateOutput ?? true;
     this.role = options.role ?? "executive";
   }
@@ -304,6 +312,22 @@ export class MockBackend {
         request,
         inScope: this.inScope(request.scopeId),
       }),
+    "reliability.fmea": ({ assetClass }) =>
+      fmea({
+        world: this.world,
+        failures: allFailures(this.world, this.workOrders),
+        workOrders: this.workOrders,
+        now: this.now(),
+        assetClass,
+      }),
+    "rca.list": ({ assetId }) => ({ items: this.rcas.list(assetId) }),
+    "rca.get": ({ rcaId }) => this.rcas.get(rcaId),
+    "rca.create": (request) => {
+      this.asset(request.assetId);
+      return this.rcas.create(request, this.now());
+    },
+    "rca.update": (request) => this.rcas.update(request, this.now()),
+    "rca.addAction": (request) => this.rcas.addAction(request, this.me().id, this.now()),
     "assets.failures": ({ assetId }) => assetFailures(this.world, this.workOrders, this.asset(assetId), this.now()),
     "operations.turbineTrend": ({ assetId, days }) =>
       turbineTrend({ world: this.world, chaos: this.chaos, now: this.now() }, this.asset(assetId), days),
