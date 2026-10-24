@@ -8,7 +8,7 @@ import { type WorkOrderStatus } from "@pdm/contracts";
 import { Select, Skeleton, cx } from "@pdm/ui";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
-import { GanttChart } from "lucide-react";
+import { GanttChart, Repeat } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
@@ -69,6 +69,14 @@ export function MaintenancePage() {
           >
             <GanttChart aria-hidden className="size-4" />
             {t("schedule.title")}
+          </Link>
+          <Link
+            to="/maintenance/pm"
+            search={(prev) => prev}
+            className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-sm hover:bg-sunken"
+          >
+            <Repeat aria-hidden className="size-4" />
+            {t("pm.title.page")}
           </Link>
           <label className="flex items-center gap-2 text-sm">
             <input type="checkbox" checked={search.mine === "yes"} onChange={(e) => set({ mine: e.target.checked ? "yes" : "no" })} />

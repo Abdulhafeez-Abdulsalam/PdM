@@ -1,6 +1,6 @@
 # Phase 4 plan: operations and governance
 
-*Agreed 2026-10-24. Progress: not started.*
+*Agreed 2026-10-24. Progress: chunk 1 done (2026-10-24): PM programs.*
 
 Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fills in the rest of the menu: the modules that turn predictions into **parts, permits, money, reports and compliance**, the screens that run the platform itself, and the AI copilot. Every remaining placeholder in the menu becomes a real page, and every role gets its own home page (today HSE, Procurement, ESG and Admin still land on the Command Center).
 
@@ -25,7 +25,7 @@ Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fill
 
 | # | Chunk | What you'd see | Notes |
 |---|---|---|---|
-| 1 | **PM programs** (`/maintenance/pm`) | Preventive maintenance plans per class (task, interval by time or running hours, parts, crew hours), built from FMEA's recommended strategies; which assets each plan covers; PM compliance (done on time, late, missed), which replaces the Command Center's seeded PM-compliance tile; generating the next work orders | Closes the gap from chunk 6 of Phase 3 ("FMEA doesn't generate PM tasks"). Turnarounds stay for later |
+| 1 ✅ | **PM programs** (`/maintenance/pm`) | Preventive maintenance plans per class (task, interval by time or running hours, parts, crew hours), built from FMEA's recommended strategies; which assets each plan covers; PM compliance (done on time, late, missed), which replaces the Command Center's seeded PM-compliance tile; generating the next work orders | Closes the gap from chunk 6 of Phase 3 ("FMEA doesn't generate PM tasks"). Turnarounds stay for later |
 | 2 | **Inventory and spares** (`/inventory`) | Stock per site with min/max and criticality; **demand forecast from predictions and planned work** ("PMP-106's bearing will need a 6309 in ~20 days; 2 in stock"); reorder suggestions; parts on work orders and in the field close-out; Procurement's home page | Spec §6.7 "spare parts criticality and stocking" was deferred to here |
 | 3 | **HSE and compliance** (`/hse`) | Safety-critical elements and their health; permits to work linked to work orders (and a permit check before field work starts); incidents and near misses; management of change (MoC) with an approval flow; HSE Officer's home page | Builds on the field safety checks from Phase 2 |
 | 4 | **Energy and ESG** (`/esg`) | CO₂ from fuel burned (gas turbines, engines, heaters), flaring, methane from compressors and pipelines; intensity per MWh or barrel; progress against targets; the assets that emit most and how their health affects it; ESG Lead's home page | Needs new emission tags in the mock, from the same physics as heat rate |
@@ -36,6 +36,8 @@ Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fill
 | 9 | **Predictive tools** | Model registry (each model's precision from the feedback loop, versions, approve/retire), a rule builder ("BRG1_VIB > 4.5 mm/s for 10 min → P2 alarm"), and a what-if simulator ("what if we defer this repair 30 days?") | Listed as Phase 4 in the information architecture; never planned before |
 | 10 | **AI copilot and command palette** | A chat panel that answers anticipated questions from the data with citations and suggested actions (always confirmed, never automatic), as ADR-0010 decided; `Ctrl+K` command palette and the keyboard shortcuts from the information architecture | Scripted provider, no API key in the browser |
 | 11 | **Phase 4 review** | Like the Phase 3 review: criteria re-tested, gaps listed, real-browser checks | |
+
+**What chunk 1 added beyond the table:** 56 plans from FMEA (planned replacements at B10 for wear-out modes, condition checks every 30 or 90 days), running hours for rotating machines' overhauls; a seeded year of PM outcomes with a different discipline per site, plus PM work raised and closed out in the app; compliance counts a PM against you until its work is closed out, not merely raised (a test caught the first version rewarding paperwork); the Command Center's PM-compliance tile is now real. See [learning note 26](learning/26-pm-programs-and-compliance.md).
 
 ## Decisions (made 2026-10-24)
 

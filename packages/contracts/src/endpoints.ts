@@ -28,6 +28,7 @@ import { AddActionRequest, CreateRcaRequest, Fmea, FmeaRequest, Rca, RcaSummary,
 import { OilGasOperations, OilGasRequest } from "./oil-gas";
 import { Vibration, VibrationRequest } from "./vibration";
 import { TwinArea, TwinRequest } from "./twin";
+import { GeneratePmRequest, GeneratePmResult, PmOverview, PmOverviewRequest, PmPlanDetail, PmPlanRequest } from "./pm";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -170,6 +171,27 @@ export const endpoints = {
       "One area at one moment in the last 72 hours: each asset's health, values and limits, and the area's hour-by-hour activity",
     input: TwinRequest,
     output: TwinArea,
+  }),
+  "pm.overview": endpoint({
+    method: "GET",
+    path: "/maintenance/pm",
+    description: "Preventive maintenance plans built from FMEA, with PM compliance, overdue and due-soon counts",
+    input: PmOverviewRequest,
+    output: PmOverview,
+  }),
+  "pm.plan": endpoint({
+    method: "GET",
+    path: "/maintenance/pm/:planId",
+    description: "One PM plan: why it exists, every asset it covers and when each is next due",
+    input: PmPlanRequest,
+    output: PmPlanDetail,
+  }),
+  "pm.generate": endpoint({
+    method: "POST",
+    path: "/maintenance/pm/:planId/generate",
+    description: "Raise preventive work orders for everything due in the next 30 days (or overdue) without one",
+    input: GeneratePmRequest,
+    output: GeneratePmResult,
   }),
   "operations.power": endpoint({
     method: "GET",

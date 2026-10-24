@@ -953,11 +953,13 @@
     "fromPrediction": "Prediction {{id}}",
     "fromAlarm": "Alarm {{id}}",
     "fromRca": "Root-cause analysis {{id}}",
+    "fromPm": "PM plan {{id}}",
     "sourceKind": {
       "manual": "Manual request",
       "alarm": "Alarm",
       "prediction": "Prediction",
-      "rca": "Root-cause analysis"
+      "rca": "Root-cause analysis",
+      "pm": "PM plan"
     },
     "history": "History",
     "system": "System",
@@ -1380,6 +1382,7 @@
     "label": "Operations pages",
     "power": "Gas-to-power",
     "solar": "Solar",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
@@ -2171,6 +2174,107 @@
       "wall": "Wall thickness",
       "corrosion": "Corrosion rate",
       "pressure": "Inlet pressure"
+    }
+  },
+  "pm": {
+    "title": {
+      "page": "PM programs",
+      "planned_remedy": "Planned replacement: {{mode}}",
+      "condition_check": "Condition check: {{mode}}"
+    },
+    "intro": "Preventive maintenance plans, built from FMEA: a planned replacement for each failure mode that wears out, a regular condition check for each one a measurement can catch early. PM compliance is the share done on time.",
+    "allClasses": "All kinds of equipment",
+    "kpisLabel": "PM measures",
+    "kpi": {
+      "compliance": "PM compliance",
+      "target": "Target {{target}} %",
+      "complianceHow": "PMs due in the last {{days}} days that were done within their window (a week, or a tenth of the interval if longer)",
+      "overdue": "Overdue",
+      "overdueHow": "Past their window, not done, and no work order raised yet",
+      "dueSoon": "Due in the next {{days}} days",
+      "plans": "Plans",
+      "uncovered_one": "{{count}} mode with no plan",
+      "uncovered_other": "{{count}} modes with no plan"
+    },
+    "monthlyTitle": "PM compliance by month",
+    "monthlyIntro": "Each month: the share of PMs due that month that were done on time, against the target.",
+    "monthlyLabel": "PM compliance by month, last 12 months",
+    "monthlySummary": "{{pct}} over the last 90 days, against a target of {{target}} %.",
+    "plansTitle": "Plans",
+    "plansIntro": "Most overdue first. Open a plan to see every machine it covers and raise the work that's due.",
+    "plansCaption": "PM plans with their interval, the assets they cover, compliance and what's due",
+    "col": {
+      "plan": "Plan",
+      "class": "Equipment",
+      "every": "Every",
+      "assets": "Assets",
+      "compliance": "Compliance",
+      "overdue": "Overdue",
+      "dueSoon": "Due in 30 days",
+      "nextDue": "Next due",
+      "asset": "Asset",
+      "status": "Status",
+      "lastDone": "Last done",
+      "workOrder": "Work order",
+      "assetCompliance": "On time, last 12 months"
+    },
+    "uncoveredTitle": "Failure modes with no PM",
+    "uncoveredIntro": "FMEA recommends no preventive work for these: either it's cheaper to fix them when they fail, or the right answer is to change the design or how it's installed.",
+    "trigger": {
+      "calendar_one": "Every {{count}} day",
+      "calendar_other": "Every {{count}} days",
+      "running_hours": "Every {{hours}} running hours (about {{days}} days)"
+    },
+    "generated_one": "Raised {{count}} work order",
+    "generated_other": "Raised {{count}} work orders",
+    "notFound": "PM plan {{id}} not found",
+    "backToPlans": "Back to PM programs",
+    "hours": "about {{hours}} h of work",
+    "whyTitle": "Why this plan",
+    "why": {
+      "time_based": "{{mode}} wears out with age, so it's replaced on a schedule, before about 10 % would have failed (B10 life about {{b10}} days).",
+      "condition_based": "{{mode}} can be seen coming, so it's checked regularly and fixed only when a check finds something."
+    },
+    "score": {
+      "severity": "Severity",
+      "occurrence": "Occurrence",
+      "detection": "Detection",
+      "rpn": "RPN"
+    },
+    "seeFmea": "See this equipment's FMEA",
+    "taskTitle": "What the work is",
+    "steps": {
+      "planned_remedy": {
+        "1": "Isolate and lock out the machine under a permit to work.",
+        "2": "Replace the parts listed below.",
+        "3": "Check alignment, leaks and that it runs as it should.",
+        "4": "Return it to service and record the readings."
+      },
+      "condition_check": {
+        "1": "Take the readings on the route (vibration, temperature, a look and a listen).",
+        "2": "Compare them with the limits.",
+        "3": "Raise a work order if anything is out of range."
+      }
+    },
+    "partsTitle": "Parts",
+    "noParts": "No parts: it's a check.",
+    "part": "{{quantity}} × {{description}}",
+    "statusTitle": "How it's going",
+    "generate_one": "Raise {{count}} work order",
+    "generate_other": "Raise {{count}} work orders",
+    "generateHelp": "For every machine overdue or due in the next {{days}} days that has no work order from this plan yet. They arrive in the plan, ready to schedule.",
+    "dueCount": "PMs due",
+    "planMonthlyLabel": "PMs due each month for plan {{id}}, last 12 months",
+    "planMonthlySummary": "{{pct}} done on time over the last 90 days.",
+    "assetsTitle_one": "{{count}} asset",
+    "assetsTitle_other": "{{count}} assets",
+    "assetsIntro": "Overdue first, then by next due date.",
+    "assetsCaption": "Assets covered by this plan, with their PM status",
+    "status": {
+      "overdue": "Overdue",
+      "planned": "Work order raised",
+      "due_soon": "Due soon",
+      "ok": "Up to date"
     }
   }
 }

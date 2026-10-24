@@ -82,6 +82,8 @@ const SCREENS: [string, RoleId][] = [
   ["/twin?site=GCM&area=GCM-PLA&h=6", "control_room_operator"],
   ["/twin?site=PCS&area=PCS-BLB", "control_room_operator"],
   ["/assets/CBC-GT-101/twin", "control_room_operator"],
+  ["/maintenance/pm", "maintenance_planner"],
+  ["/maintenance/pm/PM-PMP-VIB", "maintenance_planner"],
   ["/inventory", "maintenance_planner"], // a module from a later phase
 ];
 

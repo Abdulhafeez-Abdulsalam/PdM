@@ -39,6 +39,7 @@ import { riskMatrix, weibullAnalysis } from "./weibull";
 import { solarOperations } from "./solar";
 import { vibration } from "./vibration";
 import { twinArea } from "./twin";
+import { generatePm, pmCompliance, pmOverview, pmPlan } from "./pm";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -164,6 +165,17 @@ export class MockBackend {
     return prediction;
   }
 
+  private pmContext(scopeId: string | undefined) {
+    return {
+      world: this.world,
+      workOrders: this.workOrders,
+      failures: () => allFailures(this.world, this.workOrders),
+      now: this.now(),
+      inScope: this.inScope(scopeId),
+      scopeKey: scopeId ?? "",
+    };
+  }
+
   private asset(id: string): AssetRecord {
     const asset = this.world.assets.get(id);
     if (!asset) throw new ApiFailure("not_found", `Asset ${id} not found`);
@@ -263,6 +275,9 @@ export class MockBackend {
     "assets.vibration": ({ assetId, point }) =>
       vibration({ world: this.world, chaos: this.chaos, now: this.now() }, this.asset(assetId), point),
     "twin.area": ({ areaId, hoursAgo }) => twinArea({ world: this.world, chaos: this.chaos, now: this.now() }, areaId, hoursAgo),
+    "pm.overview": ({ scopeId, assetClass }) => pmOverview(this.pmContext(scopeId), assetClass),
+    "pm.plan": ({ planId, scopeId }) => pmPlan(this.pmContext(scopeId), planId),
+    "pm.generate": ({ planId, scopeId }) => generatePm(this.pmContext(scopeId), planId, this.me().id),
     "operations.power": ({ scopeId, siteId }) =>
       powerOperations({
         world: this.world,
@@ -534,6 +549,7 @@ export class MockBackend {
           alarms: this.alarms,
           workOrders: this.workOrders,
           failures: allFailures(this.world, this.workOrders),
+          pmCompliancePct: pmCompliance(this.pmContext(scopeId)),
           now: this.now(),
         },
         keys,

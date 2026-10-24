@@ -1,8 +1,8 @@
 /**
  * Command Center KPIs for any scope. Counts come straight from the simulation; MTBF and MTTR
- * from the failure history, worked out exactly as on the Reliability page. Figures the
- * simulation doesn't model yet (OEE, PM compliance) are seeded per scope so they stay stable
- * and plausible.
+ * from the failure history, worked out exactly as on the Reliability page; PM compliance
+ * from the PM programs. OEE, which the simulation doesn't model yet, is seeded per scope so it
+ * stays stable and plausible.
  */
 import type { FailureRecord, Kpi, KpiKey, KpiResponse } from "@pdm/contracts";
 import type { AlarmEngine } from "./alarms";
@@ -25,11 +25,13 @@ interface KpiInput {
   workOrders: WorkOrderStore;
   /** The failure history (reliability.ts), for MTBF and MTTR. */
   failures: readonly FailureRecord[];
+  /** PM compliance from the PM programs (pm.ts), trailing 90 days. */
+  pmCompliancePct: number | null;
   now: number;
 }
 
 export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiResponse {
-  const { scopeId, assets, snapshot, alarms, workOrders, failures, now } = input;
+  const { scopeId, assets, snapshot, alarms, workOrders, failures, pmCompliancePct, now } = input;
   const seed = hashString(`kpi:${scopeId}`);
   const ids = new Set(assets.map((a) => a.data.id));
   const conditions = assets.map((a) => snapshot.conditions.get(a.data.id)).filter((c) => c !== undefined);
@@ -160,12 +162,12 @@ export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiRespo
       lineage: lineage("Open work orders (requested → in progress)"),
     },
     pm_compliance: {
-      value: round(seeded(4, 86, 97), 1),
+      value: pmCompliancePct,
       format: "percent",
       currency: null,
       target: 95,
       higherIsBetter: true,
-      lineage: lineage("Preventive work completed within its window, trailing 90 days"),
+      lineage: lineage("PM programs: preventive work done within its window, trailing 90 days"),
     },
     avoided_downtime_hours: {
       value: round(avoidedHours, 0),

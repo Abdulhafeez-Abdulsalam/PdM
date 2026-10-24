@@ -26,6 +26,8 @@ const AnomaliesPage = lazyRouteComponent(() => import("../features/predictions/A
 const MaintenancePage = lazyRouteComponent(() => import("../features/maintenance/MaintenancePage"), "MaintenancePage");
 const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/WorkOrderPage"), "WorkOrderPage");
 const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenance/ScheduleBoardPage"), "ScheduleBoardPage");
+const PmPage = lazyRouteComponent(() => import("../features/maintenance/PmPage"), "PmPage");
+const PmPlanPage = lazyRouteComponent(() => import("../features/maintenance/PmPlanPage"), "PmPlanPage");
 const FieldPage = lazyRouteComponent(() => import("../features/field/FieldPage"), "FieldPage");
 const TaskPage = lazyRouteComponent(() => import("../features/field/TaskPage"), "TaskPage");
 const ReliabilityPage = lazyRouteComponent(() => import("../features/reliability/ReliabilityPage"), "ReliabilityPage");
@@ -209,6 +211,20 @@ const scheduleRoute = createRoute({
   component: ScheduleBoardPage,
 });
 
+/** PM programs (?class=…). Fixed paths, so they win over /maintenance/$workOrderId. */
+const pmRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/maintenance/pm",
+  component: PmPage,
+});
+
+/** One PM plan. */
+const pmPlanRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/maintenance/pm/$planId",
+  component: PmPlanPage,
+});
+
 /** One field task (a work order as the technician works through it). */
 const taskRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -243,6 +259,8 @@ const routeTree = rootRoute.addChildren([
   alarmAnalyticsRoute,
   workOrderRoute,
   scheduleRoute,
+  pmRoute,
+  pmPlanRoute,
   taskRoute,
   liveLoadRoute,
 ]);

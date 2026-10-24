@@ -151,6 +151,13 @@ function Source({ wo }: { wo: WorkOrder }) {
       </Link>
     );
   }
+  if (kind === "pm" && refId) {
+    return (
+      <Link to="/maintenance/pm/$planId" params={{ planId: refId }} className="text-accent hover:underline">
+        {t("workOrderPage.fromPm", { id: refId })}
+      </Link>
+    );
+  }
   return <>{t(`workOrderPage.sourceKind.${kind}`)}</>;
 }
 

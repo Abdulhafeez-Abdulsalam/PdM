@@ -36,7 +36,7 @@ export type WorkOrderPriority = z.infer<typeof WorkOrderPriority>;
 
 /** Where the work order came from — keeps the trail from alarm/prediction to repair. */
 export const WorkOrderSource = z.object({
-  kind: z.enum(["alarm", "prediction", "manual", "rca"]),
+  kind: z.enum(["alarm", "prediction", "manual", "rca", "pm"]),
   refId: Id.nullable(),
 });
 

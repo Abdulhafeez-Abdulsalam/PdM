@@ -85,6 +85,8 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Digital twin: pipeline", () => "/twin?site=GCM&area=GCM-PLA&h=6", "control_room_operator"],
   ["Digital twin: solar block", () => "/twin?site=PCS&area=PCS-BLB", "control_room_operator"],
   ["Asset 360: twin", () => "/assets/CBC-GT-101/twin", "control_room_operator"],
+  ["PM programs", () => "/maintenance/pm", "maintenance_planner"],
+  ["PM plan", () => "/maintenance/pm/PM-PMP-VIB", "maintenance_planner"],
   ["Later-phase page", () => "/inventory", "maintenance_planner"],
 ];
 
