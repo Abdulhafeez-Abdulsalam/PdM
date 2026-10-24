@@ -71,6 +71,7 @@ export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
   "field",
   "inventory",
   "hse",
+  "esg",
 ]);
 
 export function moduleById(id: ModuleId): Module {

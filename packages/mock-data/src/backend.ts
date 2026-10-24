@@ -42,6 +42,7 @@ import { twinArea } from "./twin";
 import { generatePm, pmCompliance, pmOverview, pmPlan } from "./pm";
 import { InventoryStore } from "./inventory";
 import { HseStore } from "./hse";
+import { esgOverview } from "./esg";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -301,6 +302,15 @@ export class MockBackend {
     "hse.mocs": ({ scopeId }) => ({ items: this.hse.listMocs(this.now(), this.inScope(scopeId)) }),
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
+    "esg.overview": ({ scopeId }) =>
+      esgOverview({
+        world: this.world,
+        chaos: this.chaos,
+        now: this.now(),
+        snapshot: () => this.snapshot(),
+        inScope: this.inScope(scopeId),
+        scopeKey: scopeId ?? "",
+      }),
     "inventory.workOrderParts": ({ workOrderId }) =>
       this.inventory.workOrderParts(this.inventoryContext(undefined), this.workOrders.get(workOrderId)),
     "operations.power": ({ scopeId, siteId }) =>

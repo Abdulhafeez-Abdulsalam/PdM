@@ -26,6 +26,7 @@ await Promise.all([
   import("../features/hse/PermitsPage"),
   import("../features/hse/IncidentsPage"),
   import("../features/hse/MocPage"),
+  import("../features/esg/EsgPage"),
   import("../features/reliability/RcaListPage"),
   import("../features/reliability/RcaPage"),
   import("../features/alarms/AlarmsPage"),

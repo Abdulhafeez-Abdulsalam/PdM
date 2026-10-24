@@ -53,6 +53,7 @@ import {
   PermitListRequest,
   ReportIncidentRequest,
 } from "./hse";
+import { EsgOverview, EsgRequest } from "./esg";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -301,6 +302,14 @@ export const endpoints = {
     description: "Move a change through review: under review, approved, implemented, or rejected with a reason",
     input: MocTransitionRequest,
     output: Moc,
+  }),
+  "esg.overview": endpoint({
+    method: "GET",
+    path: "/esg",
+    description:
+      "Emissions over the last 90 days from fuel, flaring and methane, intensity per site, targets, avoided and avoidable emissions",
+    input: EsgRequest,
+    output: EsgOverview,
   }),
   "operations.power": endpoint({
     method: "GET",

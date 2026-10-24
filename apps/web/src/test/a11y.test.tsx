@@ -91,7 +91,9 @@ const SCREENS: [string, RoleId][] = [
   ["/hse/permits", "hse_officer"],
   ["/hse/incidents", "hse_officer"],
   ["/hse/moc", "hse_officer"],
-  ["/esg", "esg_lead"], // a module still to come
+  ["/esg", "esg_lead"],
+  ["/esg?scope=PCS", "esg_lead"],
+  ["/financials", "executive"], // a module still to come
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */

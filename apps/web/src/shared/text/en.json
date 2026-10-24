@@ -1392,6 +1392,7 @@
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas"
   },
   "solar": {
@@ -2517,5 +2518,69 @@
     "mocRiskLabel": "Risk",
     "propose": "Propose",
     "mocCreated": "{{id}} proposed"
+  },
+  "esg": {
+    "intro": "Greenhouse-gas emissions over the last {{days}} days, worked out from the plant's own measurements: fuel burned, gas flared and methane released. Each site against this year's target, and the part poor equipment health adds.",
+    "kpisLabel": "Emissions measures",
+    "unit": {
+      "co2e": "t CO₂e",
+      "co2": "t CO₂",
+      "t": "t"
+    },
+    "tonnes": "{{value}} t",
+    "kpi": {
+      "co2e": "Emitted, last {{days}} days",
+      "co2eHow": "Combustion + flaring + methane, in tonnes of CO₂-equivalent",
+      "projected": "On course for this year",
+      "target": "Target {{target}} t",
+      "methane": "Methane",
+      "methaneHow": "Vented and leaked gas: compressor seals, pipelines, gas-driven valves, wellheads, flare slip. Counted ×{{gwp}} as CO₂-equivalent (IPCC AR6, 100 years).",
+      "flaring": "Flaring: {{value}} t CO₂e",
+      "avoided": "Avoided by solar",
+      "avoidedHow": "Solar output × the grid's emission factor: what the grid didn't have to burn",
+      "avoidable": "Avoidable",
+      "avoidableHow": "What poor equipment health added: fouled turbines burning more fuel per MWh, leaking pipelines, gas flared while compressors were down"
+    },
+    "dailyTitle": "Emitted and avoided, day by day",
+    "dailyIntro": "Emissions dip when plants turn down and rise on hot days, when turbines need more fuel for each MWh.",
+    "dailyLabel": "Tonnes of CO₂e emitted and avoided each day, last {{days}} days",
+    "dailySummary": "Combustion {{combustion}} t, flaring {{flaring}} t, methane {{methane}} t CO₂e; solar avoided {{avoided}} t.",
+    "emitted": "Emitted",
+    "avoidedLine": "Avoided by solar",
+    "sitesTitle": "Sites",
+    "sitesIntro": "Intensity is emissions for what a site produces: tonnes per MWh for power, kilograms per barrel of oil equivalent for oil and gas.",
+    "sitesCaption": "Sites with emissions, methane share, intensity, progress against target and emissions avoided",
+    "col": {
+      "site": "Site",
+      "co2e": "t CO₂e, {{days}} days",
+      "methane": "Methane",
+      "intensity": "Intensity",
+      "target": "This year",
+      "avoided": "Avoided, t",
+      "asset": "Asset",
+      "source": "Source",
+      "avoidable": "Avoidable",
+      "health": "Health"
+    },
+    "intensity": {
+      "t_per_mwh": "{{value}} t/MWh",
+      "kg_per_boe": "{{value}} kg/boe"
+    },
+    "onTrack": "On track: {{projected}} t of {{target}} t",
+    "offTrack": "Over: {{projected}} t against {{target}} t",
+    "noDirect": "No direct emissions",
+    "emittersTitle": "Biggest emitters",
+    "emittersIntro": "The 20 assets emitting most. Avoidable is what their condition adds: fixing it cuts emissions and cost together.",
+    "emittersCaption": "The assets emitting most, with source, emissions, avoidable part and health",
+    "source": {
+      "combustion": "Fuel burned",
+      "flaring": "Flaring",
+      "methane": "Methane"
+    },
+    "reason": {
+      "efficiency": "{{value}} t: lost efficiency (fouling)",
+      "leak": "{{value}} t: leak (corrosion)",
+      "downtime": "{{value}} t: flared while compressors were down"
+    }
   }
 }
