@@ -26,6 +26,7 @@ import { AssetPerformance, PowerOperations, PowerOperationsRequest, TurbineTrend
 import { SolarOperations, SolarOperationsRequest } from "./solar";
 import { AddActionRequest, CreateRcaRequest, Fmea, FmeaRequest, Rca, RcaSummary, UpdateRcaRequest } from "./rca";
 import { OilGasOperations, OilGasRequest } from "./oil-gas";
+import { Vibration, VibrationRequest } from "./vibration";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -153,6 +154,13 @@ export const endpoints = {
     description: "The asset's own performance measures (gas turbine efficiency and inspection hours, transformer oil analysis)",
     input: z.object({ assetId: Id }),
     output: AssetPerformance,
+  }),
+  "assets.vibration": endpoint({
+    method: "GET",
+    path: "/assets/:assetId/vibration",
+    description: "A rotating machine's vibration spectra over the last weeks, with fault-frequency findings, and its shaft orbit",
+    input: VibrationRequest,
+    output: Vibration,
   }),
   "operations.power": endpoint({
     method: "GET",

@@ -79,6 +79,8 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Root-cause analyses", () => "/reliability/rca", "reliability_engineer"],
   ["Root-cause analysis", () => "/reliability/rca/RCA-001", "reliability_engineer"],
   ["Asset 360: failures", () => "/assets/CBC-GT-101/failures", "reliability_engineer"],
+  ["Asset 360: vibration (rolling bearings)", () => "/assets/PBU-PMP-106/vibration", "reliability_engineer"],
+  ["Asset 360: vibration (orbit)", () => "/assets/GCM-CMP-105/vibration", "reliability_engineer"],
   ["Coming-later page", () => "/twin", "control_room_operator"],
 ];
 

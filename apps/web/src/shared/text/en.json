@@ -334,6 +334,7 @@
       "overview": "Overview",
       "telemetry": "Telemetry",
       "health": "Health & prediction",
+      "vibration": "Vibration",
       "performance": "Performance",
       "failures": "Failures",
       "alarms": "Alarms",
@@ -1377,6 +1378,7 @@
     "solar": "Solar",
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas"
   },
   "solar": {
@@ -2005,5 +2007,111 @@
     "addAction": "Add action",
     "actionWithWo": "Action added; work order {{id}} raised",
     "actionAdded": "Action added"
+  },
+  "vibration": {
+    "point": "Measurement point",
+    "measurement": "Spectrum from",
+    "latest": "{{date}} (latest)",
+    "neverRunning": "This machine hasn't been running when a measurement was due in the last 12 weeks, so there are no spectra to show.",
+    "overall": "Overall level",
+    "state": {
+      "normal": "normal",
+      "alert": "past alert",
+      "alarm": "past alarm"
+    },
+    "limits": "Alert at {{alert}}, alarm at {{alarm}}",
+    "speed": "Running speed",
+    "rpm": "{{value}} rpm",
+    "speedHz": "{{hz}} Hz: the 1× line",
+    "bearings": "Bearings",
+    "rolling": "Rolling bearing {{designation}}, {{balls}} balls",
+    "orders": "BPFO {{bpfo}}×, BPFI {{bpfi}}×, BSF {{bsf}}×, FTF {{ftf}}× running speed",
+    "journal": "Oil-film (journal) bearings",
+    "journalNote": "No defect frequencies; proximity probes show the shaft's orbit instead",
+    "findingsTitle": "What the spectrum shows",
+    "noFindings": "No fault patterns found: mostly running speed (1×), as in a healthy machine.",
+    "level": {
+      "watch": "Watch",
+      "act": "Act"
+    },
+    "finding": {
+      "bearing_outer_race": {
+        "title": "Rolling bearing, outer-race defect",
+        "why": "A peak at the outer-race frequency (BPFO, {{hz}} Hz, {{amp}}). Every ball strikes the damaged spot as it passes. Plan a bearing change; the waterfall shows how fast it's growing."
+      },
+      "bearing_inner_race": {
+        "title": "Rolling bearing, inner-race defect",
+        "why": "A peak at the inner-race frequency (BPFI, {{hz}} Hz, {{amp}}) with sidebands one running speed either side, because the damage turns with the shaft. Plan a bearing change."
+      },
+      "oil_whirl": {
+        "title": "Oil whirl in a journal bearing",
+        "why": "A peak just under half running speed ({{hz}} Hz, {{amp}}): the oil film is dragging the shaft round instead of holding it. Usually wear or too little load on the bearing; check clearance and oil."
+      },
+      "flow_instability": {
+        "title": "Flow instability",
+        "why": "Broad energy well below running speed ({{amp}} in total): the flow through the machine is breaking up, as it does close to surge or at very low flow. Check the operating point and the anti-surge control."
+      },
+      "misalignment": {
+        "title": "Misalignment",
+        "why": "The 2× peak ({{hz}} Hz, {{amp}}) is about as big as 1×. Shafts that aren't in line flex twice a turn. Check the coupling alignment at the next stop."
+      },
+      "unbalance": {
+        "title": "Unbalance",
+        "why": "Nearly all the vibration is at running speed ({{hz}} Hz, {{amp}}) and the level is past alert. A heavy spot goes round once a turn. Balance the rotor."
+      }
+    },
+    "marker": {
+      "1x": "1×",
+      "2x": "2×",
+      "3x": "3×",
+      "vane_pass": "Vane pass",
+      "ftf": "FTF",
+      "bsf": "BSF",
+      "bpfo": "BPFO",
+      "bpfi": "BPFI",
+      "oil_whirl": "Whirl"
+    },
+    "markerName": {
+      "1x": "Running speed (1×)",
+      "2x": "Twice running speed (2×)",
+      "3x": "Three times running speed (3×)",
+      "vane_pass": "Vane pass (vanes × running speed)",
+      "ftf": "Cage frequency (FTF)",
+      "bsf": "Ball spin frequency (BSF)",
+      "bpfo": "Outer-race frequency (BPFO)",
+      "bpfi": "Inner-race frequency (BPFI)",
+      "oil_whirl": "Oil whirl (about 0.43×)"
+    },
+    "spectrumTitle": "Spectrum, {{date}}",
+    "spectrumIntro": "How much the machine shakes at each frequency. Dashed lines mark where each kind of fault would show. Arrow keys move the cursor.",
+    "spectrumLabel": "Vibration spectrum of {{point}} on {{date}}, amplitude against frequency",
+    "spectrumSummary": "The largest peak is {{amp}} at {{hz}} Hz ({{order}}× running speed).",
+    "spectrumFindings": "Found: {{findings}}.",
+    "waterfallTitle": "Waterfall: the last 12 weeks",
+    "waterfallIntro": "One spectrum a week, newest in front. A peak that grows week by week rises out of the floor like a ridge. The highlighted one is the spectrum above.",
+    "waterfallLabel": "Weekly vibration spectra of {{point}}, {{n}} measurements, newest in front",
+    "waterfallSummary": "{{marker}} changed the most: from {{from}} to {{to}}.",
+    "orbitTitle": "Orbit",
+    "orbitIntro": "The path of the shaft centre over a few turns, {{date}}, from two probes at right angles. An ellipse is normal; loops inside it mean something slower than the shaft. The dots mark each turn.",
+    "orbitLabel": "Shaft orbit at {{point}}, in micrometres",
+    "orbitSummary": "{{x}} µm across horizontally and {{y}} µm vertically, peak to peak.",
+    "orbit": {
+      "x": "X (µm)",
+      "y": "Y (µm)"
+    },
+    "pkPkX": "Peak to peak, X",
+    "pkPkY": "Peak to peak, Y",
+    "um": "{{value}} µm",
+    "noOrbit": "No orbit for this machine: it runs on rolling bearings, which don't have proximity probes. Its bearing defects show in the spectrum instead.",
+    "notRunning": "Not running",
+    "table": {
+      "what": "Frequency",
+      "order": "× speed",
+      "hz": "Hz",
+      "amp": "Amplitude",
+      "peak": "Peak {{rank}}",
+      "date": "Week of",
+      "overall": "Overall"
+    }
   }
 }

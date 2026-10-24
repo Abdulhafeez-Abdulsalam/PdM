@@ -76,6 +76,8 @@ const SCREENS: [string, RoleId][] = [
   ["/reliability/rca?asset=CBC-GT-101", "reliability_engineer"],
   ["/reliability/rca/RCA-001", "reliability_engineer"],
   [`/assets/${ASSET}/failures`, "reliability_engineer"],
+  ["/assets/PBU-PMP-106/vibration", "reliability_engineer"],
+  ["/assets/GCM-CMP-105/vibration", "reliability_engineer"],
   ["/twin", "control_room_operator"], // a "coming in a later chunk" page
 ];
 

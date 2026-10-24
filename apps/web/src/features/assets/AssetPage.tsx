@@ -1,7 +1,7 @@
 /**
  * Asset 360 (spec §6.2) — "the centerpiece". Header with identity, health and remaining life,
- * then tabs: Overview, Telemetry, Health & prediction, Alarms, Maintenance, Documents,
- * Related, Comments.
+ * then tabs: Overview, Telemetry, Health & prediction, Vibration and Performance (for the kinds of
+ * equipment that have them), Failures, Alarms, Maintenance, Documents, Related, Comments.
  * The tab is part of the URL: /assets/CBC-GT-101/telemetry.
  */
 import { useApiQuery } from "@pdm/api-client";
@@ -19,11 +19,13 @@ import { CommentsTab, DocumentsTab, RelatedTab } from "./InfoTabs";
 import { OverviewTab } from "./OverviewTab";
 import { PERFORMANCE_CLASSES, PerformanceTab } from "./PerformanceTab";
 import { TelemetryTab } from "./TelemetryTab";
+import { VIBRATION_TAB_CLASSES, VibrationTab } from "./VibrationTab";
 
 export const ASSET_TABS = [
   "overview",
   "telemetry",
   "health",
+  "vibration",
   "performance",
   "failures",
   "alarms",
@@ -58,8 +60,12 @@ export function AssetPage() {
 
   const site = sites.data?.items.find((s) => s.id === asset.data?.siteId);
   const area = path.data?.items.find((n) => n.level === "area");
-  // Performance only for the kinds of equipment that have performance measures so far.
-  const tabs = ASSET_TABS.filter((tb) => tb !== "performance" || (asset.data && PERFORMANCE_CLASSES.has(asset.data.assetClass)));
+  // Vibration only for rotating machines, Performance only for the kinds of equipment that have measures so far.
+  const cls = asset.data?.assetClass;
+  const tabs = ASSET_TABS.filter(
+    (tb) =>
+      (tb !== "performance" || (cls && PERFORMANCE_CLASSES.has(cls))) && (tb !== "vibration" || (cls && VIBRATION_TAB_CLASSES.has(cls))),
+  );
   const current = (tabs as readonly string[]).includes(tab) ? (tab as AssetTab) : "overview";
 
   return (
@@ -89,6 +95,7 @@ export function AssetPage() {
           overview: <OverviewTab asset={asset.data} siteTimeZone={site?.timezone} />,
           telemetry: <TelemetryTab asset={asset.data} siteTimeZone={site?.timezone} />,
           health: <HealthTab asset={asset.data} />,
+          vibration: <VibrationTab key={asset.data.id} asset={asset.data} />,
           performance: <PerformanceTab asset={asset.data} />,
           failures: <FailuresTab asset={asset.data} />,
           alarms: <AlarmsTab asset={asset.data} siteTimeZone={site?.timezone} />,

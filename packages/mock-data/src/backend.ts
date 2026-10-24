@@ -37,6 +37,7 @@ import { allFailures, assetFailures, reliabilitySummary } from "./reliability";
 import { RcaStore, fmea } from "./rca";
 import { riskMatrix, weibullAnalysis } from "./weibull";
 import { solarOperations } from "./solar";
+import { vibration } from "./vibration";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -258,6 +259,8 @@ export class MockBackend {
     },
     "assets.performance": ({ assetId }) =>
       assetPerformance({ world: this.world, chaos: this.chaos, now: this.now() }, this.snapshot(), this.asset(assetId)),
+    "assets.vibration": ({ assetId, point }) =>
+      vibration({ world: this.world, chaos: this.chaos, now: this.now() }, this.asset(assetId), point),
     "operations.power": ({ scopeId, siteId }) =>
       powerOperations({
         world: this.world,
