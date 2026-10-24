@@ -32,7 +32,10 @@
     "reliability": { "name": "Reliability", "description": "Weibull, FMEA, root-cause analysis and bad-actor programmes." },
     "maintenance": { "name": "Maintenance", "description": "Work orders, scheduling, PM programmes and turnarounds." },
     "field": { "name": "Field", "description": "Mobile task execution for field technicians." },
-    "inventory": { "name": "Inventory", "description": "Spare parts, stock levels, reservations and vendors." },
+    "inventory": {
+      "name": "Inventory",
+      "description": "Spare parts: stock at each site, what PM plans and predictions will need, and what to order."
+    },
     "hse": { "name": "HSE & Compliance", "description": "Safety-critical elements, permits, incidents and audits." },
     "esg": { "name": "Energy & ESG", "description": "Emissions, flaring, methane and sustainability reporting." },
     "financials": { "name": "Financials", "description": "Value realised, cost of downtime and budgets." },
@@ -1387,6 +1390,7 @@
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas"
   },
   "solar": {
@@ -2269,6 +2273,7 @@
     "assetsTitle_one": "{{count}} asset",
     "assetsTitle_other": "{{count}} assets",
     "assetsIntro": "Overdue first, then by next due date.",
+    "showAll": "Show all {{count}}",
     "assetsCaption": "Assets covered by this plan, with their PM status",
     "status": {
       "overdue": "Overdue",
@@ -2276,5 +2281,93 @@
       "due_soon": "Due soon",
       "ok": "Up to date"
     }
+  },
+  "inventory": {
+    "intro": "Spare parts at every site: what's on the shelf, what's on its way, and what PM plans and failure predictions will need in the next {{days}} days. Parts that will run short come first.",
+    "kpisLabel": "Inventory measures",
+    "kpi": {
+      "short": "Will run short",
+      "shortHow": "Needed before a new order could arrive, and not enough on the shelf or on its way",
+      "reorder": "At reorder point",
+      "reorderHow": "On hand plus on order is at or below the reorder point: time to order",
+      "value": "Stock value",
+      "lines_one": "{{count}} stock line",
+      "lines_other": "{{count}} stock lines",
+      "orders": "Orders on their way",
+      "excess_one": "{{count}} line overstocked",
+      "excess_other": "{{count}} lines overstocked"
+    },
+    "linesTitle": "Stock lines",
+    "linesIntro": "One part at one site. Reorder point / max: order when stock on hand and on order falls to the first number, back up to the second.",
+    "show": "Show",
+    "showOption": {
+      "action": "Needs action",
+      "all": "All lines",
+      "excess": "Overstocked"
+    },
+    "search": "Search parts",
+    "none": "No stock lines match.",
+    "linesCaption": "Stock lines with status, stock, reorder levels, demand and what to order",
+    "col": {
+      "part": "Part",
+      "site": "Site",
+      "status": "Status",
+      "onHand": "On hand",
+      "onOrder": "On order",
+      "minMax": "Reorder / max",
+      "needed": "Needed, {{days}} days",
+      "suggestion": "What to order",
+      "needBy": "Needed by",
+      "asset": "Asset",
+      "qty": "Quantity",
+      "why": "Why"
+    },
+    "criticality": {
+      "vital": "Vital",
+      "essential": "Essential",
+      "desirable": "Desirable"
+    },
+    "arrives": "arrives {{date}}",
+    "firstNeed": "first {{date}}",
+    "status": {
+      "short": "Will run short",
+      "reorder": "Reorder",
+      "ok": "OK",
+      "excess": "Overstocked"
+    },
+    "suggest": "{{qty}} suggested",
+    "orderBy": "order by {{date}}",
+    "order": "Order {{qty}}",
+    "orderOf": "of {{part}} for {{site}}",
+    "ordered": "{{id}} placed: {{qty}} arriving {{eta}}",
+    "notFound": "Part {{id}} not found",
+    "back": "Back to inventory",
+    "unitCost": "Unit cost",
+    "leadTime": "Lead time",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "criticalityLabel": "Criticality",
+    "usedFor": "Used for",
+    "pmPlan": "PM plan",
+    "noPmPlan": "None: used only when a failure needs it",
+    "stockTitle": "Stock at each site",
+    "stockCaption": "Stock of {{part}} at each site",
+    "demandTitle": "Who needs it in the next {{days}} days",
+    "demandIntro": "PM replacements coming due, and failures that open predictions expect by their median remaining life.",
+    "noDemand": "Nothing expected in this period.",
+    "demandCaption": "Demand for {{part}}, soonest first",
+    "fromPm": "PM plan {{id}}",
+    "fromPrediction": "Prediction, {{probability}} likely",
+    "ordersTitle": "Orders",
+    "noOrders": "No orders.",
+    "orderOpen": "{{qty}} for {{site}}, ordered {{ordered}}, arriving {{eta}}",
+    "orderReceived": "{{qty}} for {{site}}, ordered {{ordered}}, received {{eta}}",
+    "woTitle": "Parts",
+    "woIntro": "What this work will use, and whether the site has it.",
+    "woIssued": "Taken out of stock when the work was closed out.",
+    "woPart": "{{qty}} × {{description}}",
+    "woOnHand_one": "{{count}} on the shelf at {{site}}",
+    "woOnHand_other": "{{count}} on the shelf at {{site}}",
+    "woNotEnough": "Not enough on the shelf: order before scheduling."
   }
 }

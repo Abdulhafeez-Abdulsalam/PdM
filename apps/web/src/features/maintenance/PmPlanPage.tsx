@@ -199,8 +199,13 @@ export function PmPlanPage() {
   );
 }
 
+/** Long lists (a plan can cover 750 solar strings) show the first ones, overdue first, until asked for all. */
+const FIRST_ROWS = 100;
+
 function AssetTable({ rows }: { rows: readonly PmAssetStatus[] }) {
   const { t } = useTranslation();
+  const [all, setAll] = useState(false);
+  const shown = all ? rows : rows.slice(0, FIRST_ROWS);
   return (
     <section aria-labelledby="pm-assets" className="rounded-lg border border-line bg-surface p-4">
       <h2 id="pm-assets" className="font-semibold">
@@ -233,7 +238,7 @@ function AssetTable({ rows }: { rows: readonly PmAssetStatus[] }) {
             </tr>
           </thead>
           <tbody>
-            {rows.map((r) => {
+            {shown.map((r) => {
               const Icon = STATUS_ICON[r.status];
               return (
                 <tr key={r.assetId} className="border-b border-line last:border-0">
@@ -270,6 +275,11 @@ function AssetTable({ rows }: { rows: readonly PmAssetStatus[] }) {
           </tbody>
         </table>
       </div>
+      {shown.length < rows.length && (
+        <Button size="sm" variant="ghost" className="mt-2" onClick={() => setAll(true)}>
+          {t("pm.showAll", { count: rows.length })}
+        </Button>
+      )}
     </section>
   );
 }

@@ -20,6 +20,8 @@ await Promise.all([
   import("../features/twin/TwinPage"),
   import("../features/maintenance/PmPage"),
   import("../features/maintenance/PmPlanPage"),
+  import("../features/inventory/InventoryPage"),
+  import("../features/inventory/PartPage"),
   import("../features/reliability/RcaListPage"),
   import("../features/reliability/RcaPage"),
   import("../features/alarms/AlarmsPage"),

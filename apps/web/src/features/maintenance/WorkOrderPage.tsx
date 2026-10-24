@@ -16,6 +16,7 @@ import { formatMeasurement, toDisplay } from "../../shared/units";
 import { allowedMoves, moveLabelKey } from "./lifecycle";
 import { PriorityLabel } from "./PriorityLabel";
 import { WorkOrderDialogs } from "./WorkOrderDialogs";
+import { WorkOrderPartsCard } from "../inventory/WorkOrderPartsCard";
 import { useMove } from "./use-move";
 
 export function WorkOrderPage() {
@@ -114,6 +115,7 @@ function WorkOrderView({ wo }: { wo: WorkOrder }) {
         </Card>
 
         <Checklist wo={wo} />
+        <WorkOrderPartsCard wo={wo} />
         {wo.evidence && <Evidence wo={wo} />}
         {wo.closeOut && <CloseOutCard wo={wo} name={name} />}
       </div>

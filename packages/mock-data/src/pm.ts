@@ -40,7 +40,7 @@ import type { FailureRecord } from "@pdm/contracts";
 import type { WorkOrderStore } from "./work-orders";
 import type { World } from "./world";
 
-interface Ctx {
+export interface Ctx {
   world: World;
   workOrders: WorkOrderStore;
   failures: () => readonly FailureRecord[];
@@ -48,7 +48,7 @@ interface Ctx {
 }
 
 /** A plan with everything the occurrence maths needs. */
-interface Plan extends Omit<PmPlanSummary, "assets" | "counts" | "nextDue"> {
+export interface Plan extends Omit<PmPlanSummary, "assets" | "counts" | "nextDue"> {
   why: PmPlanDetail["why"];
   /** Typical days between PMs, before running-hours plans are adjusted for each asset's use. */
   days: number;
@@ -92,7 +92,7 @@ const PART_NAMES: Partial<Record<FailureModeCode, string>> = {
 };
 
 /** The parts a planned remedy uses. The two bearings match the vibration tab's bearing geometry. */
-function partsFor(cls: AssetClass, mode: FailureModeCode): PmPart[] {
+export function partsFor(cls: AssetClass, mode: FailureModeCode): PmPart[] {
   const info = ASSET_CLASSES[cls];
   if (mode === "VIB" && cls === "pump") return [{ partNumber: "SP-BRG-6309", description: "Ball bearing 6309-2RS", quantity: 2 }];
   if (mode === "VIB" && cls === "esp") return [{ partNumber: "SP-BRG-6205", description: "Ball bearing 6205-2RS", quantity: 2 }];
@@ -243,7 +243,7 @@ function occurrences(ctx: Ctx, plan: Plan, asset: AssetRecord, pmOrders: readonl
   return list;
 }
 
-interface Ctx2 extends Ctx {
+export interface Ctx2 extends Ctx {
   inScope: (assetId: string) => boolean;
   /** Names the scope, for the cache. */
   scopeKey: string;
@@ -449,6 +449,33 @@ export function generatePm(ctx: Ctx2, planId: string, by: string): GeneratePmRes
     }
   }
   return { created };
+}
+
+/** Every plan, with the typical days between its PMs (inventory sizes stock from it). */
+export function pmPlans(ctx: Ctx): readonly Plan[] {
+  return buildPlans(ctx).plans;
+}
+
+/**
+ * The parts PM work will use: every planned replacement on an asset in scope that is overdue,
+ * has a work order raised but not closed out, or falls due within `days`. Overdue ones are
+ * needed now.
+ */
+export function pmPartDemand(ctx: Ctx2, days: number): { planId: string; assetId: string; siteId: string; due: number; part: PmPart }[] {
+  const out: { planId: string; assetId: string; siteId: string; due: number; part: PmPart }[] = [];
+  for (const plan of buildPlans(ctx).plans) {
+    if (plan.task !== "planned_remedy" || plan.parts.length === 0) continue;
+    const orders = pmOrdersOf(ctx, plan.id);
+    for (const asset of assetsFor(ctx, plan)) {
+      for (const o of occurrences(ctx, plan, asset, orders)) {
+        const pending = o.outcome === "overdue" || o.outcome === "planned" || o.outcome === "upcoming";
+        if (!pending || o.due > ctx.now + days * DAY) continue;
+        for (const part of plan.parts)
+          out.push({ planId: plan.id, assetId: asset.data.id, siteId: asset.data.siteId, due: Math.max(o.due, ctx.now), part });
+      }
+    }
+  }
+  return out;
 }
 
 /** PM compliance for a set of assets, for the Command Center tile. */

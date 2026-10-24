@@ -84,7 +84,10 @@ const SCREENS: [string, RoleId][] = [
   ["/assets/CBC-GT-101/twin", "control_room_operator"],
   ["/maintenance/pm", "maintenance_planner"],
   ["/maintenance/pm/PM-PMP-VIB", "maintenance_planner"],
-  ["/inventory", "maintenance_planner"], // a module from a later phase
+  ["/inventory", "procurement"],
+  ["/inventory?show=all", "maintenance_planner"],
+  ["/inventory/parts/SP-BRG-6309", "procurement"],
+  ["/hse", "hse_officer"], // a module still to come
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */

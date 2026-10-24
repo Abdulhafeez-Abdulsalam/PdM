@@ -30,6 +30,16 @@ import { Vibration, VibrationRequest } from "./vibration";
 import { TwinArea, TwinRequest } from "./twin";
 import { GeneratePmRequest, GeneratePmResult, PmOverview, PmOverviewRequest, PmPlanDetail, PmPlanRequest } from "./pm";
 import {
+  InventoryOverview,
+  InventoryRequest,
+  PartDetail,
+  PartRequest,
+  PlaceOrderRequest,
+  PurchaseOrder,
+  WorkOrderParts,
+  WorkOrderPartsRequest,
+} from "./inventory";
+import {
   AssetFailures,
   ReliabilityRequest,
   ReliabilitySummary,
@@ -192,6 +202,35 @@ export const endpoints = {
     description: "Raise preventive work orders for everything due in the next 30 days (or overdue) without one",
     input: GeneratePmRequest,
     output: GeneratePmResult,
+  }),
+  "inventory.overview": endpoint({
+    method: "GET",
+    path: "/inventory",
+    description:
+      "Stock lines (part × site) with reorder points, the 90-day demand forecast from PM plans and predictions, and what to order",
+    input: InventoryRequest,
+    output: InventoryOverview,
+  }),
+  "inventory.part": endpoint({
+    method: "GET",
+    path: "/inventory/parts/:partNumber",
+    description: "One spare part: stock at each site, who will need it and when, and its orders",
+    input: PartRequest,
+    output: PartDetail,
+  }),
+  "inventory.order": endpoint({
+    method: "POST",
+    path: "/inventory/orders",
+    description: "Place a purchase order for a part at a site; it arrives after the part's lead time",
+    input: PlaceOrderRequest,
+    output: PurchaseOrder,
+  }),
+  "inventory.workOrderParts": endpoint({
+    method: "GET",
+    path: "/work-orders/:workOrderId/parts",
+    description: "The parts a work order will use and whether its site has them",
+    input: WorkOrderPartsRequest,
+    output: WorkOrderParts,
   }),
   "operations.power": endpoint({
     method: "GET",

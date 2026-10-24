@@ -18,6 +18,7 @@ export * from "./rca";
 export * from "./vibration";
 export * from "./twin";
 export * from "./pm";
+export * from "./inventory";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

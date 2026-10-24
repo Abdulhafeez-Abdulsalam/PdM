@@ -25,9 +25,11 @@ describe("PM programs", () => {
   it("raises the work that's due from a plan, and the work order points back to it", { timeout: 60_000 }, async () => {
     as("maintenance_planner");
     const user = setup();
-    renderApp("/maintenance/pm");
-    const table = await screen.findByRole("table", { name: /^PM plans/ });
-    await user.click(within(within(table).getAllByRole("row")[1]!).getByRole("link"));
+    const { backend, router } = renderApp("/maintenance/pm");
+    await screen.findByRole("table", { name: /^PM plans/ });
+    // A plan with something overdue, on a few dozen machines rather than hundreds of solar strings.
+    const plan = backend.request("pm.overview", {}).plans.find((p) => p.counts.overdue > 0 && p.assets < 60)!;
+    await router.navigate({ to: "/maintenance/pm/$planId", params: { planId: plan.id } });
     const raise = await screen.findByRole("button", { name: /^Raise \d+ work orders?$/ });
     expect(screen.getAllByText("Overdue").length).toBeGreaterThan(1);
     await user.click(raise);

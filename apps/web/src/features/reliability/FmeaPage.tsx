@@ -130,8 +130,7 @@ function Row({ r, assetClass }: { r: FmeaRow; assetClass: AssetClass }) {
         {r.act ? (
           <span className="inline-flex items-center gap-1 font-semibold text-health-warning">
             <AlertTriangle aria-hidden className="size-3.5" />
-            {r.rpn}
-            <span className="sr-only"> {t("fmea.act")}</span>
+            {r.rpn} <span className="sr-only">{t("fmea.act")}</span>
           </span>
         ) : (
           r.rpn

@@ -74,8 +74,8 @@ export function InverterHeatMap({ tiles }: { tiles: readonly InverterTile[] }) {
                         {x.assetId.split("-").at(-1)}
                       </span>
                       <span className="font-semibold text-fg tabular-nums">
-                        {x.performancePct === null ? t("solar.heat.noDataShort") : `${x.performancePct.toFixed(1)} %`}
-                        <span className="sr-only"> {t("solar.heat.ofExpected")}</span>
+                        {x.performancePct === null ? t("solar.heat.noDataShort") : `${x.performancePct.toFixed(1)} %`}{" "}
+                        <span className="sr-only">{t("solar.heat.ofExpected")}</span>
                       </span>
                     </Link>
                   </li>

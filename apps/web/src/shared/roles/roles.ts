@@ -73,6 +73,8 @@ export const ACTIONS = {
   "workOrder.close": ["field_technician"],
   "workOrder.verify": ["maintenance_planner", "reliability_engineer"],
   "workOrder.cancel": ["maintenance_planner", "plant_manager"],
+  /** Place a purchase order for spare parts. */
+  "inventory.order": ["procurement", "maintenance_planner"],
   "threshold.edit": ["reliability_engineer", "condition_analyst", "system_admin"],
   "model.approve": ["reliability_engineer", "condition_analyst", "system_admin"],
   "admin.manage": ["system_admin"],

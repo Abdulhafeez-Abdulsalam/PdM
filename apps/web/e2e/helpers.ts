@@ -13,7 +13,9 @@ export type Role =
   | "condition_analyst"
   | "control_room_operator"
   | "maintenance_planner"
-  | "field_technician";
+  | "field_technician"
+  | "hse_officer"
+  | "procurement";
 export type Theme = "light" | "dark" | "control-room";
 
 export const test = base.extend<{ consoleErrors: string[] }>({

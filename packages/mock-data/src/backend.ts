@@ -40,6 +40,7 @@ import { solarOperations } from "./solar";
 import { vibration } from "./vibration";
 import { twinArea } from "./twin";
 import { generatePm, pmCompliance, pmOverview, pmPlan } from "./pm";
+import { InventoryStore } from "./inventory";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -79,6 +80,7 @@ export class MockBackend {
   readonly storyline: Storyline;
   readonly comments: CommentStore;
   readonly rcas: RcaStore;
+  readonly inventory = new InventoryStore();
   private readonly overlays = new Map<string, PredictionOverlay>();
   private readonly log: TimelineEvent[] = [];
   private readonly hubs = new Set<LiveHub>();
@@ -174,6 +176,10 @@ export class MockBackend {
       inScope: this.inScope(scopeId),
       scopeKey: scopeId ?? "",
     };
+  }
+
+  private inventoryContext(scopeId: string | undefined) {
+    return { ...this.pmContext(scopeId), snapshot: () => this.snapshot() };
   }
 
   private asset(id: string): AssetRecord {
@@ -278,6 +284,11 @@ export class MockBackend {
     "pm.overview": ({ scopeId, assetClass }) => pmOverview(this.pmContext(scopeId), assetClass),
     "pm.plan": ({ planId, scopeId }) => pmPlan(this.pmContext(scopeId), planId),
     "pm.generate": ({ planId, scopeId }) => generatePm(this.pmContext(scopeId), planId, this.me().id),
+    "inventory.overview": (request) => this.inventory.overview(this.inventoryContext(request.scopeId), request),
+    "inventory.part": ({ partNumber, scopeId }) => this.inventory.part(this.inventoryContext(scopeId), partNumber),
+    "inventory.order": (request) => this.inventory.order(this.inventoryContext(undefined), request, this.me().id),
+    "inventory.workOrderParts": ({ workOrderId }) =>
+      this.inventory.workOrderParts(this.inventoryContext(undefined), this.workOrders.get(workOrderId)),
     "operations.power": ({ scopeId, siteId }) =>
       powerOperations({
         world: this.world,

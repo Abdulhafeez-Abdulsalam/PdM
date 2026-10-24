@@ -29,6 +29,8 @@ const SCREENS: [url: string, role: Role][] = [
   ["/assets/CBC-GT-101/twin", "control_room_operator"],
   ["/maintenance/pm", "maintenance_planner"],
   ["/maintenance/pm/PM-PMP-VIB", "maintenance_planner"],
+  ["/inventory", "procurement"],
+  ["/inventory/parts/SP-BRG-6309", "procurement"],
   ["/alarms/analytics", "control_room_operator"],
   ["/assets/compare?class=pump&measure=anomaly", "reliability_engineer"],
 ];

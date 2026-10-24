@@ -1,6 +1,6 @@
 # Phase 4 plan: operations and governance
 
-*Agreed 2026-10-24. Progress: chunk 1 done (2026-10-24): PM programs.*
+*Agreed 2026-10-24. Progress: chunks 1–2 done (2026-10-24): PM programs, inventory and spares.*
 
 Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fills in the rest of the menu: the modules that turn predictions into **parts, permits, money, reports and compliance**, the screens that run the platform itself, and the AI copilot. Every remaining placeholder in the menu becomes a real page, and every role gets its own home page (today HSE, Procurement, ESG and Admin still land on the Command Center).
 
@@ -26,7 +26,7 @@ Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fill
 | # | Chunk | What you'd see | Notes |
 |---|---|---|---|
 | 1 ✅ | **PM programs** (`/maintenance/pm`) | Preventive maintenance plans per class (task, interval by time or running hours, parts, crew hours), built from FMEA's recommended strategies; which assets each plan covers; PM compliance (done on time, late, missed), which replaces the Command Center's seeded PM-compliance tile; generating the next work orders | Closes the gap from chunk 6 of Phase 3 ("FMEA doesn't generate PM tasks"). Turnarounds stay for later |
-| 2 | **Inventory and spares** (`/inventory`) | Stock per site with min/max and criticality; **demand forecast from predictions and planned work** ("PMP-106's bearing will need a 6309 in ~20 days; 2 in stock"); reorder suggestions; parts on work orders and in the field close-out; Procurement's home page | Spec §6.7 "spare parts criticality and stocking" was deferred to here |
+| 2 ✅ | **Inventory and spares** (`/inventory`) | Stock per site with min/max and criticality; **demand forecast from predictions and planned work** ("PMP-106's bearing will need a 6309 in ~20 days; 2 in stock"); reorder suggestions; parts on work orders and in the field close-out; Procurement's home page | Spec §6.7 "spare parts criticality and stocking" was deferred to here |
 | 3 | **HSE and compliance** (`/hse`) | Safety-critical elements and their health; permits to work linked to work orders (and a permit check before field work starts); incidents and near misses; management of change (MoC) with an approval flow; HSE Officer's home page | Builds on the field safety checks from Phase 2 |
 | 4 | **Energy and ESG** (`/esg`) | CO₂ from fuel burned (gas turbines, engines, heaters), flaring, methane from compressors and pipelines; intensity per MWh or barrel; progress against targets; the assets that emit most and how their health affects it; ESG Lead's home page | Needs new emission tags in the mock, from the same physics as heat rate |
 | 5 | **Financials** (`/financials`) | Value realised by predictions (avoided downtime, from the work orders), cost of downtime per site, maintenance spend vs budget by month and category, cost per work order type | Turns the Command Center's "value delivered" tile into a page with its workings shown |
@@ -38,6 +38,8 @@ Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fill
 | 11 | **Phase 4 review** | Like the Phase 3 review: criteria re-tested, gaps listed, real-browser checks | |
 
 **What chunk 1 added beyond the table:** 56 plans from FMEA (planned replacements at B10 for wear-out modes, condition checks every 30 or 90 days), running hours for rotating machines' overhauls; a seeded year of PM outcomes with a different discipline per site, plus PM work raised and closed out in the app; compliance counts a PM against you until its work is closed out, not merely raised (a test caught the first version rewarding paperwork); the Command Center's PM-compliance tile is now real. See [learning note 26](learning/26-pm-programs-and-compliance.md).
+
+**What chunk 2 added beyond the table:** one part per kind of equipment × failure mode (the PM plans' parts), stocked at every site with that equipment; reorder points from lead-time demand plus safety stock by VED criticality; a 90-day forecast from PM work coming due and from open predictions (bearings have no PM plan: their demand is all predicted); a "will run short" check that walks needs against arrivals by date; purchase orders that arrive after the lead time; a work order's page shows its parts and the site's stock, and closed-out replacements leave stock. Parts aren't entered on the field close-out form yet: they're issued from the plan or failure mode. See [learning note 27](learning/27-spare-parts-and-stock-control.md).
 
 ## Decisions (made 2026-10-24)
 

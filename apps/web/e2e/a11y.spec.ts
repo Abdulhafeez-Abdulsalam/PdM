@@ -87,7 +87,9 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Asset 360: twin", () => "/assets/CBC-GT-101/twin", "control_room_operator"],
   ["PM programs", () => "/maintenance/pm", "maintenance_planner"],
   ["PM plan", () => "/maintenance/pm/PM-PMP-VIB", "maintenance_planner"],
-  ["Later-phase page", () => "/inventory", "maintenance_planner"],
+  ["Inventory", () => "/inventory", "procurement"],
+  ["Spare part", () => "/inventory/parts/SP-BRG-6309", "procurement"],
+  ["Coming-later page", () => "/hse", "hse_officer"],
 ];
 
 for (const [name, url, role] of SCREENS) {

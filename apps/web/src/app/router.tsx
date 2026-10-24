@@ -35,6 +35,8 @@ const WeibullPage = lazyRouteComponent(() => import("../features/reliability/Wei
 const RiskPage = lazyRouteComponent(() => import("../features/reliability/RiskPage"), "RiskPage");
 const FmeaPage = lazyRouteComponent(() => import("../features/reliability/FmeaPage"), "FmeaPage");
 const TwinPage = lazyRouteComponent(() => import("../features/twin/TwinPage"), "TwinPage");
+const InventoryPage = lazyRouteComponent(() => import("../features/inventory/InventoryPage"), "InventoryPage");
+const PartPage = lazyRouteComponent(() => import("../features/inventory/PartPage"), "PartPage");
 const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
 const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
@@ -76,6 +78,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   predictive: PredictionConsolePage,
   reliability: ReliabilityPage,
   twin: TwinPage,
+  inventory: InventoryPage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };
@@ -225,6 +228,13 @@ const pmPlanRoute = createRoute({
   component: PmPlanPage,
 });
 
+/** One spare part. */
+const partRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/inventory/parts/$partNumber",
+  component: PartPage,
+});
+
 /** One field task (a work order as the technician works through it). */
 const taskRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -261,6 +271,7 @@ const routeTree = rootRoute.addChildren([
   scheduleRoute,
   pmRoute,
   pmPlanRoute,
+  partRoute,
   taskRoute,
   liveLoadRoute,
 ]);
