@@ -478,6 +478,33 @@ export function pmPartDemand(ctx: Ctx2, days: number): { planId: string; assetId
   return out;
 }
 
+const overdueCache = new WeakMap<World, Map<string, Set<string>>>();
+
+/** Every asset (in scope) with at least one overdue PM. Cached like the overview. */
+export function overdueAssets(ctx: Ctx2): ReadonlySet<string> {
+  const version = ctx.workOrders
+    .all()
+    .filter((o) => o.source.kind === "pm")
+    .map((o) => `${o.id}:${o.status}`)
+    .join(",");
+  const key = `${ctx.scopeKey}|${Math.floor(ctx.now / HOUR)}|${version}`;
+  let cache = overdueCache.get(ctx.world);
+  if (!cache) overdueCache.set(ctx.world, (cache = new Map()));
+  const hit = cache.get(key);
+  if (hit) return hit;
+  const out = new Set<string>();
+  for (const plan of buildPlans(ctx).plans) {
+    const orders = pmOrdersOf(ctx, plan.id);
+    for (const asset of assetsFor(ctx, plan)) {
+      if (out.has(asset.data.id)) continue;
+      if (occurrences(ctx, plan, asset, orders).some((o) => o.outcome === "overdue")) out.add(asset.data.id);
+    }
+  }
+  if (cache.size > 50) cache.clear();
+  cache.set(key, out);
+  return out;
+}
+
 /** PM compliance for a set of assets, for the Command Center tile. */
 export function pmCompliance(ctx: Ctx2): number | null {
   return pmOverview(ctx).counts.compliancePct;

@@ -69,6 +69,9 @@ describe("PM programs", () => {
     const overdue = created.find((c) => Date.parse(c.dueAt) < START && Date.parse(c.dueAt) > START - 80 * DAY)!;
     const tech = backend.request("users.list", { role: "field_technician" }).items[0]!;
     for (const to of ["scheduled", "approved", "in_progress"] as const) {
+      if (to === "in_progress")
+        for (const permit of backend.request("hse.permits", { workOrderId: overdue.workOrderId, status: ["requested"] }).items)
+          backend.request("hse.issuePermit", { permitId: permit.id });
       const checklist =
         to === "in_progress"
           ? backend

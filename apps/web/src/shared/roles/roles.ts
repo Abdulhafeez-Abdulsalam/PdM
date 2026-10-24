@@ -75,6 +75,28 @@ export const ACTIONS = {
   "workOrder.cancel": ["maintenance_planner", "plant_manager"],
   /** Place a purchase order for spare parts. */
   "inventory.order": ["procurement", "maintenance_planner"],
+  /** Issue a permit to work. */
+  "permit.issue": ["hse_officer"],
+  /** Report a near miss, equipment damage or a release: anyone who works on site. */
+  "incident.report": [
+    "hse_officer",
+    "field_technician",
+    "control_room_operator",
+    "maintenance_planner",
+    "plant_manager",
+    "reliability_engineer",
+  ],
+  /** Propose a change; review and approve (or reject) it; mark it implemented. */
+  "moc.propose": [
+    "reliability_engineer",
+    "condition_analyst",
+    "maintenance_planner",
+    "plant_manager",
+    "hse_officer",
+    "control_room_operator",
+  ],
+  "moc.review": ["hse_officer", "plant_manager"],
+  "moc.implement": ["maintenance_planner"],
   "threshold.edit": ["reliability_engineer", "condition_analyst", "system_admin"],
   "model.approve": ["reliability_engineer", "condition_analyst", "system_admin"],
   "admin.manage": ["system_admin"],

@@ -36,7 +36,7 @@
       "name": "Inventory",
       "description": "Spare parts: stock at each site, what PM plans and predictions will need, and what to order."
     },
-    "hse": { "name": "HSE & Compliance", "description": "Safety-critical elements, permits, incidents and audits." },
+    "hse": { "name": "HSE & Compliance", "description": "Safety-critical equipment, permits to work, incidents and management of change." },
     "esg": { "name": "Energy & ESG", "description": "Emissions, flaring, methane and sustainability reporting." },
     "financials": { "name": "Financials", "description": "Value realised, cost of downtime and budgets." },
     "reports": { "name": "Reports", "description": "Report builder, scheduled reports and shift handover." },
@@ -1391,6 +1391,7 @@
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas"
   },
   "solar": {
@@ -2369,5 +2370,152 @@
     "woOnHand_one": "{{count}} on the shelf at {{site}}",
     "woOnHand_other": "{{count}} on the shelf at {{site}}",
     "woNotEnough": "Not enough on the shelf: order before scheduling."
+  },
+  "hse": {
+    "intro": "Is anything safety-critical at risk? Safety-critical equipment and what's impairing it, permits waiting to be issued, incidents and changes under review.",
+    "nav": {
+      "label": "HSE pages",
+      "overview": "Overview",
+      "permits": "Permits to work",
+      "incidents": "Incidents",
+      "moc": "Management of change"
+    },
+    "kpisLabel": "HSE measures",
+    "kpi": {
+      "impaired": "Safety-critical, impaired",
+      "ofSces_one": "of {{count}} safety-critical item",
+      "ofSces_other": "of {{count}} safety-critical items",
+      "impairedHow": "Impaired: health warning or critical, a PM overdue, or an active P1 alarm",
+      "permitsWaiting": "Permits waiting",
+      "permitsIssued_one": "{{count}} issued",
+      "permitsIssued_other": "{{count}} issued",
+      "daysSinceTier1": "Days since a tier 1 event",
+      "tiers": "Last 12 months: {{tier1}} tier 1, {{tier2}} tier 2",
+      "tierHow": "Process safety events (losses of containment) by consequence, as in API RP 754: tier 1 the more serious",
+      "nearMisses": "Near misses reported",
+      "openMoc_one": "{{count}} change open",
+      "openMoc_other": "{{count}} changes open"
+    },
+    "monthlyTitle": "Process safety events and near misses",
+    "monthlyIntro": "Columns: losses of containment each month (tier 1 and 2). Line: near misses reported. Many near misses for each event is a healthy sign: warnings heard early.",
+    "monthlyLabel": "Process safety events and near misses by month, last 12 months",
+    "monthlySummary": "{{tier1}} tier 1 and {{tier2}} tier 2 events, {{nearMisses}} near misses in the last 12 months.",
+    "pse": "Process safety events",
+    "nearMissLine": "Near misses",
+    "scesTitle_one": "{{count}} safety-critical item impaired",
+    "scesTitle_other": "{{count}} safety-critical items impaired",
+    "scesAllTitle_one": "{{count}} safety-critical item",
+    "scesAllTitle_other": "{{count}} safety-critical items",
+    "scesIntro": "Relief valves, vessels, pipelines, tanks, separators, fired heaters, and any equipment of the highest criticality.",
+    "scesCaption": "Safety-critical equipment with its health and what impairs it",
+    "noneImpaired": "Nothing safety-critical is impaired.",
+    "notImpaired": "Not impaired",
+    "showAllSces_one": "Show all {{count}}",
+    "showAllSces_other": "Show all {{count}}",
+    "showAll_one": "Show all {{count}}",
+    "showAll_other": "Show all {{count}}",
+    "reason": {
+      "health": "Poor health",
+      "pm_overdue": "PM overdue",
+      "alarm": "P1 alarm"
+    },
+    "col": {
+      "asset": "Asset",
+      "site": "Site",
+      "health": "Health",
+      "why": "Impaired by",
+      "permit": "Permit",
+      "work": "Work",
+      "start": "Planned start",
+      "status": "Status",
+      "actions": "Actions",
+      "when": "When",
+      "kind": "Kind",
+      "what": "What happened"
+    },
+    "show": "Show",
+    "permitsIntro": "Hazardous work needs a permit to work, raised when it's scheduled. Work can't start until the HSE officer issues it; it closes when the work is closed out.",
+    "permitShow": {
+      "waiting": "Waiting to be issued",
+      "issued": "Issued",
+      "all": "All"
+    },
+    "permitsTitle_one": "{{count}} permit",
+    "permitsTitle_other": "{{count}} permits",
+    "permitsCaption": "Permits to work with their work order, asset, planned start and status",
+    "noPermits": "No permits.",
+    "permitStatus": {
+      "requested": "Waiting to be issued",
+      "issued": "Issued",
+      "closed": "Closed",
+      "cancelled": "Cancelled"
+    },
+    "permitType": {
+      "cold_work": "Cold work (mechanical isolation)",
+      "hot_work": "Hot work",
+      "electrical_isolation": "Electrical isolation",
+      "confined_space": "Confined space entry"
+    },
+    "issue": "Issue",
+    "issued": "{{id}} issued: {{wo}} may start",
+    "permitCardTitle": "Permit to work",
+    "cannotStart": "Work can't start until this permit is issued.",
+    "incidentsIntro": "The last 12 months. Process safety events come from the failure history (a leak of process fluid is a loss of containment); anyone on site can report a near miss.",
+    "incidentsTitle_one": "{{count}} incident",
+    "incidentsTitle_other": "{{count}} incidents",
+    "incidentsCaption": "Incidents, newest first",
+    "incidentKind": {
+      "process_safety_event": "Process safety event",
+      "near_miss": "Near miss",
+      "equipment_damage": "Equipment damage",
+      "environmental_release": "Environmental release"
+    },
+    "tier": "Process safety event, tier {{tier}}",
+    "seeFailure": "{{id}}: see the failure",
+    "reportTitle": "Report a near miss",
+    "reportIntro": "Something that could have hurt someone or damaged something, but didn't. Reporting it is how the next one is prevented.",
+    "reportKind": "Kind",
+    "reportAsset": "Asset tag",
+    "reportWhat": "What happened",
+    "report": "Report",
+    "reported": "{{id}} reported. Thank you.",
+    "mocIntro": "Before plant, a setting or a procedure changes, the change is written down, its risk assessed, reviewed and approved. Many major accidents started with a change nobody reviewed.",
+    "mocsTitle_one": "{{count}} change",
+    "mocsTitle_other": "{{count}} changes",
+    "mocKind": {
+      "setpoint": "Setting or limit",
+      "equipment": "Equipment",
+      "procedure": "Procedure",
+      "temporary": "Temporary change"
+    },
+    "mocRisk": {
+      "low": "Low risk",
+      "medium": "Medium risk",
+      "high": "High risk"
+    },
+    "mocStatus": {
+      "proposed": "Proposed",
+      "under_review": "Under review",
+      "approved": "Approved",
+      "implemented": "Implemented",
+      "rejected": "Rejected"
+    },
+    "mocMove": {
+      "under_review": "Start review",
+      "approved": "Approve",
+      "implemented": "Mark implemented",
+      "rejected": "Reject"
+    },
+    "mocMoved": "{{id}}: {{status}}",
+    "mocProposed": "proposed by {{by}} on {{date}}",
+    "rejectReason": "Reason",
+    "confirmReject": "Reject",
+    "proposeTitle": "Propose a change",
+    "mocTitle": "Change",
+    "mocDescription": "What and why",
+    "mocKindLabel": "Kind of change",
+    "mocRiskLabel": "Risk",
+    "propose": "Propose",
+    "mocCreated": "{{id}} proposed"
   }
 }

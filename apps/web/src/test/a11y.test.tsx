@@ -87,7 +87,11 @@ const SCREENS: [string, RoleId][] = [
   ["/inventory", "procurement"],
   ["/inventory?show=all", "maintenance_planner"],
   ["/inventory/parts/SP-BRG-6309", "procurement"],
-  ["/hse", "hse_officer"], // a module still to come
+  ["/hse", "hse_officer"],
+  ["/hse/permits", "hse_officer"],
+  ["/hse/incidents", "hse_officer"],
+  ["/hse/moc", "hse_officer"],
+  ["/esg", "esg_lead"], // a module still to come
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */

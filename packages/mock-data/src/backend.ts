@@ -41,6 +41,7 @@ import { vibration } from "./vibration";
 import { twinArea } from "./twin";
 import { generatePm, pmCompliance, pmOverview, pmPlan } from "./pm";
 import { InventoryStore } from "./inventory";
+import { HseStore } from "./hse";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -81,6 +82,7 @@ export class MockBackend {
   readonly comments: CommentStore;
   readonly rcas: RcaStore;
   readonly inventory = new InventoryStore();
+  readonly hse: HseStore;
   private readonly overlays = new Map<string, PredictionOverlay>();
   private readonly log: TimelineEvent[] = [];
   private readonly hubs = new Set<LiveHub>();
@@ -95,6 +97,8 @@ export class MockBackend {
     this.clock = new SimClock(realNow, start);
     this.world = buildWorld(options.seed ?? 20261010, start);
     this.workOrders = new WorkOrderStore(this.world, start, this.overlays);
+    // Permits follow the work orders from here on, so this comes straight after them.
+    this.hse = new HseStore(this.world, this.workOrders, start);
     this.alarms = new AlarmEngine(this.world, this.chaos, start, (alarm, title, t) =>
       this.addLog({ kind: "operator_action", t: iso(t), assetId: alarm.assetId, title, detail: null, severity: null, refId: alarm.id }),
     );
@@ -287,6 +291,16 @@ export class MockBackend {
     "inventory.overview": (request) => this.inventory.overview(this.inventoryContext(request.scopeId), request),
     "inventory.part": ({ partNumber, scopeId }) => this.inventory.part(this.inventoryContext(scopeId), partNumber),
     "inventory.order": (request) => this.inventory.order(this.inventoryContext(undefined), request, this.me().id),
+    "hse.overview": ({ scopeId }) => this.hse.overview({ ...this.inventoryContext(scopeId), alarms: () => this.alarms.all() }),
+    "hse.permits": (request) => ({ items: this.hse.listPermits(request, this.inScope(request.scopeId), this.workOrders) }),
+    "hse.issuePermit": ({ permitId }) => this.hse.issue(permitId, this.me().id, this.now()),
+    "hse.incidents": ({ scopeId }) => ({
+      items: this.hse.listIncidents(allFailures(this.world, this.workOrders), this.now(), this.inScope(scopeId)),
+    }),
+    "hse.reportIncident": (request) => this.hse.report(request, allFailures(this.world, this.workOrders), this.me().id, this.now()),
+    "hse.mocs": ({ scopeId }) => ({ items: this.hse.listMocs(this.now(), this.inScope(scopeId)) }),
+    "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
+    "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
     "inventory.workOrderParts": ({ workOrderId }) =>
       this.inventory.workOrderParts(this.inventoryContext(undefined), this.workOrders.get(workOrderId)),
     "operations.power": ({ scopeId, siteId }) =>

@@ -213,6 +213,18 @@ function titleFor(rng: Rng, type: WorkOrderType, asset: AssetRecord): string {
 export class WorkOrderStore {
   private orders: WorkOrder[] = [];
   private nextNumber = 10001;
+  /** Told of every status change (permits are raised and closed this way). */
+  private readonly listeners: ((wo: WorkOrder, from: WorkOrderStatus, now: number) => void)[] = [];
+  /** Asked before work starts; throws to refuse (no issued permit). */
+  private startCheck: ((wo: WorkOrder) => void) | null = null;
+
+  onStatusChange(listener: (wo: WorkOrder, from: WorkOrderStatus, now: number) => void): void {
+    this.listeners.push(listener);
+  }
+
+  setStartCheck(check: (wo: WorkOrder) => void): void {
+    this.startCheck = check;
+  }
 
   constructor(
     private readonly world: World,
@@ -384,6 +396,7 @@ export class WorkOrderStore {
     if (request.checklist) applyResults(wo.checklist, request.checklist);
     if (wo.status === "approved" && request.to === "in_progress") {
       requireDone(wo.checklist, ["safety"], "Confirm every safety check before starting");
+      this.startCheck?.(wo);
     }
     this.record(wo, request.to, by, now, request.note ?? null);
     return wo;
@@ -439,8 +452,10 @@ export class WorkOrderStore {
   }
 
   private record(wo: WorkOrder, to: WorkOrderStatus, by: string, now: number, note: string | null): void {
-    wo.history.push({ at: iso(now), by, from: wo.status, to, note });
+    const from = wo.status;
+    wo.history.push({ at: iso(now), by, from, to, note });
     wo.status = to;
+    for (const listener of this.listeners) listener(wo, from, now);
   }
 
   query(params: Omit<WorkOrderListParams, "offset" | "limit">, inScope: (assetId: string) => boolean): WorkOrder[] {

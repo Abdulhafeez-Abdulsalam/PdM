@@ -17,6 +17,7 @@ import { allowedMoves, moveLabelKey } from "./lifecycle";
 import { PriorityLabel } from "./PriorityLabel";
 import { WorkOrderDialogs } from "./WorkOrderDialogs";
 import { WorkOrderPartsCard } from "../inventory/WorkOrderPartsCard";
+import { PermitCard } from "../hse/PermitCard";
 import { useMove } from "./use-move";
 
 export function WorkOrderPage() {
@@ -114,6 +115,7 @@ function WorkOrderView({ wo }: { wo: WorkOrder }) {
           </ol>
         </Card>
 
+        <PermitCard wo={wo} />
         <Checklist wo={wo} />
         <WorkOrderPartsCard wo={wo} />
         {wo.evidence && <Evidence wo={wo} />}

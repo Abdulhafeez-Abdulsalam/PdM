@@ -80,6 +80,9 @@ describe("inventory", () => {
 
     const tech = backend.request("users.list", { role: "field_technician" }).items[0]!;
     for (const to of ["scheduled", "approved", "in_progress"] as const) {
+      if (to === "in_progress")
+        for (const permit of backend.request("hse.permits", { workOrderId: job.workOrderId, status: ["requested"] }).items)
+          backend.request("hse.issuePermit", { permitId: permit.id });
       backend.request("workOrders.transition", {
         workOrderId: job.workOrderId,
         to,

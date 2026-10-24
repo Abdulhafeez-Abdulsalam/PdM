@@ -37,6 +37,10 @@ const FmeaPage = lazyRouteComponent(() => import("../features/reliability/FmeaPa
 const TwinPage = lazyRouteComponent(() => import("../features/twin/TwinPage"), "TwinPage");
 const InventoryPage = lazyRouteComponent(() => import("../features/inventory/InventoryPage"), "InventoryPage");
 const PartPage = lazyRouteComponent(() => import("../features/inventory/PartPage"), "PartPage");
+const HsePage = lazyRouteComponent(() => import("../features/hse/HsePage"), "HsePage");
+const PermitsPage = lazyRouteComponent(() => import("../features/hse/PermitsPage"), "PermitsPage");
+const IncidentsPage = lazyRouteComponent(() => import("../features/hse/IncidentsPage"), "IncidentsPage");
+const MocPage = lazyRouteComponent(() => import("../features/hse/MocPage"), "MocPage");
 const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
 const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
@@ -79,6 +83,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   reliability: ReliabilityPage,
   twin: TwinPage,
   inventory: InventoryPage,
+  hse: HsePage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };
@@ -228,6 +233,11 @@ const pmPlanRoute = createRoute({
   component: PmPlanPage,
 });
 
+/** HSE: permits to work (?show=…), incidents, management of change. */
+const permitsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/hse/permits", component: PermitsPage });
+const incidentsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/hse/incidents", component: IncidentsPage });
+const mocRoute = createRoute({ getParentRoute: () => rootRoute, path: "/hse/moc", component: MocPage });
+
 /** One spare part. */
 const partRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -272,6 +282,9 @@ const routeTree = rootRoute.addChildren([
   pmRoute,
   pmPlanRoute,
   partRoute,
+  permitsRoute,
+  incidentsRoute,
+  mocRoute,
   taskRoute,
   liveLoadRoute,
 ]);

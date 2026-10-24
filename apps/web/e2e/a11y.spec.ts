@@ -89,7 +89,11 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["PM plan", () => "/maintenance/pm/PM-PMP-VIB", "maintenance_planner"],
   ["Inventory", () => "/inventory", "procurement"],
   ["Spare part", () => "/inventory/parts/SP-BRG-6309", "procurement"],
-  ["Coming-later page", () => "/hse", "hse_officer"],
+  ["HSE overview", () => "/hse", "hse_officer"],
+  ["Permits to work", () => "/hse/permits", "hse_officer"],
+  ["Incidents", () => "/hse/incidents", "hse_officer"],
+  ["Management of change", () => "/hse/moc", "hse_officer"],
+  ["Coming-later page", () => "/esg", "esg_lead"],
 ];
 
 for (const [name, url, role] of SCREENS) {

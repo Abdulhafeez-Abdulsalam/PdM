@@ -31,6 +31,10 @@ const SCREENS: [url: string, role: Role][] = [
   ["/maintenance/pm/PM-PMP-VIB", "maintenance_planner"],
   ["/inventory", "procurement"],
   ["/inventory/parts/SP-BRG-6309", "procurement"],
+  ["/hse", "hse_officer"],
+  ["/hse/permits?show=all", "hse_officer"],
+  ["/hse/incidents", "hse_officer"],
+  ["/hse/moc", "hse_officer"],
   ["/alarms/analytics", "control_room_operator"],
   ["/assets/compare?class=pump&measure=anomaly", "reliability_engineer"],
 ];

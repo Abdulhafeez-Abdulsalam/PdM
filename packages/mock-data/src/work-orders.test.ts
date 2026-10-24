@@ -11,6 +11,11 @@ const allDone = (b: Backend, id: string) =>
   b
     .request("workOrders.get", { workOrderId: id })
     .checklist.map((i) => ({ itemId: i.id, done: true, value: i.kind === "reading" ? 3 : null }));
+/** The HSE officer issues the permit raised when the work was scheduled. */
+const issuePermit = (b: Backend, id: string) => {
+  for (const p of b.request("hse.permits", { workOrderId: id, status: ["requested"] }).items)
+    b.request("hse.issuePermit", { permitId: p.id });
+};
 const safetyOnly = (b: Backend, id: string) =>
   b
     .request("workOrders.get", { workOrderId: id })
@@ -62,6 +67,9 @@ describe("lifecycle", () => {
     expect(() => move("scheduled")).toThrowError(/start time and someone assigned/);
     move("scheduled", { scheduledStart: iso(START + 2 * HOUR), assigneeId: tech.id });
     move("approved");
+    // Hazardous work needs an issued permit to work before it starts.
+    expect(() => move("in_progress", { checklist: safetyOnly(b, wo.id) })).toThrowError(/hasn't been issued/);
+    issuePermit(b, wo.id);
     move("in_progress", { checklist: safetyOnly(b, wo.id) });
     const done = b.request("workOrders.closeOut", {
       workOrderId: wo.id,
@@ -113,6 +121,7 @@ describe("lifecycle", () => {
       evidence: null,
     });
     for (const to of ["triaged", "planned", "scheduled", "approved", "in_progress"] as const) {
+      if (to === "in_progress") issuePermit(b, wo.id);
       b.request("workOrders.transition", {
         workOrderId: wo.id,
         to,
