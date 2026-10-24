@@ -56,7 +56,7 @@ export function DocumentsTab({ asset }: { asset: Asset }) {
         aria-label={t("docs.tableLabel")}
         // eslint-disable-next-line jsx-a11y/no-noninteractive-tabindex -- a named, focusable scroll region is the recommended pattern here
         tabIndex={0}
-        className="-mx-4 overflow-x-auto focus-visible:outline-2 focus-visible:outline-[var(--pdm-focus-ring)]"
+        className="relative -mx-4 overflow-x-auto focus-visible:outline-2 focus-visible:outline-[var(--pdm-focus-ring)]"
       >
         <table className="w-full min-w-[760px] text-sm">
           <caption className="sr-only">{t("docs.title")}</caption>

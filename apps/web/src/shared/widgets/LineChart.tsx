@@ -215,7 +215,7 @@ export function LineChart({
               const i = n <= 1 ? 0 : Math.round(((px - left) / plotW) * (n - 1));
               setActive(i < 0 || i >= n ? null : i);
             }}
-            className="rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
+            className="max-w-full rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
           >
             {ticks.map((v) => (
               <g key={v}>

@@ -39,7 +39,7 @@ export function FailuresTab({ asset }: { asset: Asset }) {
         {failures.length === 0 ? (
           <p className="mt-2 text-sm text-fg-muted">{t("failuresTab.none")}</p>
         ) : (
-          <div className="-mx-4 overflow-x-auto">
+          <div className="relative -mx-4 overflow-x-auto">
             <table className="w-full min-w-[820px] text-sm">
               <caption className="sr-only">{t("failuresTab.listCaption")}</caption>
               <thead>

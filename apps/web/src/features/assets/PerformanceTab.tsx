@@ -171,7 +171,7 @@ function TransformerPerformance({ dga }: { dga: TransformerDga }) {
       : "";
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <section aria-labelledby="dga-latest" className="rounded-lg border border-line bg-surface p-4">
           <h2 id="dga-latest" className="font-semibold">
             {t("performance.latestSample", { date: formatDate(latest.sampledAt) })}
@@ -194,7 +194,7 @@ function TransformerPerformance({ dga }: { dga: TransformerDga }) {
         <h2 id="dga-history" className="font-semibold">
           {t("performance.samplesTitle")}
         </h2>
-        <div className="-mx-4 overflow-x-auto">
+        <div className="relative -mx-4 overflow-x-auto">
           <table className="w-full min-w-[640px] text-sm">
             <caption className="sr-only">{t("performance.samplesTitle")}</caption>
             <thead>

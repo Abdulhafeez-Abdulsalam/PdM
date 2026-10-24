@@ -533,6 +533,7 @@ export class MockBackend {
           snapshot: this.snapshot(),
           alarms: this.alarms,
           workOrders: this.workOrders,
+          failures: allFailures(this.world, this.workOrders),
           now: this.now(),
         },
         keys,

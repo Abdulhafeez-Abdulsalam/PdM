@@ -110,7 +110,7 @@ export function AssetRegistryPage() {
           </div>
         }
       >
-        <div className={`-mx-4 overflow-x-auto ${assets.isPlaceholderData ? "opacity-60" : ""}`}>
+        <div className={`relative -mx-4 overflow-x-auto ${assets.isPlaceholderData ? "opacity-60" : ""}`}>
           <table className="w-full min-w-[760px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs text-fg-muted">

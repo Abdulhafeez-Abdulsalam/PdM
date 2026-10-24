@@ -174,7 +174,7 @@ function ControlRooms({ a }: { a: AlarmAnalytics }) {
   const sites = [...a.sites].sort((x, y) => y.averagePer10Min - x.averagePer10Min);
   return (
     <Section title={t("analytics.sitesTitle")} hint={t("analytics.sitesHint")}>
-      <div className="-mx-4 overflow-x-auto">
+      <div className="relative -mx-4 overflow-x-auto">
         <table className="w-full min-w-[520px] text-sm">
           <caption className="sr-only">{t("analytics.sitesTitle")}</caption>
           <thead>
@@ -288,7 +288,7 @@ function BadActors({ a }: { a: AlarmAnalytics }) {
       {a.badActors.length === 0 ? (
         <p className="text-sm text-fg-muted">{t("analytics.noAlarms")}</p>
       ) : (
-        <div className="-mx-4 overflow-x-auto">
+        <div className="relative -mx-4 overflow-x-auto">
           <table className="w-full min-w-[760px] text-sm">
             <caption className="sr-only">{t("analytics.badActorsTitle")}</caption>
             <thead>

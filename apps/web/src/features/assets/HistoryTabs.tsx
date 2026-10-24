@@ -56,7 +56,7 @@ export function MaintenanceTab({ asset }: { asset: Asset }) {
       emptyText={t("assets.noWorkOrders")}
       skeleton={rows}
     >
-      <div className="-mx-4 overflow-x-auto">
+      <div className="relative -mx-4 overflow-x-auto">
         <table className="w-full min-w-[640px] text-sm">
           <thead>
             <tr className="border-b border-line text-left text-xs text-fg-muted">

@@ -22,15 +22,15 @@ export interface SelectProps<V extends string> extends Omit<SelectHTMLAttributes
 export function Select<V extends string>({ label, hideLabel, value, options, onChange, className, ...rest }: SelectProps<V>) {
   const id = useId();
   return (
-    <span className="inline-flex items-center gap-2">
-      <label htmlFor={id} className={hideLabel ? "sr-only" : "text-xs text-fg-muted"}>
+    <span className="inline-flex max-w-full min-w-0 items-center gap-2">
+      <label htmlFor={id} className={hideLabel ? "sr-only" : "shrink-0 text-xs text-fg-muted"}>
         {label}
       </label>
       <select
         id={id}
         value={value}
         onChange={(e) => onChange(e.target.value as V)}
-        className={cx("h-8 rounded-md border border-line bg-surface px-2 text-sm text-fg", className)}
+        className={cx("h-8 max-w-full min-w-0 rounded-md border border-line bg-surface px-2 text-sm text-fg", className)}
         {...rest}
       >
         {options.map((o) => (

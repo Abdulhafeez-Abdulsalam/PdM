@@ -234,7 +234,7 @@ function TurbineTable({ rows, selected, onSelect }: { rows: readonly GasTurbineR
   const units = usePreferences((p) => p.units);
   if (rows.length === 0) return <p className="text-sm text-fg-muted">{t("power.noTurbines")}</p>;
   return (
-    <div className="-mx-4 overflow-x-auto">
+    <div className="relative -mx-4 overflow-x-auto">
       <table className="w-full min-w-[900px] text-sm">
         <caption className="sr-only">{t("power.turbinesTitle")}</caption>
         <thead>

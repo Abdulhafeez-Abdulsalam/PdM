@@ -111,7 +111,7 @@ export function LossWaterfall({ waterfall, label }: { waterfall: SolarWaterfall;
         </table>
       ) : (
         <div ref={box}>
-          <svg role="img" aria-label={`${label}. ${summary}`} width={width} height={height}>
+          <svg role="img" aria-label={`${label}. ${summary}`} width={width} height={height} className="max-w-full">
             {rows.map((r, i) => {
               const y = i * ROW + (ROW - BAR) / 2;
               const left = x(Math.min(r.from, r.to));

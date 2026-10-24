@@ -74,7 +74,7 @@ export function WeibullPage() {
         <div className={cx("flex flex-col gap-4 transition-opacity", data.isPlaceholderData && "opacity-60")}>
           <Summary r={r} />
           {r.fit && (
-            <div className="grid gap-4 xl:grid-cols-2">
+            <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
               <section aria-labelledby="wb-plot" className="rounded-lg border border-line bg-surface p-4">
                 <h2 id="wb-plot" className="font-semibold">
                   {t("weibull.plotTitle")}
@@ -282,7 +282,7 @@ function WeibullPlot({ r }: { r: WeibullAnalysis }) {
             height={H}
             onKeyDown={onKey}
             onBlur={() => setActive(null)}
-            className="rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
+            className="max-w-full rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
           >
             {F_LINES.map((p) => (
               <g key={p}>

@@ -132,7 +132,7 @@ export function AnomaliesPage() {
         {fleet.isPending ? (
           <Skeleton className="h-64" />
         ) : (
-          <div className={cx("-mx-4 overflow-x-auto transition-opacity", fleet.isPlaceholderData && "opacity-60")}>
+          <div className={cx("relative -mx-4 overflow-x-auto transition-opacity", fleet.isPlaceholderData && "opacity-60")}>
             <table className="w-full min-w-[1000px] text-sm">
               <caption className="sr-only">{t("anomalies.caption")}</caption>
               <thead>

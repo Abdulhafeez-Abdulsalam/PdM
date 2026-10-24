@@ -81,7 +81,7 @@ export function Waterfall({ rows, columns, selected, df, label, summary, format,
         </Button>
       </div>
       {asTable ? (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-sm">
             <caption className="sr-only">{label}</caption>
             <thead>
@@ -126,7 +126,7 @@ export function Waterfall({ rows, columns, selected, df, label, summary, format,
         </div>
       ) : (
         <div ref={box}>
-          <svg role="img" aria-label={`${label}. ${summary}`} width={width} height={height}>
+          <svg role="img" aria-label={`${label}. ${summary}`} width={width} height={height} className="max-w-full">
             {drawn.map((r, idx) => {
               const k = n - 1 - idx; // the oldest is furthest back and drawn first, so nearer ones hide what's behind
               const o = origin(k);

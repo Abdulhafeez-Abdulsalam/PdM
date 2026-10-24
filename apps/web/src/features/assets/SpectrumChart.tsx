@@ -120,7 +120,7 @@ export function SpectrumChart({ amps, df, runningHz, markers, label, summary, fo
         </Button>
       </div>
       {asTable ? (
-        <div className="overflow-x-auto">
+        <div className="relative overflow-x-auto">
           <table className="w-full text-sm">
             <caption className="sr-only">{label}</caption>
             <thead>
@@ -179,7 +179,7 @@ export function SpectrumChart({ amps, df, runningHz, markers, label, summary, fo
               const i = Math.round(((px - left) / plotW) * n) - 1;
               setActive(i < 0 || i >= n ? null : i);
             }}
-            className="rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
+            className="max-w-full rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
           >
             {yTicks.map((v) => (
               <g key={v}>

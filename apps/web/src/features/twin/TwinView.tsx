@@ -262,7 +262,7 @@ function PipelineView({ area, highlight }: { area: TwinArea; highlight?: string 
           <span>{t("twin.km", { km: length })}</span>
         </div>
       </div>
-      <div className="overflow-x-auto">
+      <div className="relative overflow-x-auto">
         <table className="w-full min-w-[720px] text-sm">
           <caption className="sr-only">{t("twin.segmentsCaption", { name: area.areaName })}</caption>
           <thead>

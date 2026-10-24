@@ -97,7 +97,7 @@ export function SolarPage() {
                 </section>
               )}
 
-              <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
                 <section aria-labelledby="solar-inverters" className="rounded-lg border border-line bg-surface p-4">
                   <h2 id="solar-inverters" className="font-semibold">
                     {t("solar.invertersTitle")}
@@ -108,7 +108,7 @@ export function SolarPage() {
                 <StringsSection strings={r.strings} />
               </div>
 
-              <div className="grid gap-4 xl:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
                 {r.soiling && <CleaningCard advice={r.soiling} />}
                 <BatteriesSection bess={r.bess} times={r.power.map((p) => Date.parse(p.t))} />
               </div>

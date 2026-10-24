@@ -161,7 +161,7 @@ export function ColumnChart({ columns, label, summary, format, valueName, lineNa
               const x = e.clientX - e.currentTarget.getBoundingClientRect().left - PAD.left;
               setActive(x < 0 || x > plotW ? null : Math.min(columns.length - 1, Math.floor(x / slot)));
             }}
-            className="rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
+            className="max-w-full rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
           >
             {ticks.map((v) => (
               <g key={v}>

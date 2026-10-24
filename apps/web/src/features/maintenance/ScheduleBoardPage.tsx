@@ -202,7 +202,7 @@ export function ScheduleBoardPage() {
         <div className="grid grid-cols-1 gap-4 2xl:grid-cols-[1fr_20rem]">
           <section
             aria-label={t("schedule.boardLabel", { range: rangeLabel })}
-            className="overflow-x-auto rounded-lg border border-line bg-surface"
+            className="relative overflow-x-auto rounded-lg border border-line bg-surface"
           >
             {orders.isPending ? (
               <Skeleton className="m-4 h-96" />

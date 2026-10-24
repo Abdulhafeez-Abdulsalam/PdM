@@ -108,7 +108,7 @@ function Editor({ rca }: { rca: Rca }) {
         </div>
       </header>
 
-      <div className="grid gap-4 xl:grid-cols-[1fr_2fr]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
         <Timeline rca={rca} />
         <section aria-labelledby="rca-whys" className="rounded-lg border border-line bg-surface p-4">
           <h2 id="rca-whys" className="font-semibold">

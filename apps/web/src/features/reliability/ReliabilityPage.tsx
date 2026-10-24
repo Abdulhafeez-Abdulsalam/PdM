@@ -84,7 +84,7 @@ export function ReliabilityPage() {
       ) : (
         <div className={cx("flex flex-col gap-4 transition-opacity", data.isPlaceholderData && "opacity-60")}>
           <Kpis r={r} />
-          <div className="grid gap-4 xl:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
             <section aria-labelledby="rel-monthly" className="rounded-lg border border-line bg-surface p-4">
               <h2 id="rel-monthly" className="font-semibold">
                 {t("reliability.monthlyTitle")}
@@ -250,7 +250,7 @@ function BadActors({ r }: { r: ReliabilitySummary }) {
       {r.badActors.length === 0 ? (
         <p className="text-sm text-fg-muted">{t("reliability.noBad")}</p>
       ) : (
-        <div className="-mx-4 overflow-x-auto">
+        <div className="relative -mx-4 overflow-x-auto">
           <table className="w-full min-w-[760px] text-sm">
             <caption className="sr-only">{t("reliability.badTitle")}</caption>
             <thead>

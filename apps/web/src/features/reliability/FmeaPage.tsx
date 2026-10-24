@@ -68,7 +68,7 @@ export function FmeaPage() {
               {t("fmea.openPlan")}
             </Link>
           </p>
-          <div className="-mx-4 overflow-x-auto">
+          <div className="relative -mx-4 overflow-x-auto">
             <table className="w-full min-w-[960px] text-sm">
               <caption className="sr-only">{t("fmea.caption")}</caption>
               <thead>

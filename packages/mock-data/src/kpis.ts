@@ -1,13 +1,15 @@
 /**
- * Command Center KPIs for any scope. Counts come straight from the simulation;
- * figures that would need years of history (MTBF, MTTR, OEE, PM compliance) are seeded
- * per scope so they stay stable and plausible.
+ * Command Center KPIs for any scope. Counts come straight from the simulation; MTBF and MTTR
+ * from the failure history, worked out exactly as on the Reliability page. Figures the
+ * simulation doesn't model yet (OEE, PM compliance) are seeded per scope so they stay stable
+ * and plausible.
  */
-import type { Kpi, KpiKey, KpiResponse } from "@pdm/contracts";
+import type { FailureRecord, Kpi, KpiKey, KpiResponse } from "@pdm/contracts";
 import type { AlarmEngine } from "./alarms";
 import { DAY, iso } from "./clock";
 import type { AssetRecord } from "./model";
 import { hashNoise, hashString, smoothNoise } from "./random";
+import { kpisOf } from "./reliability";
 import type { Snapshot } from "./snapshot";
 import { OPEN_STATUSES, type WorkOrderStore } from "./work-orders";
 import { round } from "./world";
@@ -21,11 +23,13 @@ interface KpiInput {
   snapshot: Snapshot;
   alarms: AlarmEngine;
   workOrders: WorkOrderStore;
+  /** The failure history (reliability.ts), for MTBF and MTTR. */
+  failures: readonly FailureRecord[];
   now: number;
 }
 
 export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiResponse {
-  const { scopeId, assets, snapshot, alarms, workOrders, now } = input;
+  const { scopeId, assets, snapshot, alarms, workOrders, failures, now } = input;
   const seed = hashString(`kpi:${scopeId}`);
   const ids = new Set(assets.map((a) => a.data.id));
   const conditions = assets.map((a) => snapshot.conditions.get(a.data.id)).filter((c) => c !== undefined);
@@ -67,6 +71,12 @@ export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiRespo
   }
 
   const seeded = (n: number, lo: number, hi: number) => lo + hashNoise(seed, n) * (hi - lo);
+  const reliability = kpisOf(
+    assets,
+    failures.filter((f) => ids.has(f.assetId)),
+    now - 365.25 * DAY,
+    now,
+  );
 
   const all: Record<KpiKey, Omit<Kpi, "trend" | "changePct" | "updatedAt" | "key">> = {
     enterprise_health: {
@@ -86,20 +96,20 @@ export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiRespo
       lineage: lineage("Share of assets not tripped or in maintenance"),
     },
     mtbf: {
-      value: round(seeded(1, 4200, 9800), 0),
+      value: reliability.mtbfHours,
       format: "hours",
       currency: null,
       target: null,
       higherIsBetter: true,
-      lineage: lineage("Mean time between failures, trailing 12 months"),
+      lineage: lineage("Mean time between failures from the failure history (operating hours ÷ failures), trailing 12 months"),
     },
     mttr: {
-      value: round(seeded(2, 7, 21), 1),
+      value: reliability.mttrHours,
       format: "hours",
       currency: null,
       target: 12,
       higherIsBetter: false,
-      lineage: lineage("Mean time to repair, trailing 12 months"),
+      lineage: lineage("Mean time to repair from the failure history, trailing 12 months"),
     },
     oee: {
       value: round(seeded(3, 78, 88), 1),

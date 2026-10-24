@@ -118,7 +118,7 @@ export function PredictionConsolePage() {
           </div>
         }
       >
-        <div className="-mx-4 overflow-x-auto">
+        <div className="relative -mx-4 overflow-x-auto">
           <table className="w-full min-w-[960px] text-sm">
             <thead>
               <tr className="border-b border-line text-left text-xs text-fg-muted">

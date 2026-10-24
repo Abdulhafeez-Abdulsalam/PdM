@@ -178,7 +178,7 @@ export function IntegrityPerformanceView({ data }: { data: IntegrityPerformance 
   const i = data.integrity;
   const insp = data.inspection;
   return (
-    <div className="grid gap-4 lg:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
       {i && (
         <section aria-labelledby="int-wall" className="rounded-lg border border-line bg-surface p-4">
           <h2 id="int-wall" className="font-semibold">

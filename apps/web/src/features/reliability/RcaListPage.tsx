@@ -31,7 +31,7 @@ export function RcaListPage() {
         <p className="text-fg-muted">{t("rca.intro")}</p>
       </header>
       <ReliabilityNav />
-      <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <section aria-labelledby="rca-list" className="rounded-lg border border-line bg-surface p-4">
           <h2 id="rca-list" className="mb-2 font-semibold">
             {t("rca.listTitle")}
@@ -43,7 +43,7 @@ export function RcaListPage() {
           ) : list.data.items.length === 0 ? (
             <p className="text-sm text-fg-muted">{t("rca.none")}</p>
           ) : (
-            <div className="-mx-4 overflow-x-auto">
+            <div className="relative -mx-4 overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <caption className="sr-only">{t("rca.listTitle")}</caption>
                 <thead>

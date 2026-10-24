@@ -58,7 +58,7 @@ export function RiskPage() {
       ) : data.isError || !r ? (
         <p className="text-health-warning">{t("widget.failed")}</p>
       ) : (
-        <div className={cx("grid gap-4 2xl:grid-cols-[minmax(0,560px)_1fr]", data.isPlaceholderData && "opacity-60")}>
+        <div className={cx("grid grid-cols-1 gap-4 2xl:grid-cols-[minmax(0,560px)_1fr]", data.isPlaceholderData && "opacity-60")}>
           <section aria-labelledby="risk-matrix" className="rounded-lg border border-line bg-surface p-4">
             <h2 id="risk-matrix" className="font-semibold">
               {t("risk.matrixTitle")}
@@ -85,7 +85,7 @@ function Matrix({
   const { t } = useTranslation();
   const count = (l: number, c: number) => r.cells.find((x) => x.likelihood === l && x.consequence === c)?.count ?? 0;
   return (
-    <div className="overflow-x-auto">
+    <div className="relative overflow-x-auto">
       <table className="w-full min-w-[460px] border-separate border-spacing-1 text-sm">
         <caption className="sr-only">{t("risk.caption")}</caption>
         <thead>

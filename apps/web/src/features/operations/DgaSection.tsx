@@ -37,12 +37,12 @@ export function DgaSection({ transformers }: { transformers: readonly Transforme
       {transformers.length === 0 ? (
         <p className="text-sm text-fg-muted">{t("dga.none")}</p>
       ) : (
-        <div className="grid gap-4 lg:grid-cols-[minmax(280px,420px)_1fr]">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(280px,420px)_minmax(0,1fr)]">
           <div>
             <DuvalTriangle marks={marks} label={t("dga.triangleLabel")} summary={summary} />
             <p className="mt-1 text-xs text-fg-muted">{summary}</p>
           </div>
-          <div className="-mx-4 overflow-x-auto lg:mx-0">
+          <div className="relative -mx-4 overflow-x-auto lg:mx-0">
             <table className="w-full min-w-[560px] text-sm">
               <caption className="sr-only">{t("dga.tableCaption")}</caption>
               <thead>

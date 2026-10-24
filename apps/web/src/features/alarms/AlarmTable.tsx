@@ -107,7 +107,7 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
           <span className="text-xs text-fg-muted">{t("alarmTable.keyboardHint")}</span>
         </div>
       )}
-      <div className="-mx-4 overflow-x-auto">
+      <div className="relative -mx-4 overflow-x-auto">
         <table className="w-full min-w-[880px] text-sm">
           <caption className="sr-only">{caption}</caption>
           <thead>

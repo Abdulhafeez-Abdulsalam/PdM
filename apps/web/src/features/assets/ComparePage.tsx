@@ -120,7 +120,7 @@ export function ComparePage() {
                 {t("compare.onlyOutliers", { count: outliers.length })}
               </label>
             </div>
-            <div className="-mx-4 overflow-x-auto">
+            <div className="relative -mx-4 overflow-x-auto">
               <table className="w-full min-w-[640px] text-sm">
                 <caption className="sr-only">{t("compare.tableCaption")}</caption>
                 <thead>
@@ -308,7 +308,7 @@ function RankChart({
           const i = valued.length === 1 ? 0 : Math.round(((px - PAD.left) / plotW) * (valued.length - 1));
           setActive(i < 0 || i >= valued.length ? null : i);
         }}
-        className="rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
+        className="max-w-full rounded focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--pdm-focus-ring)]"
       >
         {ticks.map((v) => (
           <g key={v}>

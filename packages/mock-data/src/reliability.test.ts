@@ -109,6 +109,15 @@ describe("reliability KPIs", () => {
     expect(r.badActors.every((a) => a.assetClass === "pump")).toBe(true);
   });
 
+  it("gives the Command Center the same MTBF and MTTR as the Reliability page", () => {
+    for (const scopeId of [undefined, "CBC"]) {
+      const page = b.request("reliability.summary", { years: 1, scopeId }).kpis;
+      const tiles = b.request("kpis.get", { scopeId, keys: ["mtbf", "mttr"] }).kpis;
+      expect(tiles.find((k) => k.key === "mtbf")!.value).toBe(page.mtbfHours);
+      expect(tiles.find((k) => k.key === "mttr")!.value).toBe(page.mttrHours);
+    }
+  });
+
   it("follows the scope", () => {
     const all = b.request("reliability.summary", { years: 1 }).kpis;
     const one = b.request("reliability.summary", { years: 1, scopeId: "CBC" }).kpis;

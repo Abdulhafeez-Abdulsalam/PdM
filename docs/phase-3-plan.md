@@ -1,6 +1,6 @@
 # Phase 3 plan: domain depth
 
-*Agreed 2026-10-22. Progress: chunks 1–8 done (2026-10-24): the industry views, the reliability suite (KPIs, Weibull, risk matrix, FMEA, root-cause analysis), vibration diagnostics and the 2D digital twin. Next: the Phase 3 review.*
+*Agreed 2026-10-22. Progress: complete (2026-10-24): the industry views, the reliability suite (KPIs, Weibull, risk matrix, FMEA, root-cause analysis), vibration diagnostics and the 2D digital twin. See the [Phase 3 review](phase-3-review.md).*
 
 Phase 1 built the foundation and Phase 2 the predictive core. Phase 3 ("domain depth" in the spec, §6.3, §6.7, §6.8) is where the app starts to speak each industry's language: a gas turbine engineer, a solar plant manager and a pipeline integrity engineer each get screens built around *their* questions, and the reliability engineer gets real analysis tools.
 
@@ -30,7 +30,7 @@ Each chunk is reviewable on its own, like Phase 2. **Decided 2026-10-22: the ind
 | 6 ✅ | **FMEA and root-cause analysis** | FMEA table with severity × occurrence × detection (RPN) per failure mode, linked to PM tasks; an RCA workspace with 5-Whys, a fishbone diagram, timeline and corrective actions | Turns analysis into action; links to work orders |
 | 7 ✅ | **Rotating-equipment diagnostics** | Asset 360 *Vibration* tab: frequency spectrum with fault-frequency markers (1×, 2×, bearing frequencies BPFO/BPFI), a waterfall (spectra over time), an orbit plot | The mock must generate spectra with real fault signatures |
 | 8 ✅ | **Digital twin (2D)** (`/twin`) | A process diagram per unit with live values and alarm colours, clicking through to Asset 360; solar farm layout (block → inverter → string); pipeline route by distance with anomalies; a time slider to replay the last days | Ties everything together; needs the earlier chunks' data |
-| 9 | **Phase 3 review** | Like the Phase 2 review: criteria re-tested, gaps listed, real-browser checks | |
+| 9 ✅ | **Phase 3 review** | Like the Phase 2 review: criteria re-tested, gaps listed, real-browser checks | [Review](phase-3-review.md): seven screens were too wide for a phone (fixed, now tested); the MTBF and MTTR tiles now come from the failure history |
 
 **What chunk 1 added beyond the table:** a reusable line chart (also for solar's power vs expected); transformer gases come from monthly lab oil samples (the online monitor covers H₂, C₂H₂ and CO); three hand-placed plant conditions so the page always has something to show (a fouling turbine, one washed five days ago, a gassing transformer); and an air-temperature effect on gas turbine power and heat rate, so "ambient-corrected" means something. See [learning note 18](learning/18-gas-to-power-heat-rate-hours-and-oil.md).
 

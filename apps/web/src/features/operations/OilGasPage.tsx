@@ -160,7 +160,7 @@ function Upstream({ v }: { v: UpstreamView }) {
         <DeclineChart production={v.production} fit={v.fit} label={t("oilGas.up.declineLabel")} />
       </section>
 
-      <div className="grid gap-4 xl:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
         <section aria-labelledby="og-esps" className="rounded-lg border border-line bg-surface p-4">
           <h2 id="og-esps" className="font-semibold">
             {t("oilGas.up.espTitle")}

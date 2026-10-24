@@ -102,7 +102,7 @@ export function VibrationTab({ asset }: { asset: Asset }) {
             <p className="mb-2 text-sm text-fg-muted">{t("vibration.spectrumIntro")}</p>
             <Spectrum v={v} slice={slice} amp={amp} />
           </section>
-          <div className="grid gap-4 xl:grid-cols-[2fr_1fr]">
+          <div className="grid grid-cols-1 gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
             <section aria-labelledby="vib-waterfall" className="min-w-0 rounded-lg border border-line bg-surface p-4">
               <h2 id="vib-waterfall" className="font-semibold">
                 {t("vibration.waterfallTitle")}
