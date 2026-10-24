@@ -16,6 +16,7 @@ export * from "./oil-gas";
 export * from "./reliability";
 export * from "./rca";
 export * from "./vibration";
+export * from "./twin";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

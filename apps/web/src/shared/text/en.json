@@ -24,7 +24,10 @@
     "assets": { "name": "Assets", "description": "The asset registry and the Asset 360 page for every piece of equipment." },
     "alarms": { "name": "Alarms & Events", "description": "Live alarms, acknowledgement, shelving and the event timeline." },
     "operations": { "name": "Operations", "description": "Dashboards for oil & gas, gas-to-power and solar operations." },
-    "twin": { "name": "Digital Twin", "description": "P&IDs, 3D models, solar layouts and pipeline routes with live values." },
+    "twin": {
+      "name": "Digital Twin",
+      "description": "Process diagrams, solar layouts and pipeline routes with live values, and a replay of the last three days."
+    },
     "predictive": { "name": "Predictive & AI", "description": "Predictions, anomalies, explanations and the model registry." },
     "reliability": { "name": "Reliability", "description": "Weibull, FMEA, root-cause analysis and bad-actor programmes." },
     "maintenance": { "name": "Maintenance", "description": "Work orders, scheduling, PM programmes and turnarounds." },
@@ -336,6 +339,7 @@
       "health": "Health & prediction",
       "vibration": "Vibration",
       "performance": "Performance",
+      "twin": "Twin",
       "failures": "Failures",
       "alarms": "Alarms",
       "maintenance": "Maintenance",
@@ -1379,6 +1383,7 @@
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
     "oilGas": "Oil & gas",
+    "oilGas": "Oil & gas",
     "oilGas": "Oil & gas"
   },
   "solar": {
@@ -2112,6 +2117,60 @@
       "peak": "Peak {{rank}}",
       "date": "Week of",
       "overall": "Overall"
+    }
+  },
+  "twin": {
+    "intro": "Every asset in one area of a site, laid out the way the area works, with its health and values. Replay any hour of the last three days to see what happened when.",
+    "site": "Site",
+    "area": "Area",
+    "timeTitle": "Replay",
+    "play": "Play",
+    "pause": "Pause",
+    "backToNow": "Back to now",
+    "moment": "Showing",
+    "now": "now ({{time}})",
+    "nowShort": "Now",
+    "hoursAgo_one": "{{count}} hour ago ({{time}})",
+    "hoursAgo_other": "{{count}} hours ago ({{time}})",
+    "windowStart": "{{hours}} hours ago",
+    "activity_one": "Something in this area was past a limit in {{count}} of the last {{hours}} hours.",
+    "activity_other": "Something in this area was past a limit in {{count}} of the last {{hours}} hours.",
+    "stripLegend": "In the strip, grey is normal; the colours mark the worst level that hour (alert, alarm, trip).",
+    "areaTitle": "{{area}}, {{site}}",
+    "areaSummary_one": "{{count}} asset, {{past}} past a limit, {{time}}.",
+    "areaSummary_other": "{{count}} assets, {{past}} past a limit, {{time}}.",
+    "legend": "Border colour and word show health; a warning sign says which sensor is past which limit.",
+    "tabIntro": "Where {{id}} sits in its area, right now (outlined).",
+    "replayLink": "Replay the last three days in the digital twin",
+    "flowLabel": "{{name}}, from supply to grid",
+    "stage": {
+      "supply": "Supply",
+      "drive": "Drive",
+      "process": "Process",
+      "power": "Power",
+      "grid": "Electrical",
+      "protection": "Valves and protection"
+    },
+    "limit": {
+      "alert": "Past alert",
+      "alarm": "Past alarm",
+      "trip": "Tripped"
+    },
+    "invertersLabel": "Inverters in {{name}}, each with its strings",
+    "stringsOf": "Strings feeding {{id}}",
+    "stringsNote": "Each string shows its performance index: its output against its sister strings (100% = as good as the others).",
+    "solarOthers": "Combiner boxes and trackers",
+    "routeLabel": "{{name}}, {{km}} km, segment by segment",
+    "segment": "Segment {{id}}, km {{from}} to {{to}}, {{health}}",
+    "km": "km {{km}}",
+    "segmentsCaption": "Segments of {{name}} in route order",
+    "col": {
+      "segment": "Segment",
+      "km": "km",
+      "health": "Health",
+      "wall": "Wall thickness",
+      "corrosion": "Corrosion rate",
+      "pressure": "Inlet pressure"
     }
   }
 }

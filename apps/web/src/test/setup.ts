@@ -17,6 +17,7 @@ await Promise.all([
   import("../features/reliability/WeibullPage"),
   import("../features/reliability/RiskPage"),
   import("../features/reliability/FmeaPage"),
+  import("../features/twin/TwinPage"),
   import("../features/reliability/RcaListPage"),
   import("../features/reliability/RcaPage"),
   import("../features/alarms/AlarmsPage"),

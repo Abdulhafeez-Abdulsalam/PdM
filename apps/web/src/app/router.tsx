@@ -32,6 +32,7 @@ const ReliabilityPage = lazyRouteComponent(() => import("../features/reliability
 const WeibullPage = lazyRouteComponent(() => import("../features/reliability/WeibullPage"), "WeibullPage");
 const RiskPage = lazyRouteComponent(() => import("../features/reliability/RiskPage"), "RiskPage");
 const FmeaPage = lazyRouteComponent(() => import("../features/reliability/FmeaPage"), "FmeaPage");
+const TwinPage = lazyRouteComponent(() => import("../features/twin/TwinPage"), "TwinPage");
 const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
 const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
@@ -72,6 +73,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   alarms: AlarmsPage,
   predictive: PredictionConsolePage,
   reliability: ReliabilityPage,
+  twin: TwinPage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };

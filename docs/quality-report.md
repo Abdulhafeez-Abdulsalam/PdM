@@ -42,8 +42,8 @@ Before trusting any number, four problems in the *measurement* were found and fi
 | Level | Test | Covers |
 |---|---|---|
 | Every colour | `packages/ui/src/tokens.test.ts` | Every text and health colour on every background, every theme, ≥ 4.5 : 1 |
-| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on every screen (51 as of Phase 3 chunk 7), each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
-| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on every screen × 3 themes (48 screens), one test per screen so a failure names the screen |
+| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on every screen (55 as of Phase 3 chunk 8), each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
+| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on every screen × 3 themes (52 screens), one test per screen so a failure names the screen |
 
 **Result:** 0 violations on every screen in jsdom, and on all 25 screens × 3 themes in Chrome (re-run 2026-10-22, after the missing Phase 2 pages were added).
 

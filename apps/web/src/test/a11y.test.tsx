@@ -78,7 +78,11 @@ const SCREENS: [string, RoleId][] = [
   [`/assets/${ASSET}/failures`, "reliability_engineer"],
   ["/assets/PBU-PMP-106/vibration", "reliability_engineer"],
   ["/assets/GCM-CMP-105/vibration", "reliability_engineer"],
-  ["/twin", "control_room_operator"], // a "coming in a later chunk" page
+  ["/twin", "control_room_operator"],
+  ["/twin?site=GCM&area=GCM-PLA&h=6", "control_room_operator"],
+  ["/twin?site=PCS&area=PCS-BLB", "control_room_operator"],
+  ["/assets/CBC-GT-101/twin", "control_room_operator"],
+  ["/inventory", "maintenance_planner"], // a module from a later phase
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */

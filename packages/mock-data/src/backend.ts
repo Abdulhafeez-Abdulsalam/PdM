@@ -38,6 +38,7 @@ import { RcaStore, fmea } from "./rca";
 import { riskMatrix, weibullAnalysis } from "./weibull";
 import { solarOperations } from "./solar";
 import { vibration } from "./vibration";
+import { twinArea } from "./twin";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -261,6 +262,7 @@ export class MockBackend {
       assetPerformance({ world: this.world, chaos: this.chaos, now: this.now() }, this.snapshot(), this.asset(assetId)),
     "assets.vibration": ({ assetId, point }) =>
       vibration({ world: this.world, chaos: this.chaos, now: this.now() }, this.asset(assetId), point),
+    "twin.area": ({ areaId, hoursAgo }) => twinArea({ world: this.world, chaos: this.chaos, now: this.now() }, areaId, hoursAgo),
     "operations.power": ({ scopeId, siteId }) =>
       powerOperations({
         world: this.world,

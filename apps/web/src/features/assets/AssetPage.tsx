@@ -1,7 +1,7 @@
 /**
  * Asset 360 (spec §6.2) — "the centerpiece". Header with identity, health and remaining life,
  * then tabs: Overview, Telemetry, Health & prediction, Vibration and Performance (for the kinds of
- * equipment that have them), Failures, Alarms, Maintenance, Documents, Related, Comments.
+ * equipment that have them), Twin, Failures, Alarms, Maintenance, Documents, Related, Comments.
  * The tab is part of the URL: /assets/CBC-GT-101/telemetry.
  */
 import { useApiQuery } from "@pdm/api-client";
@@ -19,6 +19,7 @@ import { CommentsTab, DocumentsTab, RelatedTab } from "./InfoTabs";
 import { OverviewTab } from "./OverviewTab";
 import { PERFORMANCE_CLASSES, PerformanceTab } from "./PerformanceTab";
 import { TelemetryTab } from "./TelemetryTab";
+import { TwinTab } from "./TwinTab";
 import { VIBRATION_TAB_CLASSES, VibrationTab } from "./VibrationTab";
 
 export const ASSET_TABS = [
@@ -27,6 +28,7 @@ export const ASSET_TABS = [
   "health",
   "vibration",
   "performance",
+  "twin",
   "failures",
   "alarms",
   "maintenance",
@@ -97,6 +99,7 @@ export function AssetPage() {
           health: <HealthTab asset={asset.data} />,
           vibration: <VibrationTab key={asset.data.id} asset={asset.data} />,
           performance: <PerformanceTab asset={asset.data} />,
+          twin: <TwinTab asset={asset.data} />,
           failures: <FailuresTab asset={asset.data} />,
           alarms: <AlarmsTab asset={asset.data} siteTimeZone={site?.timezone} />,
           maintenance: <MaintenanceTab asset={asset.data} />,

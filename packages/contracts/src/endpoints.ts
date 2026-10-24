@@ -27,6 +27,7 @@ import { SolarOperations, SolarOperationsRequest } from "./solar";
 import { AddActionRequest, CreateRcaRequest, Fmea, FmeaRequest, Rca, RcaSummary, UpdateRcaRequest } from "./rca";
 import { OilGasOperations, OilGasRequest } from "./oil-gas";
 import { Vibration, VibrationRequest } from "./vibration";
+import { TwinArea, TwinRequest } from "./twin";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -161,6 +162,14 @@ export const endpoints = {
     description: "A rotating machine's vibration spectra over the last weeks, with fault-frequency findings, and its shaft orbit",
     input: VibrationRequest,
     output: Vibration,
+  }),
+  "twin.area": endpoint({
+    method: "GET",
+    path: "/twin/areas/:areaId",
+    description:
+      "One area at one moment in the last 72 hours: each asset's health, values and limits, and the area's hour-by-hour activity",
+    input: TwinRequest,
+    output: TwinArea,
   }),
   "operations.power": endpoint({
     method: "GET",

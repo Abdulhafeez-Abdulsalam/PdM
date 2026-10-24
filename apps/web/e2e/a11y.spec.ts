@@ -81,7 +81,11 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Asset 360: failures", () => "/assets/CBC-GT-101/failures", "reliability_engineer"],
   ["Asset 360: vibration (rolling bearings)", () => "/assets/PBU-PMP-106/vibration", "reliability_engineer"],
   ["Asset 360: vibration (orbit)", () => "/assets/GCM-CMP-105/vibration", "reliability_engineer"],
-  ["Coming-later page", () => "/twin", "control_room_operator"],
+  ["Digital twin: process area", () => "/twin", "control_room_operator"],
+  ["Digital twin: pipeline", () => "/twin?site=GCM&area=GCM-PLA&h=6", "control_room_operator"],
+  ["Digital twin: solar block", () => "/twin?site=PCS&area=PCS-BLB", "control_room_operator"],
+  ["Asset 360: twin", () => "/assets/CBC-GT-101/twin", "control_room_operator"],
+  ["Later-phase page", () => "/inventory", "maintenance_planner"],
 ];
 
 for (const [name, url, role] of SCREENS) {

@@ -147,7 +147,8 @@ export function buildPrediction(fault: Fault, t: number, overlay: PredictionOver
   };
 }
 
-function condition(world: World, asset: AssetRecord, t: number, predictions: Prediction[]): Condition {
+/** An asset's health and status at time t. Health and status depend only on its faults; predictions add RUL and risk. */
+export function condition(world: World, asset: AssetRecord, t: number, predictions: Prediction[]): Condition {
   const faults = world.faultsOf(asset.data.id);
   const maxP = faults.reduce((m, f) => Math.max(m, progress(f, t)), 0);
   const score = round(Math.min(100, Math.max(0, 100 - asset.baseWear - 90 * maxP ** 1.5)), 1);
