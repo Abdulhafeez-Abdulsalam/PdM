@@ -36,6 +36,16 @@ export class ChaosWindows {
     }
   }
 
+  /** The chaos periods overlapping [from, to), clipped to it. */
+  between(from: number, to: number): { from: number; to: number }[] {
+    return this.windows.map((w) => ({ from: Math.max(from, w.from), to: Math.min(to, w.to ?? to) })).filter((w) => w.from < w.to);
+  }
+
+  /** Changes whenever chaos is switched on or off, for cache keys. */
+  get version(): string {
+    return `${this.windows.length}:${this.enabled}`;
+  }
+
   activeAt(t: number): boolean {
     return this.windows.some((w) => t >= w.from && (w.to === null || t < w.to));
   }
@@ -369,14 +379,23 @@ function modelValue(world: World, tag: TagRecord, t: number, { r, L }: Operating
   return value * (withLift ? wellFactor(world, asset, t) : wellFactor(world, asset, t, false));
 }
 
+/** Chaos mode drops about 3 % of a tag's 5-minute windows (no reading at all)… */
+export function chaosGap(chaos: ChaosWindows, tag: TagRecord, t: number): boolean {
+  return chaos.activeAt(t) && hashNoise(tag.seed ^ 0xc4a05, Math.floor(t / 300_000)) < 0.03;
+}
+
+/** …and flags about 4 % as bad quality (with a noisy value). Used by tagValue and the data-quality scan. */
+export function chaosBad(chaos: ChaosWindows, tag: TagRecord, t: number): boolean {
+  return chaos.activeAt(t) && hashNoise(tag.seed ^ 0xbad, Math.floor(t / 300_000)) < 0.04;
+}
+
 /** The value of a tag at time t, or null when there is no data (offline asset, chaos gap). */
 export function tagValue(world: World, chaos: ChaosWindows, tag: TagRecord, t: number): Reading | null {
   const asset = tag.asset;
   if (asset.staticStatus === "offline") return null;
 
   const tSec = Math.floor(t / 1000);
-  const chaotic = chaos.activeAt(t);
-  if (chaotic && hashNoise(tag.seed ^ 0xc4a05, Math.floor(tSec / 300)) < 0.03) return null;
+  if (chaosGap(chaos, tag, t)) return null;
 
   const tpl = tag.template;
   const scaleAbs = Math.abs(tag.base);
@@ -402,7 +421,7 @@ export function tagValue(world: World, chaos: ChaosWindows, tag: TagRecord, t: n
   }
 
   let quality: DataQuality = "good";
-  if (chaotic && hashNoise(tag.seed ^ 0xbad, Math.floor(tSec / 300)) < 0.04) {
+  if (chaosBad(chaos, tag, t)) {
     quality = "bad";
     value += scaleAbs * 0.3 * gaussNoise(tag.seed ^ 0xbad, tSec);
   }

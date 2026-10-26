@@ -56,6 +56,7 @@ import {
 import { EsgOverview, EsgRequest } from "./esg";
 import { FinancialsOverview, FinancialsRequest } from "./financials";
 import { AddHandoverNoteRequest, Handover, HandoverNote, HandoverRequest } from "./handover";
+import { DataQualityOverview, DataQualityRequest, DataSource, TagListParams, TagPage } from "./data";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -334,6 +335,27 @@ export const endpoints = {
     description: "Leave a note for the next shift",
     input: AddHandoverNoteRequest,
     output: HandoverNote,
+  }),
+  "data.sources": endpoint({
+    method: "GET",
+    path: "/data/sources",
+    description: "The systems feeding the platform, how they connect and whether they're healthy",
+    input: z.object({}),
+    output: list(DataSource),
+  }),
+  "data.quality": endpoint({
+    method: "GET",
+    path: "/data/quality",
+    description: "Data quality over the last 24 hours: completeness, gaps, flatlined and bad-quality tags, by site",
+    input: DataQualityRequest,
+    output: DataQualityOverview,
+  }),
+  "data.tags": endpoint({
+    method: "GET",
+    path: "/data/tags",
+    description: "Every tag with its limits, latest value and any data-quality issue, with search and paging",
+    input: TagListParams,
+    output: TagPage,
   }),
   "operations.power": endpoint({
     method: "GET",

@@ -100,7 +100,11 @@ const SCREENS: [string, RoleId][] = [
   ["/reports/management-summary?scope=EBC", "plant_manager"],
   ["/reports/build?sections=inventory,hse,esg", "esg_lead"],
   ["/reports/handover", "control_room_operator"],
-  ["/data", "condition_analyst"], // a module still to come
+  ["/data", "condition_analyst"],
+  ["/data?scope=PCS", "reliability_engineer"],
+  ["/data/tags", "condition_analyst"],
+  ["/data/tags?issue=flatline", "system_admin"],
+  ["/admin", "system_admin"], // a module still to come
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */

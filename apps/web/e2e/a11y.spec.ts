@@ -99,7 +99,9 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Management summary report", () => "/reports/management-summary", "plant_manager"],
   ["Report builder", () => "/reports/build?sections=risks,reliability,pm,alarms,inventory", "reliability_engineer"],
   ["Shift handover", () => "/reports/handover", "control_room_operator"],
-  ["Coming-later page", () => "/data", "condition_analyst"],
+  ["Data sources and quality", () => "/data", "condition_analyst"],
+  ["Tag browser", () => "/data/tags?issue=no_data", "condition_analyst"],
+  ["Coming-later page", () => "/admin", "system_admin"],
 ];
 
 for (const [name, url, role] of SCREENS) {

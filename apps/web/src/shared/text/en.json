@@ -2836,5 +2836,81 @@
       "leaveNote": "Leave note",
       "noteAdded": "Note left for the next shift"
     }
+  },
+  "data": {
+    "intro": "Where the data comes from, and whether it can be trusted. Every prediction is only as good as the readings under it.",
+    "tagsIntro": "Every measured signal (tag) with its limits, latest reading and any data-quality issue.",
+    "nav": {
+      "label": "Data pages",
+      "overview": "Sources and quality",
+      "tags": "Tags"
+    },
+    "sourcesTitle": "Data sources",
+    "sourcesIntro": "The systems feeding the platform. In this demo they're simulated, but their figures come from the plant's own data.",
+    "status": {
+      "connected": "Connected",
+      "degraded": "Degraded",
+      "disconnected": "Disconnected"
+    },
+    "col": {
+      "source": "Source",
+      "status": "Status",
+      "connection": "Connection",
+      "lastSync": "Last update",
+      "records": "Received, last {{hours}} h",
+      "site": "Site",
+      "tags": "Tags",
+      "completeness": "Complete",
+      "issues": "Tags with issues",
+      "tag": "Tag",
+      "issue": "Issue",
+      "missing": "Missing",
+      "bad": "Bad",
+      "asset": "Asset",
+      "latest": "Latest reading",
+      "quality": "Quality",
+      "limits": "Limits"
+    },
+    "kpisLabel": "Data-quality measures",
+    "kpi": {
+      "completeness": "Data complete",
+      "completenessHow": "Share of expected readings that arrived: one per tag every {{minutes}} minutes, last {{hours}} hours",
+      "good": "Tags with no issues",
+      "ofTags": "of {{total}} tags",
+      "gapsOrBad": "Gaps or bad quality",
+      "gapsOrBadHow": "Tags with at least {{threshold}} % of readings missing or flagged bad. The odd dropped reading is normal; more is a problem."
+    },
+    "issue": {
+      "no_data": "No data",
+      "flatline": "Flatline",
+      "bad_quality": "Bad quality",
+      "gaps": "Gaps"
+    },
+    "issueHow": {
+      "no_data": "Tags that sent nothing in 24 hours: the asset is offline, or its link to the plant is down",
+      "flatline": "Tags reading exactly the same value for hours: a stuck sensor or transmitter. A frozen reading looks healthy, which is what makes it dangerous."
+    },
+    "browseBy": "Browse tags with:",
+    "sitesTitle": "Completeness by site",
+    "sitesIntro": "Least complete first.",
+    "worstTitle": "Tags needing attention",
+    "worstIntro": "No data first, then stuck sensors, then bad quality and gaps; most affected first.",
+    "noIssues": "No tags with data-quality issues.",
+    "limit": {
+      "lowTrip": "Trip {{value}}",
+      "lowAlarm": "Alarm {{value}}",
+      "highAlarm": "Alarm {{value}}",
+      "highTrip": "Trip {{value}}"
+    },
+    "search": "Search tags",
+    "issueFilter": "Issue",
+    "anyIssue": "Any (all tags)",
+    "found_one": "{{formatted}} tag",
+    "found_other": "{{formatted}} tags",
+    "noTags": "No tags match.",
+    "tagsCaption": "Tags with their asset, latest reading, quality, limits and any data-quality issue",
+    "noReading": "No reading in 24 h",
+    "noIssue": "None",
+    "pagination": "Tag pages"
   }
 }

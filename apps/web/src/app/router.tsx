@@ -47,6 +47,8 @@ const ReportsPage = lazyRouteComponent(() => import("../features/reports/Reports
 const ReportPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportPage");
 const ReportBuilderPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportBuilderPage");
 const HandoverPage = lazyRouteComponent(() => import("../features/reports/HandoverPage"), "HandoverPage");
+const DataPage = lazyRouteComponent(() => import("../features/data/DataPages"), "DataPage");
+const TagsPage = lazyRouteComponent(() => import("../features/data/DataPages"), "TagsPage");
 const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
 const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
@@ -93,6 +95,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   esg: EsgPage,
   financials: FinancialsPage,
   reports: ReportsPage,
+  data: DataPage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };
@@ -252,6 +255,9 @@ const handoverRoute = createRoute({ getParentRoute: () => rootRoute, path: "/rep
 const reportBuilderRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/build", component: ReportBuilderPage });
 const reportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/$reportId", component: ReportPage });
 
+/** Data and integrations: the tag browser (?issue=…). */
+const tagsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/data/tags", component: TagsPage });
+
 /** One spare part. */
 const partRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -302,6 +308,7 @@ const routeTree = rootRoute.addChildren([
   handoverRoute,
   reportBuilderRoute,
   reportRoute,
+  tagsRoute,
   taskRoute,
   liveLoadRoute,
 ]);

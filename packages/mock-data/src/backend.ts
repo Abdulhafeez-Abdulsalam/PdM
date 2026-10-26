@@ -44,6 +44,7 @@ import { InventoryStore } from "./inventory";
 import { HseStore } from "./hse";
 import { esgOverview } from "./esg";
 import { financialsOverview } from "./financials";
+import { dataQuality, dataSources, listTags } from "./data";
 import { HandoverStore } from "./handover";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
@@ -174,6 +175,10 @@ export class MockBackend {
     const prediction = this.snapshot().predictionById.get(id);
     if (!prediction) throw new ApiFailure("not_found", `Prediction ${id} not found`);
     return prediction;
+  }
+
+  private dataContext(scopeId: string | undefined) {
+    return { world: this.world, chaos: this.chaos, now: this.now(), assets: this.scope(scopeId), scopeKey: scopeId ?? "" };
   }
 
   private handoverContext(scopeId: string | undefined) {
@@ -326,6 +331,9 @@ export class MockBackend {
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
     "financials.overview": ({ scopeId }) => this.financials(scopeId),
+    "data.sources": () => ({ items: dataSources(this.dataContext(undefined), this.workOrders) }),
+    "data.quality": ({ scopeId }) => dataQuality(this.dataContext(scopeId)),
+    "data.tags": (params) => listTags(this.dataContext(params.scopeId), params),
     "handover.get": ({ scopeId }) => this.handover.summary(this.handoverContext(scopeId)),
     "handover.addNote": (request) => this.handover.add(request, this.me().id, this.handoverContext(undefined)),
     "esg.overview": ({ scopeId }) =>

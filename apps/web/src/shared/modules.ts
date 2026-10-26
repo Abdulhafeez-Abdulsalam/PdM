@@ -74,6 +74,7 @@ export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
   "esg",
   "financials",
   "reports",
+  "data",
 ]);
 
 export function moduleById(id: ModuleId): Module {
