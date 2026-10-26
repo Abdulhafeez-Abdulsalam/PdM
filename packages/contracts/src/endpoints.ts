@@ -54,6 +54,7 @@ import {
   ReportIncidentRequest,
 } from "./hse";
 import { EsgOverview, EsgRequest } from "./esg";
+import { FinancialsOverview, FinancialsRequest } from "./financials";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -310,6 +311,14 @@ export const endpoints = {
       "Emissions over the last 90 days from fuel, flaring and methane, intensity per site, targets, avoided and avoidable emissions",
     input: EsgRequest,
     output: EsgOverview,
+  }),
+  "financials.overview": endpoint({
+    method: "GET",
+    path: "/financials",
+    description:
+      "Value realised by predictions, money at risk, cost of downtime per site, and maintenance spend against budget, last 12 months",
+    input: FinancialsRequest,
+    output: FinancialsOverview,
   }),
   "operations.power": endpoint({
     method: "GET",

@@ -98,6 +98,11 @@ export function faultContributions(fault: Fault): FeatureContribution[] {
   });
 }
 
+/** What a failure of this asset would cost (repair and lost production), USD: bigger units cost more. */
+export function failureCostOf(asset: AssetRecord): number {
+  return Math.round(asset.info.failureCost * (0.5 + 0.5 * asset.scale));
+}
+
 export function buildPrediction(fault: Fault, t: number, overlay: PredictionOverlay | undefined): Prediction | null {
   const resolved = fault.resolvedAt !== null && fault.resolvedAt <= t;
   const effectiveT = resolved ? (fault.resolvedAt as number) : t;
@@ -113,7 +118,7 @@ export function buildPrediction(fault: Fault, t: number, overlay: PredictionOver
   const updatedAt = Math.floor(effectiveT / HOUR) * HOUR;
 
   const contributions = faultContributions(fault);
-  const failureCost = Math.round(asset.info.failureCost * (0.5 + 0.5 * asset.scale));
+  const failureCost = failureCostOf(asset);
 
   return {
     id: predictionId(fault),

@@ -505,6 +505,30 @@ export function overdueAssets(ctx: Ctx2): ReadonlySet<string> {
   return out;
 }
 
+/** Every PM done on an asset in scope since `from`: when, and the plan's hours and parts (financials prices them). */
+export function pmDone(
+  ctx: Ctx2,
+  from: number,
+): { planId: string; assetId: string; doneAt: number; hours: number; parts: readonly PmPart[] }[] {
+  const out: { planId: string; assetId: string; doneAt: number; hours: number; parts: readonly PmPart[] }[] = [];
+  for (const plan of buildPlans(ctx).plans) {
+    const orders = pmOrdersOf(ctx, plan.id);
+    for (const asset of assetsFor(ctx, plan)) {
+      for (const o of occurrences(ctx, plan, asset, orders)) {
+        if (o.doneAt === null || o.doneAt < from || o.doneAt > ctx.now) continue;
+        out.push({
+          planId: plan.id,
+          assetId: asset.data.id,
+          doneAt: o.doneAt,
+          hours: plan.estimatedHours,
+          parts: plan.task === "planned_remedy" ? plan.parts : [],
+        });
+      }
+    }
+  }
+  return out;
+}
+
 /** PM compliance for a set of assets, for the Command Center tile. */
 export function pmCompliance(ctx: Ctx2): number | null {
   return pmOverview(ctx).counts.compliancePct;

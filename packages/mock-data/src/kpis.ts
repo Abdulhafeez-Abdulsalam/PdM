@@ -14,8 +14,8 @@ import type { Snapshot } from "./snapshot";
 import { OPEN_STATUSES, type WorkOrderStore } from "./work-orders";
 import { round } from "./world";
 
-/** Downtime cost per hour by business line, USD — for "avoided downtime" value. */
-const DOWNTIME_COST_PER_HOUR = { oil_gas: 18_000, gas_to_power: 12_000, solar: 900 } as const;
+/** What an hour of lost production costs, by business line, USD: the Financials page's cost of downtime. */
+export const DOWNTIME_COST_PER_HOUR = { oil_gas: 18_000, gas_to_power: 12_000, solar: 900 } as const;
 
 interface KpiInput {
   scopeId: string;
@@ -27,11 +27,13 @@ interface KpiInput {
   failures: readonly FailureRecord[];
   /** PM compliance from the PM programs (pm.ts), trailing 90 days. */
   pmCompliancePct: number | null;
+  /** Failures prevented by finished predictive work, last 12 months (financials.ts); only called when wanted. */
+  valueAvoided: () => number;
   now: number;
 }
 
 export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiResponse {
-  const { scopeId, assets, snapshot, alarms, workOrders, failures, pmCompliancePct, now } = input;
+  const { scopeId, assets, snapshot, alarms, workOrders, failures, pmCompliancePct, valueAvoided, now } = input;
   const seed = hashString(`kpi:${scopeId}`);
   const ids = new Set(assets.map((a) => a.data.id));
   const conditions = assets.map((a) => snapshot.conditions.get(a.data.id)).filter((c) => c !== undefined);
@@ -60,16 +62,14 @@ export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiRespo
   const recent = scopedOrders.filter((o) => now - Date.parse(o.createdAt) < 90 * DAY && o.status !== "cancelled");
   const planned = recent.filter((o) => o.type !== "corrective").length;
 
-  // Value delivered: completed predictive work avoided an estimated 24–120 h of downtime each.
+  // Downtime avoided: completed predictive work avoided an estimated 24–120 h of downtime each.
   let avoidedHours = 0;
-  let avoidedCost = 0;
   for (const o of scopedOrders) {
     if (o.type !== "predictive" || !["completed", "verified", "closed"].includes(o.status)) continue;
     const asset = assets.find((a) => a.data.id === o.assetId);
     if (!asset) continue;
     const hours = 24 + hashNoise(seed, hashString(o.id)) * 96;
     avoidedHours += hours;
-    avoidedCost += hours * DOWNTIME_COST_PER_HOUR[asset.data.businessLine];
   }
 
   const seeded = (n: number, lo: number, hi: number) => lo + hashNoise(seed, n) * (hi - lo);
@@ -178,12 +178,13 @@ export function computeKpis(input: KpiInput, keys?: readonly KpiKey[]): KpiRespo
       lineage: lineage("Estimated downtime avoided by completed predictive work"),
     },
     avoided_downtime_cost: {
-      value: round(avoidedCost, 0),
+      // The same figure as the Financials page, so the two never disagree.
+      value: !keys || keys.includes("avoided_downtime_cost") ? valueAvoided() : null,
       format: "currency",
       currency: "USD",
       target: null,
       higherIsBetter: true,
-      lineage: lineage("Avoided downtime × cost of downtime per business line"),
+      lineage: lineage("Financials: failures prevented by finished predictive work, last 12 months"),
     },
     planned_maintenance_ratio: {
       value: recent.length > 0 ? round((100 * planned) / recent.length, 1) : null,

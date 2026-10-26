@@ -43,6 +43,7 @@ import { generatePm, pmCompliance, pmOverview, pmPlan } from "./pm";
 import { InventoryStore } from "./inventory";
 import { HseStore } from "./hse";
 import { esgOverview } from "./esg";
+import { financialsOverview } from "./financials";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -170,6 +171,12 @@ export class MockBackend {
     const prediction = this.snapshot().predictionById.get(id);
     if (!prediction) throw new ApiFailure("not_found", `Prediction ${id} not found`);
     return prediction;
+  }
+
+  private financials(scopeId: string | undefined) {
+    const ctx = this.inventoryContext(scopeId);
+    const catalog = this.inventory.parts(ctx);
+    return financialsOverview({ ...ctx, priceOf: (partNumber) => catalog.get(partNumber)?.unitCost ?? 0 });
   }
 
   private pmContext(scopeId: string | undefined) {
@@ -302,6 +309,7 @@ export class MockBackend {
     "hse.mocs": ({ scopeId }) => ({ items: this.hse.listMocs(this.now(), this.inScope(scopeId)) }),
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
+    "financials.overview": ({ scopeId }) => this.financials(scopeId),
     "esg.overview": ({ scopeId }) =>
       esgOverview({
         world: this.world,
@@ -585,6 +593,7 @@ export class MockBackend {
           workOrders: this.workOrders,
           failures: allFailures(this.world, this.workOrders),
           pmCompliancePct: pmCompliance(this.pmContext(scopeId)),
+          valueAvoided: () => this.financials(scopeId).value.avoided,
           now: this.now(),
         },
         keys,

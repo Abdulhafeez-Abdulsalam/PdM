@@ -21,6 +21,7 @@ export * from "./pm";
 export * from "./inventory";
 export * from "./hse";
 export * from "./esg";
+export * from "./financials";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

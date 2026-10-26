@@ -43,7 +43,9 @@ function setup() {
   return { api: createApiClient(transport), liveClient: new LiveClient(transport), transport, sent, tick };
 }
 
-describe("api client over the worker transport", () => {
+// Each test starts the mock backend, which builds the simulated world: under half a second alone,
+// but past the default 5 s when `npm run check` runs every package's tests at once.
+describe("api client over the worker transport", { timeout: 30_000 }, () => {
   it("returns typed, contract-checked data", async () => {
     const { api } = setup();
     const risks = await api.request("risks.top", { limit: 3 });

@@ -42,9 +42,9 @@ Before trusting any number, four problems in the *measurement* were found and fi
 | Level | Test | Covers |
 |---|---|---|
 | Every colour | `packages/ui/src/tokens.test.ts` | Every text and health colour on every background, every theme, ≥ 4.5 : 1 |
-| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on every screen (66 as of Phase 4 chunk 4), each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
-| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on every screen × 3 themes (60 screens), one test per screen so a failure names the screen |
-| Phone width, real browser | `apps/web/e2e/layout.spec.ts` | 30 screens at 375 px: the page never scrolls sideways (wide tables scroll inside their own box). Added in the [Phase 3 review](phase-3-review.md) |
+| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on every screen (68 as of Phase 4 chunk 5), each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
+| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on every screen × 3 themes (61 screens), one test per screen so a failure names the screen |
+| Phone width, real browser | `apps/web/e2e/layout.spec.ts` | 31 screens at 375 px: the page never scrolls sideways (wide tables scroll inside their own box). Added in the [Phase 3 review](phase-3-review.md) |
 
 **Result:** 0 violations on every screen in jsdom, and on all 25 screens × 3 themes in Chrome (re-run 2026-10-22, after the missing Phase 2 pages were added).
 

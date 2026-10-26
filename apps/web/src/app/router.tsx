@@ -42,6 +42,7 @@ const PermitsPage = lazyRouteComponent(() => import("../features/hse/PermitsPage
 const IncidentsPage = lazyRouteComponent(() => import("../features/hse/IncidentsPage"), "IncidentsPage");
 const MocPage = lazyRouteComponent(() => import("../features/hse/MocPage"), "MocPage");
 const EsgPage = lazyRouteComponent(() => import("../features/esg/EsgPage"), "EsgPage");
+const FinancialsPage = lazyRouteComponent(() => import("../features/financials/FinancialsPage"), "FinancialsPage");
 const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
 const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
@@ -86,6 +87,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   inventory: InventoryPage,
   hse: HsePage,
   esg: EsgPage,
+  financials: FinancialsPage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };

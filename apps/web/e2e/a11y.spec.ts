@@ -94,7 +94,8 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Incidents", () => "/hse/incidents", "hse_officer"],
   ["Management of change", () => "/hse/moc", "hse_officer"],
   ["Energy and ESG", () => "/esg", "esg_lead"],
-  ["Coming-later page", () => "/financials", "executive"],
+  ["Financials", () => "/financials", "executive"],
+  ["Coming-later page", () => "/reports", "executive"],
 ];
 
 for (const [name, url, role] of SCREENS) {
