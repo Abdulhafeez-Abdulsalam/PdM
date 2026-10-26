@@ -27,11 +27,23 @@ function makeQueryClient() {
   });
 }
 
-/** Puts the chosen theme on <html data-theme="…">, which switches every design token. */
+/**
+ * Puts the chosen theme on <html data-theme="…">, which switches every design token. Printing
+ * always uses the light theme: dark themes' light text would vanish on white paper.
+ */
 function ThemeSync() {
   const theme = usePreferences((p) => p.theme);
   useEffect(() => {
-    document.documentElement.dataset.theme = theme;
+    const root = document.documentElement;
+    root.dataset.theme = theme;
+    const toLight = () => (root.dataset.theme = "light");
+    const back = () => (root.dataset.theme = theme);
+    window.addEventListener("beforeprint", toLight);
+    window.addEventListener("afterprint", back);
+    return () => {
+      window.removeEventListener("beforeprint", toLight);
+      window.removeEventListener("afterprint", back);
+    };
   }, [theme]);
   return null;
 }

@@ -96,6 +96,15 @@ export const ACTIONS = {
     "control_room_operator",
   ],
   "moc.review": ["hse_officer", "plant_manager"],
+  /** Leave a note for the next shift. */
+  "handover.note": [
+    "control_room_operator",
+    "plant_manager",
+    "maintenance_planner",
+    "reliability_engineer",
+    "condition_analyst",
+    "hse_officer",
+  ],
   "moc.implement": ["maintenance_planner"],
   "threshold.edit": ["reliability_engineer", "condition_analyst", "system_admin"],
   "model.approve": ["reliability_engineer", "condition_analyst", "system_admin"],

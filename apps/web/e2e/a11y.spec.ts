@@ -95,7 +95,11 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Management of change", () => "/hse/moc", "hse_officer"],
   ["Energy and ESG", () => "/esg", "esg_lead"],
   ["Financials", () => "/financials", "executive"],
-  ["Coming-later page", () => "/reports", "executive"],
+  ["Reports library", () => "/reports", "executive"],
+  ["Management summary report", () => "/reports/management-summary", "plant_manager"],
+  ["Report builder", () => "/reports/build?sections=risks,reliability,pm,alarms,inventory", "reliability_engineer"],
+  ["Shift handover", () => "/reports/handover", "control_room_operator"],
+  ["Coming-later page", () => "/data", "condition_analyst"],
 ];
 
 for (const [name, url, role] of SCREENS) {

@@ -43,6 +43,10 @@ const IncidentsPage = lazyRouteComponent(() => import("../features/hse/Incidents
 const MocPage = lazyRouteComponent(() => import("../features/hse/MocPage"), "MocPage");
 const EsgPage = lazyRouteComponent(() => import("../features/esg/EsgPage"), "EsgPage");
 const FinancialsPage = lazyRouteComponent(() => import("../features/financials/FinancialsPage"), "FinancialsPage");
+const ReportsPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportsPage");
+const ReportPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportPage");
+const ReportBuilderPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportBuilderPage");
+const HandoverPage = lazyRouteComponent(() => import("../features/reports/HandoverPage"), "HandoverPage");
 const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
 const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
@@ -88,6 +92,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   hse: HsePage,
   esg: EsgPage,
   financials: FinancialsPage,
+  reports: ReportsPage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };
@@ -242,6 +247,11 @@ const permitsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/hse/
 const incidentsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/hse/incidents", component: IncidentsPage });
 const mocRoute = createRoute({ getParentRoute: () => rootRoute, path: "/hse/moc", component: MocPage });
 
+/** Reports: shift handover, the builder (?sections=…) and one ready-made report. Fixed paths before $reportId. */
+const handoverRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/handover", component: HandoverPage });
+const reportBuilderRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/build", component: ReportBuilderPage });
+const reportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/$reportId", component: ReportPage });
+
 /** One spare part. */
 const partRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -289,6 +299,9 @@ const routeTree = rootRoute.addChildren([
   permitsRoute,
   incidentsRoute,
   mocRoute,
+  handoverRoute,
+  reportBuilderRoute,
+  reportRoute,
   taskRoute,
   liveLoadRoute,
 ]);

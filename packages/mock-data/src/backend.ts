@@ -44,6 +44,7 @@ import { InventoryStore } from "./inventory";
 import { HseStore } from "./hse";
 import { esgOverview } from "./esg";
 import { financialsOverview } from "./financials";
+import { HandoverStore } from "./handover";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -85,6 +86,7 @@ export class MockBackend {
   readonly rcas: RcaStore;
   readonly inventory = new InventoryStore();
   readonly hse: HseStore;
+  readonly handover: HandoverStore;
   private readonly overlays = new Map<string, PredictionOverlay>();
   private readonly log: TimelineEvent[] = [];
   private readonly hubs = new Set<LiveHub>();
@@ -101,6 +103,7 @@ export class MockBackend {
     this.workOrders = new WorkOrderStore(this.world, start, this.overlays);
     // Permits follow the work orders from here on, so this comes straight after them.
     this.hse = new HseStore(this.world, this.workOrders, start);
+    this.handover = new HandoverStore(this.world);
     this.alarms = new AlarmEngine(this.world, this.chaos, start, (alarm, title, t) =>
       this.addLog({ kind: "operator_action", t: iso(t), assetId: alarm.assetId, title, detail: null, severity: null, refId: alarm.id }),
     );
@@ -171,6 +174,19 @@ export class MockBackend {
     const prediction = this.snapshot().predictionById.get(id);
     if (!prediction) throw new ApiFailure("not_found", `Prediction ${id} not found`);
     return prediction;
+  }
+
+  private handoverContext(scopeId: string | undefined) {
+    const sites = scopeId ? new Set(this.scope(scopeId).map((a) => a.data.siteId)) : null;
+    return {
+      alarms: this.alarms,
+      workOrders: this.workOrders,
+      snapshot: this.snapshot(),
+      log: this.log,
+      inScope: this.inScope(scopeId),
+      siteInScope: (siteId: string | null) => !sites || siteId === null || sites.has(siteId),
+      now: this.now(),
+    };
   }
 
   private financials(scopeId: string | undefined) {
@@ -310,6 +326,8 @@ export class MockBackend {
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
     "financials.overview": ({ scopeId }) => this.financials(scopeId),
+    "handover.get": ({ scopeId }) => this.handover.summary(this.handoverContext(scopeId)),
+    "handover.addNote": (request) => this.handover.add(request, this.me().id, this.handoverContext(undefined)),
     "esg.overview": ({ scopeId }) =>
       esgOverview({
         world: this.world,

@@ -22,6 +22,7 @@ export * from "./inventory";
 export * from "./hse";
 export * from "./esg";
 export * from "./financials";
+export * from "./handover";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

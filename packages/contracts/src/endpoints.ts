@@ -55,6 +55,7 @@ import {
 } from "./hse";
 import { EsgOverview, EsgRequest } from "./esg";
 import { FinancialsOverview, FinancialsRequest } from "./financials";
+import { AddHandoverNoteRequest, Handover, HandoverNote, HandoverRequest } from "./handover";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -319,6 +320,20 @@ export const endpoints = {
       "Value realised by predictions, money at risk, cost of downtime per site, and maintenance spend against budget, last 12 months",
     input: FinancialsRequest,
     output: FinancialsOverview,
+  }),
+  "handover.get": endpoint({
+    method: "GET",
+    path: "/handover",
+    description: "This shift so far: what happened, the events that matter most, and the crew's handover notes",
+    input: HandoverRequest,
+    output: Handover,
+  }),
+  "handover.addNote": endpoint({
+    method: "POST",
+    path: "/handover/notes",
+    description: "Leave a note for the next shift",
+    input: AddHandoverNoteRequest,
+    output: HandoverNote,
   }),
   "operations.power": endpoint({
     method: "GET",

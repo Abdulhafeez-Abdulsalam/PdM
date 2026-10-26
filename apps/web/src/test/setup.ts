@@ -28,6 +28,8 @@ await Promise.all([
   import("../features/hse/MocPage"),
   import("../features/esg/EsgPage"),
   import("../features/financials/FinancialsPage"),
+  import("../features/reports/ReportsPages"),
+  import("../features/reports/HandoverPage"),
   import("../features/reliability/RcaListPage"),
   import("../features/reliability/RcaPage"),
   import("../features/alarms/AlarmsPage"),

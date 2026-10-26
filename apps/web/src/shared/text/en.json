@@ -39,7 +39,7 @@
     "hse": { "name": "HSE & Compliance", "description": "Safety-critical equipment, permits to work, incidents and management of change." },
     "esg": { "name": "Energy & ESG", "description": "Emissions, flaring, methane and sustainability reporting." },
     "financials": { "name": "Financials", "description": "Value realised, cost of downtime and budgets." },
-    "reports": { "name": "Reports", "description": "Report builder, scheduled reports and shift handover." },
+    "reports": { "name": "Reports", "description": "Ready-made reports and a builder, printable as PDF, and the shift handover." },
     "data": { "name": "Data & Integrations", "description": "Data sources, tag management and data quality." },
     "admin": { "name": "Administration", "description": "Users, roles, hierarchy, thresholds and the audit log." }
   },
@@ -2647,6 +2647,194 @@
       "labour": "Labour",
       "parts": "Parts",
       "net": "Value"
+    }
+  },
+  "reports": {
+    "intro": "Ready-made reports, a shift handover and a builder for your own. Every report prints, or saves as a PDF from the print dialog.",
+    "reportIntro": "Print it, or choose \"Save as PDF\" in the print dialog. The report covers the scope chosen at the top of the page.",
+    "buildIntro": "Pick the sections you need. The report below updates as you go, and the page's address remembers your choice, so you can bookmark it or send it as a link.",
+    "nav": {
+      "label": "Reports pages",
+      "library": "Library",
+      "handover": "Shift handover",
+      "build": "Build a report"
+    },
+    "print": "Print or save as PDF",
+    "contains": "Contains: {{sections}}",
+    "handoverDescription": "This shift so far, urgent alarms still open, work in progress and notes for the next crew.",
+    "buildDescription": "Choose your own sections from everything the reports can show.",
+    "unknown": "There's no report called \"{{id}}\".",
+    "chooseSections": "Sections",
+    "buildLink": "Tip: copy the page's address to share this report or open it again later.",
+    "customTitle": "Custom report",
+    "wholeEnterprise": "Whole enterprise",
+    "coverage": "{{scope}} · made {{at}} UTC",
+    "noSections": "Choose at least one section above.",
+    "figuresCaption": "{{title}}: each figure and how it was worked out",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days",
+    "col": {
+      "measure": "Measure",
+      "value": "Value",
+      "how": "How it's worked out",
+      "asset": "Asset",
+      "failureMode": "Failure mode",
+      "probability": "Probability",
+      "within": "Within",
+      "risk": "Risk score",
+      "site": "Site"
+    },
+    "report": {
+      "weekly-reliability": {
+        "title": "Weekly reliability report",
+        "description": "Key measures, the top risks, failures over the last year, PM compliance and the alarm load."
+      },
+      "monthly-esg": {
+        "title": "Monthly ESG report",
+        "description": "Emissions, intensity and targets per site, with safety alongside."
+      },
+      "monthly-financials": {
+        "title": "Monthly financial report",
+        "description": "Value from predictions, cost of downtime, spend against budget, PM and spare parts."
+      },
+      "management-summary": {
+        "title": "Management summary",
+        "description": "One report for the leadership meeting: measures, risks, money, emissions and safety."
+      }
+    },
+    "section": {
+      "kpis": {
+        "title": "Key measures"
+      },
+      "risks": {
+        "title": "Top risks",
+        "intro": "The assets most likely to fail soon, weighted by what a failure would cost."
+      },
+      "reliability": {
+        "title": "Reliability, last 12 months"
+      },
+      "pm": {
+        "title": "Preventive maintenance"
+      },
+      "alarms": {
+        "title": "Alarm load, last 7 days"
+      },
+      "inventory": {
+        "title": "Spare parts"
+      },
+      "hse": {
+        "title": "Health, safety and environment"
+      },
+      "esg": {
+        "title": "Emissions, last 90 days"
+      },
+      "financials": {
+        "title": "Financials, last 12 months"
+      }
+    },
+    "rel": {
+      "failures": "Failures",
+      "failuresHow": "Across {{assets}} assets, from the failure history",
+      "mtbfHow": "Running hours ÷ failures",
+      "mttrHow": "Average hours to repair",
+      "availabilityHow": "Share of hours the equipment could run",
+      "downtime": "Downtime",
+      "repeats": "Repeat failures",
+      "repeatsHow": "The same mode again on the same asset within 90 days",
+      "badActors": "Bad actors",
+      "ratio": "× class average"
+    },
+    "pm": {
+      "complianceHow": "PM jobs done within their window, last 90 days",
+      "decided": "PM jobs due, last 90 days",
+      "decidedHow": "{{onTime}} on time, {{late}} late, {{missed}} missed",
+      "overdue": "Overdue now",
+      "overdueHow": "Past their window, not done and with no work order yet",
+      "dueSoon": "Due in the next 30 days"
+    },
+    "alarms": {
+      "intro": "ISA-18.2 sets the targets: about 1 alarm per 10 minutes per operator, and a flood is more than 10.",
+      "total": "Alarms",
+      "totalHow": "Every time an alarm sounded, repeats included",
+      "bySite": "Alarm load by control room",
+      "average": "Average per 10 min",
+      "peak": "Peak per 10 min",
+      "flood": "Time in flood"
+    },
+    "inv": {
+      "lines": "Stock lines",
+      "short": "Short",
+      "shortHow": "Fewer in stock than the demand forecast needs",
+      "reorder": "To reorder",
+      "reorderHow": "At or below the reorder point",
+      "excess": "Excess",
+      "openOrders": "Open purchase orders",
+      "toOrder": "Parts to order",
+      "onHand": "On hand",
+      "reorderPoint": "Reorder point",
+      "suggested": "Suggested order"
+    },
+    "hse": {
+      "impaired": "Safety-critical elements impaired",
+      "ofSces": "{{impaired}} of {{total}}",
+      "impairedHow": "Safety-critical equipment whose health is warning or worse",
+      "permits": "Permits to work",
+      "permitsValue": "{{waiting}} waiting, {{issued}} issued",
+      "tier": "Process safety events",
+      "tierValue": "Tier 1: {{tier1}}, Tier 2: {{tier2}}",
+      "tierHow": "API RP 754 tiers, by the size of the release",
+      "nearMisses": "Near misses",
+      "moc": "Open changes (MoC)"
+    },
+    "esg": {
+      "emitted": "Emitted",
+      "flaring": "Flaring"
+    },
+    "handover": {
+      "intro": "What the next shift needs to know. Print it for the handover meeting, or leave a note below.",
+      "title": "{{shift}} shift handover, {{from}}–{{to}}",
+      "shift": {
+        "day": "Day",
+        "night": "Night"
+      },
+      "utc": "Shifts run 06:00–18:00 and 18:00–06:00 UTC. Times are in UTC.",
+      "soFar": "This shift so far",
+      "alarmsRaisedValue": "{{total}} ({{urgent}} urgent)",
+      "count": {
+        "alarmsRaised": "Alarms raised",
+        "alarmsCleared": "Alarms cleared",
+        "workCreated": "Work orders raised",
+        "workFinished": "Work finished",
+        "predictions": "New predictions",
+        "operatorActions": "Operator actions"
+      },
+      "alarmsTitle": "Urgent alarms still open",
+      "alarmsIntro": "P1 and P2 alarms that are still active, most urgent first.",
+      "noAlarms": "No urgent alarms open.",
+      "since": "since {{at}}",
+      "sinceUnacked": "since {{at}}, not acknowledged",
+      "workTitle": "Work in progress",
+      "noWork": "No work in progress.",
+      "unassigned": "Unassigned",
+      "eventsTitle": "What happened",
+      "eventsIntro": "The events that matter most this shift, most serious first.",
+      "noEvents": "Nothing yet this shift.",
+      "kind": {
+        "alarm": "Alarm",
+        "operator_action": "Operator action",
+        "maintenance": "Maintenance",
+        "process": "Process",
+        "prediction": "Prediction"
+      },
+      "notesTitle": "Notes for the next shift",
+      "notesIntro": "From this shift and the one before, newest first.",
+      "noNotes": "No notes yet.",
+      "noteBy": "{{who}} · {{at}} · {{where}}",
+      "everywhere": "All sites",
+      "addNote": "Leave a note for the next shift (all sites)",
+      "addNoteSite": "Leave a note for the next shift about {{site}}",
+      "leaveNote": "Leave note",
+      "noteAdded": "Note left for the next shift"
     }
   }
 }
