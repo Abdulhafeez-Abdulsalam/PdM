@@ -75,7 +75,16 @@ export const BUILT_MODULES: ReadonlySet<ModuleId> = new Set<ModuleId>([
   "financials",
   "reports",
   "data",
+  "admin",
 ]);
+
+/** The module an address belongs to ("/assets/CBC-GT-101/vibration" → assets), or null (e.g. diagnostics). */
+export function moduleForPath(pathname: string): ModuleId | null {
+  const found = MODULES.filter((m) => pathname === m.path || pathname.startsWith(`${m.path}/`)).sort(
+    (a, b) => b.path.length - a.path.length,
+  )[0];
+  return found ? found.id : null;
+}
 
 export function moduleById(id: ModuleId): Module {
   const found = MODULES.find((m) => m.id === id);

@@ -101,7 +101,12 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Shift handover", () => "/reports/handover", "control_room_operator"],
   ["Data sources and quality", () => "/data", "condition_analyst"],
   ["Tag browser", () => "/data/tags?issue=no_data", "condition_analyst"],
-  ["Coming-later page", () => "/admin", "system_admin"],
+  ["Administration", () => "/admin", "system_admin"],
+  ["Users and roles", () => "/admin/users", "system_admin"],
+  ["Access matrix", () => "/admin/roles", "system_admin"],
+  ["Hierarchy browser", () => "/admin/hierarchy", "system_admin"],
+  ["Audit log", () => "/admin/audit", "system_admin"],
+  ["No-access page", () => "/admin", "executive"],
 ];
 
 for (const [name, url, role] of SCREENS) {

@@ -41,6 +41,10 @@ const SCREENS: [url: string, role: Role][] = [
   ["/reports/handover", "control_room_operator"],
   ["/data", "condition_analyst"],
   ["/data/tags", "condition_analyst"],
+  ["/admin", "system_admin"],
+  ["/admin/users", "system_admin"],
+  ["/admin/roles", "system_admin"],
+  ["/admin/audit", "system_admin"],
   ["/alarms/analytics", "control_room_operator"],
   ["/assets/compare?class=pump&measure=anomaly", "reliability_engineer"],
 ];

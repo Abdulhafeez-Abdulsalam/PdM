@@ -104,7 +104,12 @@ const SCREENS: [string, RoleId][] = [
   ["/data?scope=PCS", "reliability_engineer"],
   ["/data/tags", "condition_analyst"],
   ["/data/tags?issue=flatline", "system_admin"],
-  ["/admin", "system_admin"], // a module still to come
+  ["/admin", "system_admin"],
+  ["/admin/users", "system_admin"],
+  ["/admin/roles", "system_admin"],
+  ["/admin/hierarchy", "system_admin"],
+  ["/admin/audit", "system_admin"],
+  ["/admin", "executive"], // "no access": the page checks the role, not just the menu
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */

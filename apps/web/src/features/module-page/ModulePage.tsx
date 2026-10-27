@@ -3,10 +3,10 @@
  * role-based views: hidden modules explain themselves, view-only ones say so.
  */
 import { EmptyState } from "@pdm/ui";
-import { Lock } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { CURRENT_PHASE, moduleById, type ModuleId } from "../../shared/modules";
+import { NoAccess } from "../../shared/NoAccess";
 import { usePreferences } from "../../shared/preferences";
 import { accessFor } from "../../shared/roles/roles";
 
@@ -22,13 +22,7 @@ export function ModulePage({ moduleId }: { moduleId: ModuleId }) {
     document.title = `${name} · ${t("app.name")}`;
   }, [name, t]);
 
-  if (access === "none") {
-    return (
-      <EmptyState icon={<Lock className="size-8" />} title={t("placeholder.noAccessTitle")}>
-        {t("placeholder.noAccess", { role: t(`roles.${role}`), module: name })}
-      </EmptyState>
-    );
-  }
+  if (access === "none") return <NoAccess moduleId={moduleId} />;
 
   return (
     <div className="mx-auto max-w-4xl">

@@ -4,11 +4,15 @@
  */
 import { useConnectionState } from "@pdm/api-client";
 import { Banner } from "@pdm/ui";
-import { Outlet } from "@tanstack/react-router";
+import { Outlet, useLocation } from "@tanstack/react-router";
 import { WifiOff } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { PredictionDrawer } from "../../features/predictions/PredictionDrawer";
+import { moduleForPath } from "../../shared/modules";
+import { NoAccess } from "../../shared/NoAccess";
+import { usePreferences } from "../../shared/preferences";
+import { accessFor } from "../../shared/roles/roles";
 import { Toaster } from "../../shared/toast";
 import { AlarmBar } from "./AlarmBar";
 import { SideNav } from "./SideNav";
@@ -18,6 +22,11 @@ export function AppShell() {
   const { t } = useTranslation();
   const connection = useConnectionState();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  // Every page checks the role matrix, not just the menu: a typed or shared address included.
+  const { pathname } = useLocation();
+  const role = usePreferences((p) => p.role);
+  const moduleId = moduleForPath(pathname);
+  const blocked = moduleId !== null && accessFor(role, moduleId) === "none";
 
   return (
     // On paper only the page itself prints: the bars, menu, drawer and toasts hide (print: classes).
@@ -44,7 +53,7 @@ export function AppShell() {
         </div>
         {/* `relative` keeps absolutely-positioned helpers (e.g. screen-reader-only text) inside this scroll area. */}
         <main id="main" tabIndex={-1} className="relative min-w-0 flex-1 overflow-auto p-4 md:p-6 print:overflow-visible print:p-0">
-          <Outlet />
+          {blocked ? <NoAccess moduleId={moduleId} /> : <Outlet />}
         </main>
       </div>
       <div className="contents print:hidden">

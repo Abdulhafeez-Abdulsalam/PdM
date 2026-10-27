@@ -9,6 +9,7 @@ import {
   ENTERPRISE_SCOPE,
   endpoints,
   pickIntervalSeconds,
+  type AuditEntry,
   type ClientMessage,
   type EndpointDef,
   type EndpointInput,
@@ -22,12 +23,17 @@ import {
   type ServerMessage,
   type SimulationControl,
   type SimulationStatus,
+  type SetLimitsRequest,
+  type SetUserRoleRequest,
   type SimSpeed,
+  type Tag,
+  type TagLimits,
   type TimelineEvent,
   type User,
 } from "@pdm/contracts";
 import { z } from "zod";
 import { AlarmEngine } from "./alarms";
+import { ROLE_TITLES } from "./catalog/people";
 import { DETECTION_PROGRESS, rawProgress } from "./faults";
 import { CommentStore, documentsFor, relatedFor } from "./asset-info";
 import { fleetCompare } from "./comparison";
@@ -90,6 +96,10 @@ export class MockBackend {
   readonly handover: HandoverStore;
   private readonly overlays = new Map<string, PredictionOverlay>();
   private readonly log: TimelineEvent[] = [];
+  /** Every change made through the API, oldest first. */
+  private readonly audit: AuditEntry[] = [];
+  /** Set by a handler that wants to spell out what it changed; read (once) when the change is logged. */
+  private auditDetail: string | null = null;
   private readonly hubs = new Set<LiveHub>();
   private readonly validateOutput: boolean;
   private role: RoleId;
@@ -157,12 +167,64 @@ export class MockBackend {
     if (!parsed.success) throw new ApiFailure("bad_request", "Invalid request", z.treeifyError(parsed.error));
 
     const handler = this.handlers[name] as (input: unknown) => EndpointOutput<N>;
+    // Who is asking, taken before the change (changing roles can change who "me" is).
+    const actor = def.method === "GET" ? null : this.me().id;
+    this.auditDetail = null;
     const output = handler(parsed.data);
     if (this.validateOutput) {
       const check = def.output.safeParse(output);
       if (!check.success) throw new ApiFailure("internal", `Mock produced invalid ${String(name)} response`, z.treeifyError(check.error));
     }
+    if (actor) this.recordChange(String(name), def.description, actor, parsed.data, output);
     return output;
+  }
+
+  /** Every successful change goes in the audit log, so no new action can be left out of it. */
+  private recordChange(action: string, description: string, userId: string, input: unknown, output: unknown): void {
+    const pick = (o: unknown) => {
+      if (!o || typeof o !== "object") return null;
+      const r = o as Record<string, unknown>;
+      for (const key of TARGET_KEYS) if (typeof r[key] === "string") return r[key];
+      return null;
+    };
+    this.audit.push({
+      id: `AU-${String(this.audit.length + 1).padStart(5, "0")}`,
+      at: iso(this.now()),
+      userId,
+      action,
+      description,
+      targetId: pick(input) ?? pick(output),
+      detail: this.auditDetail,
+    });
+  }
+
+  private setLimits({ tagId, limits }: SetLimitsRequest): Tag {
+    const tag = this.world.tags.get(tagId);
+    if (!tag) throw new ApiFailure("not_found", `Tag ${tagId} not found`);
+    const set = LIMIT_ORDER.filter((k) => limits[k] !== undefined);
+    for (let i = 1; i < set.length; i++)
+      if (limits[set[i]!]! <= limits[set[i - 1]!]!)
+        throw new ApiFailure("bad_request", "Limits must rise from low trip to high trip, each above the one before");
+    const show = (v: number | undefined) => (v === undefined ? "none" : String(Number(v.toPrecision(6))));
+    const before = tag.tag.limits;
+    const changes = LIMIT_ORDER.filter((k) => before[k] !== limits[k]).map(
+      (k) => `${LIMIT_LABEL[k]} ${show(before[k])} → ${show(limits[k])}`,
+    );
+    tag.tag.limits = Object.fromEntries(set.map((k) => [k, limits[k]])) as TagLimits;
+    this.auditDetail = changes.length ? changes.join("; ") : "No change";
+    return tag.tag;
+  }
+
+  private setUserRole({ userId, role }: SetUserRoleRequest): User {
+    const user = this.world.users.find((u) => u.id === userId);
+    if (!user) throw new ApiFailure("not_found", `User ${userId} not found`);
+    if (user.role === role) return user;
+    if (this.world.usersWithRole(user.role).length <= 1)
+      throw new ApiFailure("conflict", `${user.name} is the only ${ROLE_TITLES[user.role]}; give someone else that role first`);
+    this.auditDetail = `${user.role} → ${role}`;
+    user.role = role;
+    user.title = ROLE_TITLES[role];
+    return user;
   }
 
   private me(): User {
@@ -331,6 +393,14 @@ export class MockBackend {
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
     "financials.overview": ({ scopeId }) => this.financials(scopeId),
+    "admin.audit": ({ userId, action, offset, limit }) =>
+      paginate(
+        this.audit.filter((e) => (!userId || e.userId === userId) && (!action || e.action.startsWith(action))).reverse(),
+        offset,
+        limit,
+      ),
+    "admin.setLimits": (request) => this.setLimits(request),
+    "admin.setUserRole": (request) => this.setUserRole(request),
     "data.sources": () => ({ items: dataSources(this.dataContext(undefined), this.workOrders) }),
     "data.quality": ({ scopeId }) => dataQuality(this.dataContext(scopeId)),
     "data.tags": (params) => listTags(this.dataContext(params.scopeId), params),
@@ -775,6 +845,31 @@ function condition(snap: Snapshot, asset: AssetRecord) {
   if (!c) throw new ApiFailure("internal", `No condition for ${asset.data.id}`);
   return c;
 }
+
+/** Input (or output) fields naming the item a change was made to, most specific first. */
+const TARGET_KEYS = [
+  "workOrderId",
+  "alarmId",
+  "predictionId",
+  "tagId",
+  "userId",
+  "permitId",
+  "mocId",
+  "rcaId",
+  "partNumber",
+  "assetId",
+  "id",
+];
+
+const LIMIT_ORDER = ["lowTrip", "lowAlarm", "lowAlert", "highAlert", "highAlarm", "highTrip"] as const;
+const LIMIT_LABEL: Record<(typeof LIMIT_ORDER)[number], string> = {
+  lowTrip: "Low trip",
+  lowAlarm: "Low alarm",
+  lowAlert: "Low alert",
+  highAlert: "High alert",
+  highAlarm: "High alarm",
+  highTrip: "High trip",
+};
 
 function paginate<T>(items: readonly T[], offset: number, limit: number) {
   return { items: items.slice(offset, offset + limit), total: items.length, offset, limit };

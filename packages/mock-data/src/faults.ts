@@ -63,18 +63,22 @@ export function faultOffset(tag: TagRecord, faults: readonly Fault[], t: number)
 
 /**
  * When a fault pushes a tag across each of its alert / alarm / trip limits.
- * Returns one entry per limit actually reached before failure.
+ * Returns one entry per limit actually reached before failure. Uses the tag's current limits,
+ * so an edited limit (admin.setLimits) moves the alarm: higher means later, or not at all.
  */
 export function limitCrossings(fault: Fault, tag: TagRecord): { level: 0 | 1 | 2; t: number; limit: number }[] {
   const effect = fault.type.effects.find((e) => e.tag === tag.template.name);
-  if (!effect || !pushesTowardLimit(effect, tag.template)) return [];
+  if (!effect || !pushesTowardLimit(effect, tag.template) || tag.base === 0) return [];
   const moveAtFailure = atFailure(effect, tag.template);
-  const fractions = limitFractions(tag.template);
+  const high = tag.template.bad === "high";
+  const { limits } = tag.tag;
+  const levels = high ? [limits.highAlert, limits.highAlarm, limits.highTrip] : [limits.lowAlert, limits.lowAlarm, limits.lowTrip];
   const crossings: { level: 0 | 1 | 2; t: number; limit: number }[] = [];
-  fractions.forEach((fraction, level) => {
-    if (moveAtFailure < fraction) return;
+  levels.forEach((limit, level) => {
+    if (limit === undefined) return;
+    const fraction = high ? limit / tag.base - 1 : 1 - limit / tag.base;
+    if (fraction <= 0 || moveAtFailure < fraction) return;
     const p = Math.sqrt(fraction / moveAtFailure);
-    const limit = tag.template.bad === "high" ? tag.base * (1 + fraction) : tag.base * (1 - fraction);
     crossings.push({ level: level as 0 | 1 | 2, t: timeAtProgress(fault, p), limit });
   });
   return crossings;

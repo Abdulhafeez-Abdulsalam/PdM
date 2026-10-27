@@ -49,6 +49,11 @@ const ReportBuilderPage = lazyRouteComponent(() => import("../features/reports/R
 const HandoverPage = lazyRouteComponent(() => import("../features/reports/HandoverPage"), "HandoverPage");
 const DataPage = lazyRouteComponent(() => import("../features/data/DataPages"), "DataPage");
 const TagsPage = lazyRouteComponent(() => import("../features/data/DataPages"), "TagsPage");
+const AdminPage = lazyRouteComponent(() => import("../features/admin/AdminPages"), "AdminPage");
+const UsersPage = lazyRouteComponent(() => import("../features/admin/AdminPages"), "UsersPage");
+const RolesPage = lazyRouteComponent(() => import("../features/admin/AdminPages"), "RolesPage");
+const HierarchyPage = lazyRouteComponent(() => import("../features/admin/AdminPages"), "HierarchyPage");
+const AuditPage = lazyRouteComponent(() => import("../features/admin/AdminPages"), "AuditPage");
 const RcaListPage = lazyRouteComponent(() => import("../features/reliability/RcaListPage"), "RcaListPage");
 const RcaPage = lazyRouteComponent(() => import("../features/reliability/RcaPage"), "RcaPage");
 const PowerPage = lazyRouteComponent(() => import("../features/operations/PowerPage"), "PowerPage");
@@ -96,6 +101,7 @@ const BUILT: Partial<Record<ModuleId, RouteComponent>> = {
   financials: FinancialsPage,
   reports: ReportsPage,
   data: DataPage,
+  admin: AdminPage,
   maintenance: MaintenancePage,
   field: FieldPage,
 };
@@ -258,6 +264,12 @@ const reportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/repor
 /** Data and integrations: the tag browser (?issue=…). */
 const tagsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/data/tags", component: TagsPage });
 
+/** Administration: people, roles and access, the hierarchy, the audit log. */
+const adminUsersRoute = createRoute({ getParentRoute: () => rootRoute, path: "/admin/users", component: UsersPage });
+const adminRolesRoute = createRoute({ getParentRoute: () => rootRoute, path: "/admin/roles", component: RolesPage });
+const adminHierarchyRoute = createRoute({ getParentRoute: () => rootRoute, path: "/admin/hierarchy", component: HierarchyPage });
+const adminAuditRoute = createRoute({ getParentRoute: () => rootRoute, path: "/admin/audit", component: AuditPage });
+
 /** One spare part. */
 const partRoute = createRoute({
   getParentRoute: () => rootRoute,
@@ -309,6 +321,10 @@ const routeTree = rootRoute.addChildren([
   reportBuilderRoute,
   reportRoute,
   tagsRoute,
+  adminUsersRoute,
+  adminRolesRoute,
+  adminHierarchyRoute,
+  adminAuditRoute,
   taskRoute,
   liveLoadRoute,
 ]);

@@ -2912,5 +2912,149 @@
     "noReading": "No reading in 24 h",
     "noIssue": "None",
     "pagination": "Tag pages"
+  },
+  "admin": {
+    "intro": "Who can do what, and who changed what. The platform's own health at a glance.",
+    "nav": {
+      "label": "Administration pages",
+      "overview": "Overview",
+      "users": "Users",
+      "roles": "Roles and access",
+      "hierarchy": "Hierarchy",
+      "audit": "Audit log"
+    },
+    "kpisLabel": "Platform measures",
+    "kpi": {
+      "users": "People",
+      "roles_one": "in {{count}} role",
+      "roles_other": "in {{count}} roles",
+      "sources": "Data sources connected",
+      "sourcesHow": "Plant historian, CMMS, lab, ERP and weather; see Data & Integrations",
+      "completenessHow": "Share of expected readings that arrived, whole enterprise, last 24 hours",
+      "changes": "Changes this session",
+      "changesHow": "Every change made through the system, from the audit log"
+    },
+    "limitsWhere": "Alarm and trip limits are edited where they're shown:",
+    "limitsLink": "Data & Integrations → Tags",
+    "recentTitle": "Recent changes",
+    "recentIntro": "The latest entries in the audit log.",
+    "noChanges": "No changes yet in this session. Acknowledge an alarm, raise a work order or edit a limit, and it appears here.",
+    "col": {
+      "when": "When (UTC)",
+      "who": "Who",
+      "what": "What",
+      "item": "Item",
+      "change": "Change",
+      "name": "Name",
+      "role": "Role",
+      "title": "Job title",
+      "sites": "Sites"
+    },
+    "users": {
+      "intro": "Everyone who uses the platform, and their role. A role decides which pages someone sees and what they can do.",
+      "filter": "Role",
+      "allRoles": "All roles",
+      "title_one": "{{count}} person",
+      "title_other": "{{count}} people",
+      "caption": "People, their role, job title and sites",
+      "roleFor": "Role for {{name}}",
+      "allSites": "All sites",
+      "changed": "{{name}} is now {{role}}"
+    },
+    "roles": {
+      "intro": "What each role can open and do. Pages a role can't use are hidden from its menu, and show \"no access\" if opened by address.",
+      "item": "Page or action",
+      "modulesTitle": "Pages",
+      "modulesIntro": "Use: full access. View: can look but not change. No: hidden.",
+      "actionsTitle": "Actions",
+      "actionsIntro": "The buttons each role gets.",
+      "access": {
+        "use": "Use",
+        "view": "View",
+        "none": "No"
+      },
+      "yes": "Yes",
+      "no": "No",
+      "action": {
+        "alarm_acknowledge": "Acknowledge alarms",
+        "alarm_shelve": "Shelve alarms",
+        "alarm_createWorkOrder": "Raise work from an alarm",
+        "prediction_feedback": "Give feedback on predictions",
+        "prediction_triage": "Triage predictions",
+        "prediction_createWorkOrder": "Raise work from a prediction",
+        "workOrder_approve": "Approve work",
+        "workOrder_schedule": "Plan and schedule work",
+        "workOrder_execute": "Carry out work",
+        "workOrder_close": "Close out work",
+        "workOrder_verify": "Verify finished work",
+        "workOrder_cancel": "Cancel work",
+        "inventory_order": "Order spare parts",
+        "permit_issue": "Issue permits to work",
+        "incident_report": "Report incidents",
+        "moc_propose": "Propose changes (MoC)",
+        "moc_review": "Approve changes (MoC)",
+        "moc_implement": "Mark changes done (MoC)",
+        "handover_note": "Leave handover notes",
+        "threshold_edit": "Edit alarm limits",
+        "model_approve": "Approve models",
+        "admin_manage": "Manage users and roles"
+      }
+    },
+    "hierarchy": {
+      "intro": "The enterprise as the platform sees it: regions, sites, areas and equipment. Open a level to load the next."
+    },
+    "level": {
+      "enterprise": "Enterprise",
+      "region": "Region",
+      "business_unit": "Business unit",
+      "site": "Site",
+      "area": "Area",
+      "equipment": "Equipment",
+      "component": "Component"
+    },
+    "children_one": "{{count}} below",
+    "children_other": "{{count}} below",
+    "audit": {
+      "intro": "Every change made through the system: who, when, what and to which item. Written by the server, so nothing can be left out.",
+      "person": "Person",
+      "anyone": "Anyone",
+      "area": "Area",
+      "everything": "Everything",
+      "areas": {
+        "workOrders": "Work orders",
+        "alarms": "Alarms",
+        "predictions": "Predictions",
+        "hse": "HSE",
+        "inventory": "Inventory",
+        "rca": "Root-cause analysis",
+        "assets": "Assets",
+        "handover": "Shift handover",
+        "admin": "Administration"
+      },
+      "title_one": "{{count}} change",
+      "title_other": "{{count}} changes",
+      "caption": "The audit log: when, who, what, which item and what changed",
+      "pagination": "Audit log pages"
+    }
+  },
+  "limits": {
+    "button": "Edit limits for {{tag}}",
+    "short": "Edit limits",
+    "title": "Limits for {{tag}}",
+    "description": "{{what}}. Alarms use the new limits from their next check, including for faults already developing.",
+    "withUnit": "{{limit}} ({{unit}})",
+    "label": {
+      "lowTrip": "Low trip",
+      "lowAlarm": "Low alarm",
+      "lowAlert": "Low alert",
+      "highAlert": "High alert",
+      "highAlarm": "High alarm",
+      "highTrip": "High trip"
+    },
+    "hint": "Leave a box empty to remove that limit. Each limit must be above the one before it, from low trip to high trip.",
+    "notNumber": "{{limit}} isn't a number.",
+    "order": "Limits must rise from low trip to high trip, each above the one before.",
+    "save": "Save limits",
+    "saved": "Limits saved for {{tag}}"
   }
 }

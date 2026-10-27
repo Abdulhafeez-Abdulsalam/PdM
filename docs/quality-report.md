@@ -42,9 +42,9 @@ Before trusting any number, four problems in the *measurement* were found and fi
 | Level | Test | Covers |
 |---|---|---|
 | Every colour | `packages/ui/src/tokens.test.ts` | Every text and health colour on every background, every theme, ≥ 4.5 : 1 |
-| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on every screen (77 as of Phase 4 chunk 7), each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
-| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on every screen × 3 themes (67 screens), one test per screen so a failure names the screen |
-| Phone width, real browser | `apps/web/e2e/layout.spec.ts` | 35 screens at 375 px: the page never scrolls sideways (wide tables scroll inside their own box). Added in the [Phase 3 review](phase-3-review.md) |
+| Every screen, every commit | `apps/web/src/test/a11y.test.tsx` | axe (WCAG 2.1 A + AA) on every screen (82 as of Phase 4 chunk 8), each as the role that uses it. jsdom can't see colours, so contrast is off here. Includes a self-check that axe really reports a known problem. |
+| Every screen × theme, real browser | `apps/web/e2e/a11y.spec.ts` | axe including colour contrast on every screen × 3 themes (72 screens), one test per screen so a failure names the screen |
+| Phone width, real browser | `apps/web/e2e/layout.spec.ts` | 39 screens at 375 px: the page never scrolls sideways (wide tables scroll inside their own box). Added in the [Phase 3 review](phase-3-review.md) |
 | Printing, real browser | `apps/web/e2e/print.spec.ts` | A report and the shift handover in print mode: the bars, menu and buttons hide, the report stays, and Chrome makes a PDF. Added in Phase 4 chunk 6 |
 
 **Result:** 0 violations on every screen in jsdom, and on all 25 screens × 3 themes in Chrome (re-run 2026-10-22, after the missing Phase 2 pages were added).

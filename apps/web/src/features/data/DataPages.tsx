@@ -23,10 +23,12 @@ import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { formatAgo, formatNumber } from "../../shared/format";
 import { usePreferences, type UnitSystem } from "../../shared/preferences";
+import { canDo } from "../../shared/roles/roles";
 import { useSimNow } from "../../shared/sim-time";
 import { globalSearchSchema, useGlobalSearch } from "../../shared/time-range";
 import { formatMeasurement, toDisplay } from "../../shared/units";
 import { SubNav } from "../../shared/widgets/SubNav";
+import { EditLimitsDialog } from "./EditLimitsDialog";
 
 const PAGE_SIZE = 50;
 const pct = (v: number) => `${formatNumber(v, 1)} %`;
@@ -298,6 +300,8 @@ export function TagsPage() {
     .parse((useSearch({ strict: false }) as { issue?: unknown }).issue);
   const [text, setText] = useState("");
   const [search, setSearch] = useState("");
+  const canEdit = usePreferences((p) => canDo(p.role, "threshold.edit"));
+  const [editing, setEditing] = useState<TagRow | null>(null);
 
   // Wait until typing pauses before searching (debounce).
   useEffect(() => {
@@ -424,7 +428,20 @@ export function TagsPage() {
                         )}
                       </td>
                       <td className="py-1.5 pr-3">{row.latest ? t(`telemetry.quality.${row.latest.quality}`) : "—"}</td>
-                      <td className="py-1.5 pr-3 text-xs">{limitsText(row, units, t)}</td>
+                      <td className="py-1.5 pr-3 text-xs">
+                        {limitsText(row, units, t)}
+                        {canEdit && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="mt-1 block"
+                            onClick={() => setEditing(row)}
+                            aria-label={t("limits.button", { tag: row.id })}
+                          >
+                            {t("limits.short")}
+                          </Button>
+                        )}
+                      </td>
                       <td className="py-1.5 pr-4">
                         {row.issue ? (
                           <span className="inline-flex items-center gap-1 font-medium text-health-warning">
@@ -462,6 +479,7 @@ export function TagsPage() {
           </Button>
         </nav>
       </section>
+      {editing && <EditLimitsDialog tag={editing} onClose={() => setEditing(null)} />}
     </div>
   );
 }

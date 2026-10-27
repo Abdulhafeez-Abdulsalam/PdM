@@ -57,6 +57,7 @@ import { EsgOverview, EsgRequest } from "./esg";
 import { FinancialsOverview, FinancialsRequest } from "./financials";
 import { AddHandoverNoteRequest, Handover, HandoverNote, HandoverRequest } from "./handover";
 import { DataQualityOverview, DataQualityRequest, DataSource, TagListParams, TagPage } from "./data";
+import { AuditListParams, AuditPage, SetLimitsRequest, SetUserRoleRequest } from "./admin";
 import {
   AssetFailures,
   ReliabilityRequest,
@@ -356,6 +357,27 @@ export const endpoints = {
     description: "Every tag with its limits, latest value and any data-quality issue, with search and paging",
     input: TagListParams,
     output: TagPage,
+  }),
+  "admin.audit": endpoint({
+    method: "GET",
+    path: "/admin/audit",
+    description: "Every change made through the API, newest first: who, when, what and to which item",
+    input: AuditListParams,
+    output: AuditPage,
+  }),
+  "admin.setLimits": endpoint({
+    method: "POST",
+    path: "/tags/:tagId/limits",
+    description: "Change a tag's alert, alarm and trip limits (the alarm engine uses them from the next check)",
+    input: SetLimitsRequest,
+    output: Tag,
+  }),
+  "admin.setUserRole": endpoint({
+    method: "POST",
+    path: "/users/:userId/role",
+    description: "Change a person's role (a role is never left with nobody in it)",
+    input: SetUserRoleRequest,
+    output: User,
   }),
   "operations.power": endpoint({
     method: "GET",
