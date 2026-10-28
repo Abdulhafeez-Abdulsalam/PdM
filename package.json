@@ -19,7 +19,7 @@
     "lint": "turbo run lint",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "check": "prettier --check . && turbo run typecheck lint test",
+    "check": "prettier --check . && turbo run typecheck lint test --concurrency=50%",
     "test:watch": "npm run test:watch -w @pdm/web",
     "prepare": "husky",
     "e2e": "npm run e2e --workspace @pdm/web"

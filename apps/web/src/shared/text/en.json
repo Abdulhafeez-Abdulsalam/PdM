@@ -3208,6 +3208,7 @@
   "palette": {
     "title": "Go to or search",
     "open": "Search pages and assets (Ctrl+K)",
+    "keys": "Ctrl K",
     "label": "Search pages, assets and actions",
     "placeholder": "Type a page, an asset id or a question…",
     "results": "Results",

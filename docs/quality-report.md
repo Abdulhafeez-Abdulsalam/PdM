@@ -8,7 +8,7 @@ The quality chunk, done after the [Phase 2 review](phase-2-review.md), turns the
 
 | Command | What it runs | When |
 |---|---|---|
-| `npm run check` | Formatting, types, lint, and all unit and component tests (including axe on every screen in jsdom, and the colour-contrast test) | Before every commit |
+| `npm run check` | Formatting, types, lint, and all unit and component tests (including axe on every screen in jsdom, and the colour-contrast test). Runs at most half as many tasks at once as the machine has processors, so tests don't starve each other (Phase 4 review) | Before every commit |
 | `npm run e2e` | Builds the app, serves it on port 4174, and runs Playwright in the installed Chrome: accessibility in all themes, user journeys, and the performance test (about 10 minutes on a quiet machine) | Before a release or after big changes |
 
 `npm run e2e` writes a report to `apps/web/playwright-report/index.html`; the performance numbers are in each test's annotations.

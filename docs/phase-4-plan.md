@@ -1,6 +1,6 @@
 # Phase 4 plan: operations and governance
 
-*Agreed 2026-10-24. Progress: chunks 1–10 done (2026-10-28): PM programs, inventory and spares, HSE and compliance, energy and ESG, financials, reports, data and integrations, administration, predictive tools, AI copilot and command palette. Next: the review.*
+*Agreed 2026-10-24. **Complete** (2026-10-28): all ten chunks and the [review](phase-4-review.md).*
 
 Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fills in the rest of the menu: the modules that turn predictions into **parts, permits, money, reports and compliance**, the screens that run the platform itself, and the AI copilot. Every remaining placeholder in the menu becomes a real page, and every role gets its own home page (today HSE, Procurement, ESG and Admin still land on the Command Center).
 
@@ -35,7 +35,7 @@ Phases 1–3 answered "what's happening, what will fail, and why?". Phase 4 fill
 | 8 ✅ | **Administration** (`/admin`) | Users and roles (the access matrix), hierarchy browser, **threshold editing that changes the simulation's limits**, and an audit log of every change made in the app; Admin's home page | Threshold edits are guarded by the existing `threshold.edit` permission |
 | 9 ✅ | **Predictive tools** | Model registry (each model's precision from the feedback loop, versions, approve/retire), a rule builder ("BRG1_VIB > 4.5 mm/s for 10 min → P2 alarm"), and a what-if simulator ("what if we defer this repair 30 days?") | Listed as Phase 4 in the information architecture; never planned before |
 | 10 ✅ | **AI copilot and command palette** | A chat panel that answers anticipated questions from the data with citations and suggested actions (always confirmed, never automatic), as ADR-0010 decided; `Ctrl+K` command palette and the keyboard shortcuts from the information architecture | Scripted provider, no API key in the browser |
-| 11 | **Phase 4 review** | Like the Phase 3 review: criteria re-tested, gaps listed, real-browser checks | |
+| 11 ✅ | **Phase 4 review** | Like the Phase 3 review: criteria re-tested, gaps listed, real-browser checks | See [phase-4-review.md](phase-4-review.md) |
 
 **What chunk 1 added beyond the table:** 56 plans from FMEA (planned replacements at B10 for wear-out modes, condition checks every 30 or 90 days), running hours for rotating machines' overhauls; a seeded year of PM outcomes with a different discipline per site, plus PM work raised and closed out in the app; compliance counts a PM against you until its work is closed out, not merely raised (a test caught the first version rewarding paperwork); the Command Center's PM-compliance tile is now real. See [learning note 26](learning/26-pm-programs-and-compliance.md).
 

@@ -72,7 +72,7 @@ function AssistButtons() {
         aria-keyshortcuts="Control+K Meta+K"
       >
         <Search aria-hidden className="size-4" />
-        <kbd className="hidden font-mono text-xs text-fg-muted lg:inline">Ctrl K</kbd>
+        <kbd className="hidden font-mono text-xs text-fg-muted lg:inline">{t("palette.keys")}</kbd>
       </button>
       <button
         type="button"
