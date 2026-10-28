@@ -51,6 +51,7 @@ import { HseStore } from "./hse";
 import { esgOverview } from "./esg";
 import { financialsOverview } from "./financials";
 import { dataQuality, dataSources, listTags } from "./data";
+import { askCopilot } from "./copilot";
 import { HandoverStore } from "./handover";
 import { ModelRegistry, RuleStore } from "./predictive-tools";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
@@ -404,6 +405,8 @@ export class MockBackend {
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
     "financials.overview": ({ scopeId }) => this.financials(scopeId),
+    "copilot.ask": (request) =>
+      askCopilot(request, { world: this.world, now: this.now(), request: (name, input) => this.request(name, input) }),
     "models.list": () => ({ items: this.models.list({ workOrders: this.workOrders, snapshot: this.snapshot(), now: this.now() }) }),
     "models.approve": ({ modelId, version }) => {
       const entry = this.models.approve(modelId, version, this.me().id, this.now(), {

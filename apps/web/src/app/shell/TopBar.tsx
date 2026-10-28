@@ -2,10 +2,11 @@ import { useConnectionState } from "@pdm/api-client";
 import { RoleId } from "@pdm/contracts";
 import { Select, cx } from "@pdm/ui";
 import { Link } from "@tanstack/react-router";
-import { Menu, SlidersHorizontal } from "lucide-react";
+import { Menu, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { THEMES, TIME_ZONE_MODES, UNIT_SYSTEMS, usePreferences } from "../../shared/preferences";
 import { ScopeSelector } from "../../features/hierarchy/ScopeSelector";
+import { useOverlays } from "../../shared/overlays";
 import { TIME_RANGES, useGlobalSearch, useSetGlobalSearch } from "../../shared/time-range";
 
 export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
@@ -31,12 +32,14 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
 
       <Link to="/" className="flex shrink-0 items-center gap-2 font-semibold">
         <img src="/favicon.svg" alt="" className="size-7" />
-        <span>{t("app.name")}</span>
+        {/* On a phone the logo alone, to leave room; the name still names the link for screen readers. */}
+        <span className="sr-only sm:not-sr-only">{t("app.name")}</span>
       </Link>
 
       <ScopeSelector />
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
+        <AssistButtons />
         <TimeRangeSelect />
         <span className="hidden sm:inline-flex">
           <Select
@@ -53,12 +56,45 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
   );
 }
 
+/** Search everything (Ctrl/Cmd + K, from small screens up) and the copilot (.): icons, with words on wide screens. */
+function AssistButtons() {
+  const { t } = useTranslation();
+  const show = useOverlays((s) => s.show);
+  const button = "items-center gap-1.5 rounded-md border border-line px-2 py-1.5 text-sm hover:bg-sunken";
+  return (
+    <>
+      {/* The palette is a keyboard tool (Ctrl/Cmd + K): on a phone there's no room in the bar, and no Ctrl key. */}
+      <button
+        type="button"
+        className={cx(button, "hidden sm:inline-flex")}
+        onClick={() => show("palette")}
+        aria-label={t("palette.open")}
+        aria-keyshortcuts="Control+K Meta+K"
+      >
+        <Search aria-hidden className="size-4" />
+        <kbd className="hidden font-mono text-xs text-fg-muted lg:inline">Ctrl K</kbd>
+      </button>
+      <button
+        type="button"
+        className={cx(button, "inline-flex")}
+        onClick={() => show("copilot")}
+        aria-label={t("copilot.open")}
+        aria-keyshortcuts="."
+      >
+        <Sparkles aria-hidden className="size-4" />
+        <span className="hidden lg:inline">{t("copilot.short")}</span>
+      </button>
+    </>
+  );
+}
+
 function TimeRangeSelect() {
   const { t } = useTranslation();
   const { range } = useGlobalSearch();
   const setSearch = useSetGlobalSearch();
   return (
     <Select
+      data-shortcut="time-range"
       label={t("topBar.timeRange")}
       hideLabel
       value={range}

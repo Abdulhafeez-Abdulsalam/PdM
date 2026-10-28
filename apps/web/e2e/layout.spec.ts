@@ -79,3 +79,15 @@ for (const [url, role] of SCREENS) {
     expect(width, `page scrolls sideways by ${width} px; widest: ${widest}`).toBeLessThanOrEqual(1);
   });
 }
+
+test("the copilot fits a phone", async ({ page }) => {
+  await open(page, "/command-center", { role: "plant_manager" });
+  await page.getByRole("button", { name: "Open the copilot (.)" }).click();
+  await page.getByRole("button", { name: "Which pumps are likely to fail in the next 30 days?" }).click();
+  await expect(page.getByText(/^Read as: /)).toBeVisible();
+  const { scroll, client } = await page.evaluate(() => ({
+    scroll: document.documentElement.scrollWidth,
+    client: document.documentElement.clientWidth,
+  }));
+  expect(scroll).toBeLessThanOrEqual(client);
+});

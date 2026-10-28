@@ -26,6 +26,7 @@ export * from "./handover";
 export * from "./data";
 export * from "./admin";
 export * from "./predictive-tools";
+export * from "./copilot";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

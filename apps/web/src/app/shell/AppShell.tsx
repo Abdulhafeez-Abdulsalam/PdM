@@ -8,6 +8,9 @@ import { Outlet, useLocation } from "@tanstack/react-router";
 import { WifiOff } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
+import { CommandPalette } from "../../features/copilot/CommandPalette";
+import { CopilotPanel } from "../../features/copilot/CopilotPanel";
+import { ShortcutSheet, useShortcuts } from "../../features/copilot/Shortcuts";
 import { PredictionDrawer } from "../../features/predictions/PredictionDrawer";
 import { moduleForPath } from "../../shared/modules";
 import { NoAccess } from "../../shared/NoAccess";
@@ -27,6 +30,7 @@ export function AppShell() {
   const role = usePreferences((p) => p.role);
   const moduleId = moduleForPath(pathname);
   const blocked = moduleId !== null && accessFor(role, moduleId) === "none";
+  useShortcuts();
 
   return (
     // On paper only the page itself prints: the bars, menu, drawer and toasts hide (print: classes).
@@ -58,6 +62,9 @@ export function AppShell() {
       </div>
       <div className="contents print:hidden">
         <PredictionDrawer />
+        <CopilotPanel />
+        <CommandPalette />
+        <ShortcutSheet />
         <Toaster />
       </div>
     </div>

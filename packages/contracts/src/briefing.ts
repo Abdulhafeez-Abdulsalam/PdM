@@ -3,7 +3,8 @@ import { HealthState, Id, ScopeId, Timestamp } from "./common";
 
 /** Points from a sentence back to the data that supports it. Every AI claim must have at least one. */
 export const Citation = z.object({
-  kind: z.enum(["asset", "alarm", "prediction", "work_order", "kpi", "tag"]),
+  /** "page": a figure from a whole page (its id is the path, e.g. "/financials"). */
+  kind: z.enum(["asset", "alarm", "prediction", "work_order", "kpi", "tag", "page"]),
   id: Id,
   label: z.string(),
 });

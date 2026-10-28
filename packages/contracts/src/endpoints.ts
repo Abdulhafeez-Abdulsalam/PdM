@@ -58,6 +58,7 @@ import { FinancialsOverview, FinancialsRequest } from "./financials";
 import { AddHandoverNoteRequest, Handover, HandoverNote, HandoverRequest } from "./handover";
 import { DataQualityOverview, DataQualityRequest, DataSource, TagListParams, TagPage } from "./data";
 import { AuditListParams, AuditPage, SetLimitsRequest, SetUserRoleRequest } from "./admin";
+import { AskRequest, CopilotAnswer } from "./copilot";
 import {
   CreateRuleRequest,
   ModelDecisionRequest,
@@ -705,6 +706,14 @@ export const endpoints = {
     description: "Command Center KPI strip for a scope",
     input: KpiParams,
     output: KpiResponse,
+  }),
+  // A GET: asking only reads (like a search), so it never lands in the audit log.
+  "copilot.ask": endpoint({
+    method: "GET",
+    path: "/copilot/ask",
+    description: "Answer a question in plain words from the platform's data, with citations (scripted provider for now — ADR-0010)",
+    input: AskRequest,
+    output: CopilotAnswer,
   }),
   "briefing.daily": endpoint({
     method: "GET",

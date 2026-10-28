@@ -3,12 +3,11 @@
  * every sentence with citations back to the data (ADR-0010).
  */
 import { useApiQuery } from "@pdm/api-client";
-import type { Citation } from "@pdm/contracts";
 import { HealthBadge, Skeleton } from "@pdm/ui";
 import { keepPreviousData } from "@tanstack/react-query";
-import { Link } from "@tanstack/react-router";
 import { Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { CitationChip } from "../../shared/CitationChip";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
 
 export function DailyBriefing({ scopeId, className }: { scopeId: string; className?: string }) {
@@ -63,30 +62,5 @@ export function DailyBriefing({ scopeId, className }: { scopeId: string; classNa
         )}
       </div>
     </DashboardWidget>
-  );
-}
-
-/** A small tag pointing at the evidence. Assets link to their page; other kinds get links in later phases. */
-function CitationChip({ citation }: { citation: Citation }) {
-  const { t } = useTranslation();
-  const className = "rounded border border-line px-1 font-mono text-[10px] leading-4 text-fg-muted";
-  const label = t("briefing.citation", { kind: t(`briefing.kinds.${citation.kind}`), label: citation.label });
-  if (citation.kind === "asset") {
-    return (
-      <Link
-        to="/assets/$assetId"
-        params={{ assetId: citation.id }}
-        search={(prev) => prev}
-        aria-label={label}
-        className={`${className} hover:text-fg hover:underline`}
-      >
-        {citation.label}
-      </Link>
-    );
-  }
-  return (
-    <span title={label} className={className}>
-      {citation.label}
-    </span>
   );
 }

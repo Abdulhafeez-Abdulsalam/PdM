@@ -130,3 +130,29 @@ for (const [name, url, role] of SCREENS) {
     expect(failures).toEqual([]);
   });
 }
+
+/** The overlays any page can open: the copilot with an answer, the command palette with results, the shortcut sheet. */
+test("copilot, command palette and shortcut sheet pass axe in every theme", async ({ page }) => {
+  const failures: string[] = [];
+  const check = async (what: string, theme: Theme) => {
+    const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    for (const v of violations) failures.push(`[${theme}] ${what} ${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+  };
+  for (const theme of THEMES) {
+    await open(page, "/command-center", { role: "plant_manager", theme });
+    await page.getByRole("button", { name: "Open the copilot (.)" }).click();
+    await page.getByRole("button", { name: "Which pumps are likely to fail in the next 30 days?" }).click();
+    await expect(page.getByText(/^Read as: /)).toBeVisible();
+    await check("copilot", theme);
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("Control+k");
+    await page.getByRole("combobox", { name: "Search pages, assets and actions" }).fill("pump");
+    await expect(page.getByRole("option").first()).toBeVisible();
+    await check("palette", theme);
+    await page.keyboard.press("Escape");
+    await page.keyboard.press("?");
+    await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).toBeVisible();
+    await check("shortcuts", theme);
+  }
+  expect(failures).toEqual([]);
+});

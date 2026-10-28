@@ -268,7 +268,8 @@
       "prediction": "Prediction",
       "work_order": "Work order",
       "kpi": "KPI",
-      "tag": "Tag"
+      "tag": "Tag",
+      "page": "Page"
     }
   },
   "assetClass": {
@@ -3174,6 +3175,66 @@
         "expected": "Expected cost",
         "extra": "Extra over repairing now"
       }
+    }
+  },
+  "copilot": {
+    "title": "Copilot",
+    "description": "Ask the data a question in plain words. Every answer says where its numbers came from.",
+    "open": "Open the copilot (.)",
+    "short": "Ask",
+    "empty": "This copilot is scripted: it answers the kinds of questions it was built for, from the platform's own data. Try one:",
+    "example1": "Which pumps are likely to fail in the next 30 days?",
+    "example2": "Which alarms are urgent right now?",
+    "example3": "How much have predictions saved this year?",
+    "example4": "Which spare parts are running short?",
+    "conversation": "Conversation with the copilot",
+    "thinking": "Looking that up…",
+    "ask": "Your question",
+    "placeholder": "e.g. Which compressors are likely to fail this month?",
+    "send": "Ask",
+    "readAs": "Read as: {{what}}",
+    "followUps": "You could also ask:",
+    "generatedBy": "Answered by the {{provider}} copilot from the platform's data",
+    "confirmTitle": "Raise this work order?",
+    "confirmIntro": "The copilot suggested it; nothing happens until you confirm.",
+    "confirmWhat": "Work",
+    "confirmAsset": "Asset",
+    "confirmFrom": "From prediction",
+    "confirm": "Raise work order",
+    "notAllowed": "Your role can't raise work orders from predictions.",
+    "woDescription": "Raised from a copilot suggestion, after the prediction it cites.",
+    "raised": "{{number}} raised"
+  },
+  "palette": {
+    "title": "Go to or search",
+    "open": "Search pages and assets (Ctrl+K)",
+    "label": "Search pages, assets and actions",
+    "placeholder": "Type a page, an asset id or a question…",
+    "results": "Results",
+    "page": "Page",
+    "asset": "Asset",
+    "copilot": "Copilot",
+    "help": "Help",
+    "ask": "Ask the copilot: \"{{question}}\"",
+    "shortcuts": "Show keyboard shortcuts"
+  },
+  "shortcuts": {
+    "title": "Keyboard shortcuts",
+    "intro": "Single keys don't work while you're typing in a box.",
+    "keys": "Keys",
+    "does": "What it does",
+    "then": "then",
+    "action": {
+      "palette": "Search pages, assets and actions",
+      "help": "Show this list",
+      "home": "Go to your home page",
+      "assets": "Go to Assets",
+      "alarms": "Go to Alarms",
+      "maintenance": "Go to Maintenance",
+      "copilot": "Open or close the copilot",
+      "nav": "Collapse or expand the menu",
+      "search": "Jump to the page's search box",
+      "timeRange": "Jump to the time range"
     }
   }
 }
