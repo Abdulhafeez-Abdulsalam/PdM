@@ -59,6 +59,16 @@ import { AddHandoverNoteRequest, Handover, HandoverNote, HandoverRequest } from 
 import { DataQualityOverview, DataQualityRequest, DataSource, TagListParams, TagPage } from "./data";
 import { AuditListParams, AuditPage, SetLimitsRequest, SetUserRoleRequest } from "./admin";
 import {
+  CreateRuleRequest,
+  ModelDecisionRequest,
+  ModelEntry,
+  Rule,
+  RuleCondition,
+  RulesOverview,
+  RuleTestResult,
+  SetRuleEnabledRequest,
+} from "./predictive-tools";
+import {
   AssetFailures,
   ReliabilityRequest,
   ReliabilitySummary,
@@ -378,6 +388,55 @@ export const endpoints = {
     description: "Change a person's role (a role is never left with nobody in it)",
     input: SetUserRoleRequest,
     output: User,
+  }),
+  "models.list": endpoint({
+    method: "GET",
+    path: "/models",
+    description: "The prediction models, one per class of equipment: versions, backtest and live results",
+    input: z.object({}),
+    output: list(ModelEntry),
+  }),
+  "models.approve": endpoint({
+    method: "POST",
+    path: "/models/:modelId/versions/:version/approve",
+    description: "Put a candidate model version into production (the current one is retired)",
+    input: ModelDecisionRequest,
+    output: ModelEntry,
+  }),
+  "models.reject": endpoint({
+    method: "POST",
+    path: "/models/:modelId/versions/:version/reject",
+    description: "Reject a candidate model version",
+    input: ModelDecisionRequest,
+    output: ModelEntry,
+  }),
+  "rules.overview": endpoint({
+    method: "GET",
+    path: "/rules",
+    description: "Threshold rules, each with how often it fired in the last 24 hours, and the signals a rule can watch",
+    input: z.object({}),
+    output: RulesOverview,
+  }),
+  "rules.test": endpoint({
+    method: "GET",
+    path: "/rules/test",
+    description: "How often a rule would have fired on the last 24 hours of readings",
+    input: RuleCondition,
+    output: RuleTestResult,
+  }),
+  "rules.create": endpoint({
+    method: "POST",
+    path: "/rules",
+    description: "Save a threshold rule",
+    input: CreateRuleRequest,
+    output: Rule,
+  }),
+  "rules.setEnabled": endpoint({
+    method: "POST",
+    path: "/rules/:ruleId/enabled",
+    description: "Switch a rule on or off",
+    input: SetRuleEnabledRequest,
+    output: Rule,
   }),
   "operations.power": endpoint({
     method: "GET",

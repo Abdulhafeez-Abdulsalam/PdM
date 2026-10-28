@@ -110,6 +110,10 @@ const SCREENS: [string, RoleId][] = [
   ["/admin/hierarchy", "system_admin"],
   ["/admin/audit", "system_admin"],
   ["/admin", "executive"], // "no access": the page checks the role, not just the menu
+  ["/predictive/models", "reliability_engineer"],
+  ["/predictive/models", "plant_manager"],
+  ["/predictive/rules", "condition_analyst"],
+  ["/predictive/what-if", "reliability_engineer"],
 ];
 
 /** Wait until loading placeholders are gone, or have stopped changing (live values that never arrive in tests). */

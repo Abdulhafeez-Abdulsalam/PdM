@@ -32,6 +32,7 @@ await Promise.all([
   import("../features/reports/HandoverPage"),
   import("../features/data/DataPages"),
   import("../features/admin/AdminPages"),
+  import("../features/predictions/PredictiveTools"),
   import("../features/reliability/RcaListPage"),
   import("../features/reliability/RcaPage"),
   import("../features/alarms/AlarmsPage"),

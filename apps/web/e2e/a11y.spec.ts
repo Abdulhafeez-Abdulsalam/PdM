@@ -107,6 +107,9 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Hierarchy browser", () => "/admin/hierarchy", "system_admin"],
   ["Audit log", () => "/admin/audit", "system_admin"],
   ["No-access page", () => "/admin", "executive"],
+  ["Model registry", () => "/predictive/models", "reliability_engineer"],
+  ["Rule builder", () => "/predictive/rules", "condition_analyst"],
+  ["What-if simulator", () => "/predictive/what-if", "reliability_engineer"],
 ];
 
 for (const [name, url, role] of SCREENS) {

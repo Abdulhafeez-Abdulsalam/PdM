@@ -25,6 +25,7 @@ export * from "./financials";
 export * from "./handover";
 export * from "./data";
 export * from "./admin";
+export * from "./predictive-tools";
 export * from "./alarms";
 export * from "./events";
 export * from "./iso14224";

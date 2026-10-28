@@ -23,6 +23,9 @@ const AlarmAnalyticsPage = lazyRouteComponent(() => import("../features/alarms/A
 const PredictionConsolePage = lazyRouteComponent(() => import("../features/predictions/PredictionConsolePage"), "PredictionConsolePage");
 const PredictionPage = lazyRouteComponent(() => import("../features/predictions/PredictionPage"), "PredictionPage");
 const AnomaliesPage = lazyRouteComponent(() => import("../features/predictions/AnomaliesPage"), "AnomaliesPage");
+const ModelsPage = lazyRouteComponent(() => import("../features/predictions/PredictiveTools"), "ModelsPage");
+const RulesPage = lazyRouteComponent(() => import("../features/predictions/PredictiveTools"), "RulesPage");
+const WhatIfPage = lazyRouteComponent(() => import("../features/predictions/PredictiveTools"), "WhatIfPage");
 const MaintenancePage = lazyRouteComponent(() => import("../features/maintenance/MaintenancePage"), "MaintenancePage");
 const WorkOrderPage = lazyRouteComponent(() => import("../features/maintenance/WorkOrderPage"), "WorkOrderPage");
 const ScheduleBoardPage = lazyRouteComponent(() => import("../features/maintenance/ScheduleBoardPage"), "ScheduleBoardPage");
@@ -210,6 +213,11 @@ const alarmAnalyticsRoute = createRoute({
 });
 
 /** The fleet anomaly view. A fixed path, so it wins over /predictive/$predictionId. */
+/** The predictive tools: model registry, rule builder, what-if (?for=predictionId). Fixed paths, before $predictionId. */
+const modelsRoute = createRoute({ getParentRoute: () => rootRoute, path: "/predictive/models", component: ModelsPage });
+const rulesRoute = createRoute({ getParentRoute: () => rootRoute, path: "/predictive/rules", component: RulesPage });
+const whatIfRoute = createRoute({ getParentRoute: () => rootRoute, path: "/predictive/what-if", component: WhatIfPage });
+
 const anomaliesRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/predictive/anomalies",
@@ -308,6 +316,9 @@ const routeTree = rootRoute.addChildren([
   assetTabRoute,
   predictionRoute,
   anomaliesRoute,
+  modelsRoute,
+  rulesRoute,
+  whatIfRoute,
   alarmAnalyticsRoute,
   workOrderRoute,
   scheduleRoute,

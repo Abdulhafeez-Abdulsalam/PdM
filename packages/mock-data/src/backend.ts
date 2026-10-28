@@ -52,6 +52,7 @@ import { esgOverview } from "./esg";
 import { financialsOverview } from "./financials";
 import { dataQuality, dataSources, listTags } from "./data";
 import { HandoverStore } from "./handover";
+import { ModelRegistry, RuleStore } from "./predictive-tools";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
 import { scriptedBriefing } from "./briefing";
 import { STORYLINE_ASSET_ID } from "./catalog/sites";
@@ -94,6 +95,8 @@ export class MockBackend {
   readonly inventory = new InventoryStore();
   readonly hse: HseStore;
   readonly handover: HandoverStore;
+  readonly models: ModelRegistry;
+  readonly rules: RuleStore;
   private readonly overlays = new Map<string, PredictionOverlay>();
   private readonly log: TimelineEvent[] = [];
   /** Every change made through the API, oldest first. */
@@ -115,6 +118,8 @@ export class MockBackend {
     // Permits follow the work orders from here on, so this comes straight after them.
     this.hse = new HseStore(this.world, this.workOrders, start);
     this.handover = new HandoverStore(this.world);
+    this.models = new ModelRegistry(this.world);
+    this.rules = new RuleStore(this.world);
     this.alarms = new AlarmEngine(this.world, this.chaos, start, (alarm, title, t) =>
       this.addLog({ kind: "operator_action", t: iso(t), assetId: alarm.assetId, title, detail: null, severity: null, refId: alarm.id }),
     );
@@ -146,6 +151,8 @@ export class MockBackend {
     const now = this.now();
     if (!this.cached || Math.floor(this.cached.t / 1000) !== Math.floor(now / 1000)) {
       this.cached = buildSnapshot(this.world, now, this.overlays);
+      // Each prediction carries its model's version in production (the registry can change it).
+      for (const p of this.cached.predictions) p.modelVersion = this.models.productionVersion(p.modelId) ?? p.modelVersion;
     }
     return this.cached;
   }
@@ -237,6 +244,10 @@ export class MockBackend {
     const prediction = this.snapshot().predictionById.get(id);
     if (!prediction) throw new ApiFailure("not_found", `Prediction ${id} not found`);
     return prediction;
+  }
+
+  private ruleContext() {
+    return { world: this.world, chaos: this.chaos, now: this.now() };
   }
 
   private dataContext(scopeId: string | undefined) {
@@ -393,6 +404,27 @@ export class MockBackend {
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
     "financials.overview": ({ scopeId }) => this.financials(scopeId),
+    "models.list": () => ({ items: this.models.list({ workOrders: this.workOrders, snapshot: this.snapshot(), now: this.now() }) }),
+    "models.approve": ({ modelId, version }) => {
+      const entry = this.models.approve(modelId, version, this.me().id, this.now(), {
+        workOrders: this.workOrders,
+        snapshot: this.snapshot(),
+      });
+      this.invalidate(); // new predictions carry the new version from now on
+      this.auditDetail = `${version} into production`;
+      return entry;
+    },
+    "models.reject": ({ modelId, version }) => {
+      this.auditDetail = `${version} rejected`;
+      return this.models.reject(modelId, version, this.now(), { workOrders: this.workOrders, snapshot: this.snapshot() });
+    },
+    "rules.overview": () => this.rules.overview(this.ruleContext()),
+    "rules.test": (cond) => this.rules.test(cond, this.ruleContext()),
+    "rules.create": (request) => this.rules.create(request, this.me().id, this.ruleContext()),
+    "rules.setEnabled": ({ ruleId, enabled }) => {
+      this.auditDetail = enabled ? "Switched on" : "Switched off";
+      return this.rules.setEnabled(ruleId, enabled);
+    },
     "admin.audit": ({ userId, action, offset, limit }) =>
       paginate(
         this.audit.filter((e) => (!userId || e.userId === userId) && (!action || e.action.startsWith(action))).reverse(),
@@ -853,6 +885,8 @@ const TARGET_KEYS = [
   "predictionId",
   "tagId",
   "userId",
+  "ruleId",
+  "modelId",
   "permitId",
   "mocId",
   "rcaId",
