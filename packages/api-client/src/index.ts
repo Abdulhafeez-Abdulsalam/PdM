@@ -2,6 +2,7 @@ export { createApiClient, type ApiClient } from "./client";
 export { LiveClient } from "./live";
 export { ApiRequestError, type ConnectionState, type Transport } from "./transport";
 export { WorkerTransport, type WorkerLike } from "./worker-transport";
+export { HttpTransport, type HttpTransportOptions } from "./http-transport";
 export {
   ApiProvider,
   queryKey,

@@ -4,7 +4,13 @@ import { configDefaults, defineConfig } from "vitest/config";
 
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  server: { port: 5173, strictPort: true },
+  server: {
+    port: 5173,
+    strictPort: true,
+    // Server mode (`npm run dev:connected`): pass API calls on to the PdM server, so the page and
+    // the API share one address. Unused in demo mode, which never calls /api.
+    proxy: { "/api": "http://127.0.0.1:4000" },
+  },
   worker: { format: "es" },
   // MapLibre starts its own tile-processing worker from a file next to itself. Vite's
   // dependency pre-bundling moves the code and breaks that path, so leave MapLibre as-is.

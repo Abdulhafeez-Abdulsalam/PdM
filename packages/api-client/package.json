@@ -16,7 +16,7 @@
     "@pdm/contracts": "*",
     "@tanstack/react-query": "^5.104.1",
     "react": "^19.3.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@pdm/mock-data": "*"

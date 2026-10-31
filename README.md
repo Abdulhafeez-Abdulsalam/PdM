@@ -22,11 +22,21 @@ Every commit automatically lints and formats the files you changed, and checks t
 
 The app runs entirely in your browser on simulated data — no server or account needed. Use the **Simulation** panel at the bottom of the left menu to speed up time or start the demo storyline.
 
+**With the server (Phase 5, in progress).** The same app can talk to a real server instead of the in-browser simulation. In two terminals:
+
+```bash
+npm run dev:server      # the API on http://127.0.0.1:4000 (try /api/health)
+npm run dev:connected   # the app in server mode → open http://localhost:5173
+```
+
+Live values over the server arrive in Phase 5 chunk 2; see [ADR-0012](docs/adr/0012-fastify-server-and-http-format.md) for how requests travel.
+
 ## Repository layout
 
 | Folder | What's inside |
 |---|---|
 | `apps/web` | The application (Vite + React) |
+| `apps/server` | The server (Fastify): the same requests over HTTP (Phase 5) |
 | `packages/contracts` | Data shapes shared by the app and any backend |
 | `packages/api-client` | How the app requests data and receives live updates |
 | `packages/mock-data` | The simulated backend (runs in a Web Worker) |

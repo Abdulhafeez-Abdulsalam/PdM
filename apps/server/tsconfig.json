@@ -1,0 +1,9 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    // The tests use @pdm/api-client, which also exports its React hooks (.tsx).
+    "jsx": "react-jsx"
+  },
+  "include": ["src"]
+}

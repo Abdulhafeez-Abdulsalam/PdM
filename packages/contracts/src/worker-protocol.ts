@@ -2,10 +2,11 @@
  * Envelope used when the backend runs in a Web Worker (demo mode, ADR-0004).
  * A real backend doesn't use this: it speaks HTTP + WebSocket with the same payloads.
  */
+import { z } from "zod";
 import type { ApiError } from "./common";
 import type { EndpointName } from "./endpoints";
 import type { ClientMessage, ServerMessage } from "./realtime";
-import type { RoleId } from "./users";
+import { RoleId } from "./users";
 
 /** How fast simulated time runs. 3600 = one simulated hour per real second. */
 export const SIM_SPEEDS = [1, 60, 600, 3600] as const;
@@ -39,13 +40,18 @@ export interface SimulationStatus {
   storyline: StorylineStatus | null;
 }
 
-/** Demo-only controls (the "simulation panel"). */
-export type SimulationControl =
-  | { type: "set_speed"; speed: SimSpeed }
-  | { type: "set_chaos"; enabled: boolean }
-  | { type: "set_role"; role: RoleId }
-  | { type: "start_storyline" }
-  | { type: "get_status" };
+/**
+ * Demo-only controls (the "simulation panel"). A schema, not just a type, because the server
+ * receives them over the network (POST /api/simulation/control) and must check them.
+ */
+export const SimulationControl = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("set_speed"), speed: z.union(SIM_SPEEDS.map((s) => z.literal(s))) }),
+  z.object({ type: z.literal("set_chaos"), enabled: z.boolean() }),
+  z.object({ type: z.literal("set_role"), role: RoleId }),
+  z.object({ type: z.literal("start_storyline") }),
+  z.object({ type: z.literal("get_status") }),
+]);
+export type SimulationControl = z.infer<typeof SimulationControl>;
 
 /** Messages the app sends to the worker. */
 export type ToWorker =

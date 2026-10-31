@@ -19,5 +19,6 @@ Rules:
 | [0009](0009-english-only-text-catalog.md) | English only, but all text in a catalog | Accepted |
 | [0010](0010-ai-provider-interface.md) | Scripted AI behind a provider interface | Accepted |
 | [0011](0011-typescript-6-for-tooling.md) | TypeScript 6 (not 7) so linting works | Accepted |
+| [0012](0012-fastify-server-and-http-format.md) | A Fastify server, and how requests travel over HTTP | Accepted |
 
 Template for new ADRs: [template.md](template.md).

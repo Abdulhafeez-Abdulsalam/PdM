@@ -1,0 +1,24 @@
+{
+  "name": "@pdm/server",
+  "version": "0.1.0",
+  "private": true,
+  "description": "The PdM server: answers every endpoint in @pdm/contracts over HTTP, running the plant simulation (Phase 5, ADR-0012).",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@pdm/contracts": "*",
+    "@pdm/mock-data": "*",
+    "fastify": "^5.12.7"
+  },
+  "devDependencies": {
+    "@pdm/api-client": "*",
+    "@types/node": "^24.19.2",
+    "tsx": "^4.23.15"
+  }
+}

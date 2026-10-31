@@ -1,13 +1,14 @@
 /**
- * Chooses where data comes from (ADR-0004). Today: the mock backend in a Web Worker.
- * When a real backend exists, an HttpTransport is created here instead — nothing else changes.
+ * Chooses where data comes from (ADR-0004). By default, demo mode: the mock backend in a Web
+ * Worker. In Vite's "server" mode (`npm run dev:connected` runs `vite --mode server`), the PdM
+ * server instead, over HTTP on the same address (Vite forwards /api to it). Nothing else changes.
  */
-import { LiveClient, WorkerTransport, createApiClient, type ApiContextValue } from "@pdm/api-client";
+import { HttpTransport, LiveClient, WorkerTransport, createApiClient, type ApiContextValue, type Transport } from "@pdm/api-client";
 // Vite's "?worker" import bundles the file as a separate Web Worker script.
 import MockBackendWorker from "@pdm/mock-data/worker?worker";
 
 export function createBackend(): ApiContextValue {
-  const transport = new WorkerTransport(new MockBackendWorker());
+  const transport: Transport = import.meta.env.MODE === "server" ? new HttpTransport() : new WorkerTransport(new MockBackendWorker());
   // The browser knows when the network goes away (Wi-Fi off, out of coverage); pass that on.
   if (!navigator.onLine) transport.setDisconnected(true);
   window.addEventListener("offline", () => transport.setDisconnected(true));
