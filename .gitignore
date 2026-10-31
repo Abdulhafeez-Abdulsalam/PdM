@@ -18,6 +18,9 @@ storybook-static/
 .env.*
 !.env.example
 
+# The server's database (people's work and sessions; Phase 5, ADR-0015)
+apps/server/data/
+
 # Logs
 *.log
 npm-debug.log*

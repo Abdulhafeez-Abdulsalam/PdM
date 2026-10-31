@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canDo, mayMove, mayRequest, requiredAction, type AccessLookups } from "./access";
-import { endpoints, type EndpointName } from "./endpoints";
+import { changesThings, endpoints, type EndpointName } from "./endpoints";
 import type { WorkOrderStatus } from "./work-orders";
 
 const lookups = (status: WorkOrderStatus | null = null): AccessLookups => ({ workOrderStatus: () => status });
@@ -14,11 +14,12 @@ describe("who may make which request (the server's check, ADR-0014)", () => {
     }
   });
 
-  it("guards every change except the two long reads that travel as POST", () => {
-    const open = Object.entries(endpoints)
-      .filter(([name, def]) => def.method === "POST" && requiredAction(name as EndpointName, sample(name), lookups("approved")) === null)
-      .map(([name]) => name);
-    expect(open.sort()).toEqual(["timeseries.history", "timeseries.latest"]);
+  it("guards every request that changes something", () => {
+    const unguarded = (Object.keys(endpoints) as EndpointName[]).filter(
+      (name) => changesThings(name) && requiredAction(name, sample(name), lookups("approved")) === null,
+    );
+    expect(unguarded).toEqual([]);
+    expect(changesThings("timeseries.history")).toBe(false); // a long read, sent as POST
   });
 
   it("uses the same rules as the buttons: only operators acknowledge alarms", () => {

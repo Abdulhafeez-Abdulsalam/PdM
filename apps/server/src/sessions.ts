@@ -4,10 +4,12 @@
  * bytes), and the page's own code can't read the cookie (HttpOnly), so a script slipped into the
  * page can't steal it either.
  *
- * Kept in memory for now, so restarting the server signs everyone out; chunk 4 keeps sessions in
- * the SQLite database.
+ * Sessions are kept in the database (chunk 4, ADR-0015), so restarting the server signs nobody
+ * out. Only a fingerprint (SHA-256) of each token is stored: whoever gets a copy of the database
+ * file still can't sign in as anyone, because the fingerprint can't be turned back into the token.
  */
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
+import type { DatabaseSync } from "node:sqlite";
 
 export const SESSION_COOKIE = "pdm_session";
 /** Signed out after this long without a request: about a shift. */
@@ -19,37 +21,46 @@ export interface Session {
   lastSeen: number;
 }
 
-export class SessionStore {
-  private readonly sessions = new Map<string, Session>();
+const fingerprint = (token: string) => createHash("sha256").update(token).digest("hex");
 
-  constructor(private readonly now: () => number = Date.now) {}
+export class SessionStore {
+  constructor(
+    private readonly db: DatabaseSync,
+    private readonly now: () => number = Date.now,
+  ) {}
 
   create(userId: string): Session {
     const session = { token: randomBytes(32).toString("base64url"), userId, lastSeen: this.now() };
-    this.sessions.set(session.token, session);
+    this.db
+      .prepare("INSERT INTO sessions (token_hash, user_id, last_seen_ms) VALUES (?, ?, ?)")
+      .run(fingerprint(session.token), userId, session.lastSeen);
     return session;
   }
 
   /** The session for this token, if it exists and hasn't been idle too long. Using it keeps it alive. */
   use(token: string | undefined): Session | null {
     const session = this.peek(token);
-    if (session) session.lastSeen = this.now();
+    if (session) {
+      session.lastSeen = this.now();
+      this.db.prepare("UPDATE sessions SET last_seen_ms = ? WHERE token_hash = ?").run(session.lastSeen, fingerprint(session.token));
+    }
     return session;
   }
 
   /** Like use, but doesn't count as activity (for checking open live connections). */
   peek(token: string | undefined): Session | null {
     if (!token) return null;
-    const session = this.sessions.get(token);
-    if (!session) return null;
-    if (this.now() - session.lastSeen > SESSION_IDLE_MS) {
-      this.sessions.delete(token);
+    const row = this.db.prepare("SELECT user_id, last_seen_ms FROM sessions WHERE token_hash = ?").get(fingerprint(token)) as
+      { user_id: string; last_seen_ms: number } | undefined;
+    if (!row) return null;
+    if (this.now() - row.last_seen_ms > SESSION_IDLE_MS) {
+      this.end(token);
       return null;
     }
-    return session;
+    return { token, userId: row.user_id, lastSeen: row.last_seen_ms };
   }
 
   end(token: string | undefined): void {
-    if (token) this.sessions.delete(token);
+    if (token) this.db.prepare("DELETE FROM sessions WHERE token_hash = ?").run(fingerprint(token));
   }
 }

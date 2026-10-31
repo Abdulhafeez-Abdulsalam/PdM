@@ -24,6 +24,12 @@ export class SimClock {
     return this.currentSpeed;
   }
 
+  /** Set simulated time (replaying the server's command log, ADR-0015). The speed stays as it is. */
+  jumpTo(simTime: number): void {
+    this.anchorSim = simTime;
+    this.anchorReal = this.realNow();
+  }
+
   /** Changing speed re-anchors, so simulated time never jumps. */
   setSpeed(speed: number): void {
     this.anchorSim = this.now();

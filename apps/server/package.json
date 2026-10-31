@@ -2,7 +2,7 @@
   "name": "@pdm/server",
   "version": "0.1.0",
   "private": true,
-  "description": "The PdM server: answers every endpoint in @pdm/contracts over HTTP and pushes live values over a WebSocket, running one shared plant simulation, with demo sign-in and role checks (Phase 5, ADR-0012–0014).",
+  "description": "The PdM server: answers every endpoint in @pdm/contracts over HTTP and pushes live values over a WebSocket, running one shared plant simulation, with demo sign-in, role checks, and what people do kept in SQLite (Phase 5, ADR-0012–0015).",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/main.ts",

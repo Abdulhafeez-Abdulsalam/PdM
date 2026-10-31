@@ -256,8 +256,11 @@ describe("live data", () => {
   });
 });
 
+/** The plant moves on a simulated minute at a time (ADR-0015), so walking through days takes seconds. */
+const DAYS_LONG = 60_000;
+
 describe("demo storyline: gas turbine compressor fouling", () => {
-  it("plays out anomaly → prediction → alarm → work order → repair → verified", () => {
+  it("plays out anomaly → prediction → alarm → work order → repair → verified", { timeout: DAYS_LONG }, () => {
     const { backend: b, advance } = makeBackend();
     b.control({ type: "set_speed", speed: 3600 });
     b.control({ type: "start_storyline" });

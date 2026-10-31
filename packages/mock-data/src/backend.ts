@@ -7,6 +7,7 @@
  */
 import {
   ENTERPRISE_SCOPE,
+  changesThings,
   endpoints,
   pickIntervalSeconds,
   type AuditEntry,
@@ -82,6 +83,21 @@ export interface MockBackendOptions {
   role?: RoleId;
 }
 
+/**
+ * One change, as the server keeps it in its command log (ADR-0015): a request that changes
+ * something, made by a known person, or a simulation control (speed, chaos, the storyline).
+ */
+export type Command =
+  { kind: "request"; name: EndpointName; input: unknown; userId: string } | { kind: "control"; control: SimulationControl };
+
+export interface LoggedCommand {
+  command: Command;
+  /** The simulated time it happened. */
+  at: number;
+  /** The simulated time of the last tick before it, so a replay moves the plant on exactly as far first. */
+  tickedAt: number;
+}
+
 type Handlers = { [N in EndpointName]: (input: z.output<Endpoints[N]["input"]>) => EndpointOutput<N> };
 
 export class MockBackend {
@@ -111,6 +127,9 @@ export class MockBackend {
   private actingUserId: string | null = null;
   private cached: Snapshot | null = null;
   private logNumber = 1;
+  private lastTickAt: number;
+  /** Told about every change as it happens (the server stores them, ADR-0015). Quiet during a replay. */
+  onCommand: ((entry: LoggedCommand) => void) | null = null;
 
   constructor(options: MockBackendOptions = {}) {
     const realNow = options.realNow ?? (() => Date.now());
@@ -139,6 +158,30 @@ export class MockBackend {
     );
     this.validateOutput = options.validateOutput ?? true;
     this.role = options.role ?? "executive";
+    this.lastTickAt = start;
+  }
+
+  private emit(command: Command): void {
+    this.onCommand?.({ command, at: this.now(), tickedAt: this.lastTickAt });
+  }
+
+  /**
+   * Make one logged change again, at the simulated moment it first happened: move the plant on
+   * to the tick before it, then make the change at its own time. Replaying the whole log in order
+   * on a fresh simulation with the same seed and start rebuilds exactly the same state.
+   */
+  replay({ command, at, tickedAt }: LoggedCommand): void {
+    const listener = this.onCommand;
+    this.onCommand = null;
+    try {
+      this.clock.jumpTo(tickedAt);
+      this.tick();
+      this.clock.jumpTo(at);
+      if (command.kind === "request") this.request(command.name, command.input as never, command.userId);
+      else this.control(command.control);
+    } finally {
+      this.onCommand = listener;
+    }
   }
 
   private addLog(event: Omit<TimelineEvent, "id">): void {
@@ -192,14 +235,17 @@ export class MockBackend {
 
     const handler = this.handlers[name] as (input: unknown) => EndpointOutput<N>;
     // Who is asking, taken before the change (changing roles can change who "me" is).
-    const actor = def.method === "GET" ? null : this.me().id;
+    const actor = changesThings(name) ? this.me().id : null;
     this.auditDetail = null;
     const output = handler(parsed.data);
     if (this.validateOutput) {
       const check = def.output.safeParse(output);
       if (!check.success) throw new ApiFailure("internal", `Mock produced invalid ${String(name)} response`, z.treeifyError(check.error));
     }
-    if (actor) this.recordChange(String(name), def.description, actor, parsed.data, output);
+    if (actor) {
+      this.recordChange(String(name), def.description, actor, parsed.data, output);
+      this.emit({ kind: "request", name, input, userId: actor });
+    }
     return output;
   }
 
@@ -839,6 +885,7 @@ export class MockBackend {
   /** Advance the simulation to "now" and push live updates. Called once per second by the worker or the server. */
   tick(): void {
     const now = this.now();
+    this.lastTickAt = now;
     this.storyline.tick(now);
     this.alarms.tick(now);
     this.invalidate();
@@ -884,6 +931,8 @@ export class MockBackend {
       case "get_status":
         break;
     }
+    // Changes to the plant are kept; which role demo mode is viewing as, and asking, aren't.
+    if (control.type !== "set_role" && control.type !== "get_status") this.emit({ kind: "control", control });
     return this.status();
   }
 

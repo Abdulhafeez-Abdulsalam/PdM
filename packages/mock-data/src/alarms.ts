@@ -109,14 +109,24 @@ export class AlarmEngine {
 
   // ─── Time passing ──────────────────────────────────────────────────────────
 
+  /**
+   * Move on to `now`, one simulated minute at a time and always in the same order, so the alarms
+   * are the same however the time was reached: ticked once a second (live, at any speed) or in
+   * one jump (replaying the server's command log, ADR-0015). Processing a long jump in one batch
+   * gave different alarms, because whether a tag's alarm was still active depended on the batch.
+   * The cost: an alarm appears at the first whole minute after it happens (its time is exact).
+   */
   tick(now: number): void {
-    if (now <= this.processedUntil) return;
-    this.processBackground(now);
-    this.processFaults(now);
-    this.processReturns(now);
-    this.processShelveExpiry(now);
-    this.prune(now);
-    this.processedUntil = now;
+    const lastMinute = Math.floor(now / MINUTE);
+    for (let m = Math.floor(this.processedUntil / MINUTE) + 1; m <= lastMinute; m++) {
+      const t = m * MINUTE;
+      this.processBackground(t);
+      this.processFaults(t);
+      this.processReturns(t);
+      this.processShelveExpiry(t);
+      this.prune(t);
+      this.processedUntil = t;
+    }
   }
 
   /** Alarms that changed since the last call (for live alarm_changed messages). */

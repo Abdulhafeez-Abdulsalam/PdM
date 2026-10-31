@@ -4,7 +4,12 @@ import { createMockBackend } from "@pdm/mock-data";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import NodeWebSocket from "ws";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { buildServer } from "./app";
+import { migrationFiles, openDatabase } from "./db";
+import { openPlant } from "./plant";
 import { SESSION_IDLE_MS, SessionStore } from "./sessions";
 
 const START = Date.UTC(2026, 9, 10, 8, 0, 0);
@@ -95,7 +100,8 @@ describe("the server over real HTTP", () => {
 
 describe("sign-in and the server's role checks", () => {
   let real = 0;
-  const server = buildServer({ backend: makeBackend(), sessions: new SessionStore(() => real) });
+  const db = openDatabase(":memory:");
+  const server = buildServer({ backend: makeBackend(), db, sessions: new SessionStore(db, () => real) });
   let base: string;
 
   beforeAll(async () => {
@@ -265,6 +271,88 @@ describe("live values over a WebSocket", () => {
       headers: { origin: "https://evil.example", host: "127.0.0.1:4000", connection: "Upgrade", upgrade: "websocket" },
     });
     expect(response.statusCode).toBe(403);
+  });
+});
+
+describe("keeping what people do across a restart (ADR-0015)", () => {
+  const folder = mkdtempSync(join(tmpdir(), "pdm-db-"));
+  const file = join(folder, "pdm.sqlite");
+  /** Real time stands still in this test, so "the same moment" is easy to compare. */
+  const realNow = () => START;
+  afterAll(() => rmSync(folder, { recursive: true, force: true }));
+
+  /** Start the server on the database file, as main.ts does. */
+  const start = async () => {
+    const db = openDatabase(file);
+    const opened = openPlant(db, { seed: 42, realNow });
+    const server = buildServer({ backend: opened.backend, db });
+    const base = await server.listen({ port: 0, host: "127.0.0.1" });
+    const stop = async () => {
+      await server.close();
+      db.close();
+    };
+    return { ...opened, base, stop, db };
+  };
+
+  it("brings back every change, the audit log and the sessions, and applies each migration once", async () => {
+    const first = await start();
+    expect(first.replayed).toBe(0);
+    const operator = await signIn(first.base, "control_room_operator");
+    const planner = await signIn(first.base, "maintenance_planner");
+    const admin = await signIn(first.base, "system_admin");
+    const as = (who: { fetch: typeof fetch }, base: string) =>
+      createApiClient(new HttpTransport({ baseUrl: base, live: false, fetch: who.fetch }));
+
+    const alarm = (await as(operator, first.base).request("alarms.list", { states: ["active_unacked"], limit: 1 })).items[0]!;
+    await as(operator, first.base).request("alarms.acknowledge", { alarmIds: [alarm.id] });
+    const wo = await as(planner, first.base).request("workOrders.create", {
+      title: "Replace the seal",
+      description: "",
+      assetId: alarm.assetId,
+      type: "corrective",
+      priority: "urgent",
+      assigneeId: null,
+      dueAt: null,
+      source: { kind: "manual", refId: null },
+      evidence: null,
+    });
+    await as(admin, first.base).request("admin.setLimits", { tagId: "CBC-GT-101.EXH_TEMP", limits: { highAlert: 600, highAlarm: 615 } });
+    await new HttpTransport({ baseUrl: first.base, live: false, fetch: planner.fetch }).control({ type: "set_speed", speed: 600 });
+    const before = {
+      audit: await as(admin, first.base).request("admin.audit", { limit: 50 }),
+      wo: await as(planner, first.base).request("workOrders.get", { workOrderId: wo.id }),
+      alarms: await as(admin, first.base).request("alarms.list", { limit: 200, sort: "newest" }),
+    };
+    expect(before.audit.items.map((e) => e.action)).toEqual(["admin.setLimits", "workOrders.create", "alarms.acknowledge"]);
+    // The session token itself is never stored, only its fingerprint.
+    const tokens = first.db.prepare("SELECT token_hash FROM sessions").all() as { token_hash: string }[];
+    expect(tokens.some((t) => planner.cookie.includes(t.token_hash))).toBe(false);
+    await first.stop();
+
+    // Stop, start again on the same file.
+    const second = await start();
+    expect(second.replayed).toBe(4);
+    try {
+      // Still signed in: the same cookie works after the restart.
+      expect(await createSessionClient({ baseUrl: second.base, fetch: planner.fetch }).current()).toEqual(planner.person);
+      expect(await as(admin, second.base).request("admin.audit", { limit: 50 })).toEqual(before.audit);
+      expect(await as(planner, second.base).request("workOrders.get", { workOrderId: wo.id })).toEqual(before.wo);
+      expect(await as(admin, second.base).request("alarms.list", { limit: 200, sort: "newest" })).toEqual(before.alarms);
+      expect(second.backend.status().speed).toBe(600);
+      const tag = await as(admin, second.base).request("data.tags", { search: "CBC-GT-101.EXH_TEMP", limit: 1 });
+      expect(tag.items[0]!.limits).toMatchObject({ highAlert: 600, highAlarm: 615 });
+      // Each migration ran once, on the first start.
+      expect(second.db.prepare("SELECT count(*) AS n FROM schema_migrations").get()).toEqual({ n: migrationFiles().length });
+    } finally {
+      await second.stop();
+    }
+  });
+
+  it("keeps the plant the database was made with, whatever SEED says", () => {
+    const db = openDatabase(file);
+    const opened = openPlant(db, { seed: 7, realNow });
+    expect(opened.keptSeed).toBe(42);
+    db.close();
   });
 });
 

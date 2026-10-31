@@ -780,3 +780,11 @@ export type EndpointOutput<N extends EndpointName> = z.output<Endpoints[N]["outp
 export function pathParams(path: string): string[] {
   return [...path.matchAll(/:([A-Za-z][A-Za-z0-9]*)/g)].map((m) => m[1]!);
 }
+
+/** POSTs that only read: they're POSTs because the request can be long (many tags), nothing more. */
+const READS_SENT_AS_POST: ReadonlySet<EndpointName> = new Set<EndpointName>(["timeseries.history", "timeseries.latest"]);
+
+/** Does this request change anything? Those are audited, and kept in the server's command log (ADR-0015). */
+export function changesThings(name: EndpointName): boolean {
+  return endpoints[name].method === "POST" && !READS_SENT_AS_POST.has(name);
+}

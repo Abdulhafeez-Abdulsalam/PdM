@@ -36,6 +36,9 @@ import { ApiFailure, type MockBackend } from "@pdm/mock-data";
 import cookie from "@fastify/cookie";
 import websocket, { type WebSocket } from "@fastify/websocket";
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
+import type { DatabaseSync } from "node:sqlite";
+import { openDatabase } from "./db";
+import { PlantStore } from "./plant";
 import { SESSION_COOKIE, SessionStore, type Session } from "./sessions";
 
 /** The biggest message a browser may send: a full 300-tag subscription is about 10 KB. */
@@ -52,12 +55,20 @@ export interface ServerOptions {
    * when running). Leave it out to tick by hand.
    */
   tickMs?: number;
+  /** Where changes and sessions are kept (ADR-0015). Default: a database that lives only in memory. */
+  db?: DatabaseSync;
   /** Tests pass one with a clock they control. */
   sessions?: SessionStore;
 }
 
-export function buildServer({ backend, logger = false, tickMs, sessions = new SessionStore() }: ServerOptions): FastifyInstance {
+export function buildServer({ backend, logger = false, tickMs, db = openDatabase(":memory:"), sessions }: ServerOptions): FastifyInstance {
   const app = Fastify({ logger });
+  sessions ??= new SessionStore(db);
+  const plant = new PlantStore(db);
+  /** Who moved a simulation control, while it's being moved (the change itself doesn't say). */
+  let controlledBy: string | null = null;
+  // Every change goes into the command log as it happens, so a restart can make it again.
+  backend.onCommand = (entry) => plant.append(entry, controlledBy);
   /** Every open live connection, and the session it belongs to. */
   const sockets = new Map<WebSocket, string>();
 
@@ -89,8 +100,11 @@ export function buildServer({ backend, logger = false, tickMs, sessions = new Se
     for (const [socket, token] of sockets) if (!sessions.peek(token)) socket.close(LIVE_CLOSE_SIGNED_OUT, "Signed out");
   };
   if (tickMs !== undefined) {
+    let ticks = 0;
     const timer = setInterval(() => {
       backend.tick();
+      // Where the clock has got to, every 10 ticks: a crash sets it back at most that far.
+      if (++ticks % 10 === 0) plant.saveClock(backend.now());
       broadcastStatus();
       closeSignedOut();
     }, tickMs);
@@ -187,13 +201,20 @@ export function buildServer({ backend, logger = false, tickMs, sessions = new Se
 
   // The simulation panel's controls: speed, chaos mode, the storyline. One plant for everyone.
   app.post(`${API_PREFIX}/simulation/control`, async (request, reply) => {
-    if (!signedIn(request)) return signInFirst(reply);
+    const who = signedIn(request);
+    if (!who) return signInFirst(reply);
     const control = SimulationControl.safeParse(request.body);
     if (!control.success) return fail(reply, { code: "bad_request", message: "Not a simulation control" });
     if (control.data.type === "set_role") {
       return fail(reply, { code: "forbidden", message: "Your role comes from who you signed in as" });
     }
-    const status = backend.control(control.data);
+    controlledBy = who.user.id;
+    let status;
+    try {
+      status = backend.control(control.data);
+    } finally {
+      controlledBy = null;
+    }
     broadcastStatus();
     return status;
   });

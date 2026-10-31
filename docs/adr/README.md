@@ -22,5 +22,6 @@ Rules:
 | [0012](0012-fastify-server-and-http-format.md) | A Fastify server, and how requests travel over HTTP | Accepted |
 | [0013](0013-live-values-over-a-websocket.md) | Live values over a WebSocket, one shared plant | Accepted |
 | [0014](0014-sessions-and-server-role-checks.md) | Demo sign-in, sessions, and the server's role checks | Accepted |
+| [0015](0015-sqlite-command-log-and-replay.md) | SQLite, a command log, and replay on restart | Accepted |
 
 Template for new ADRs: [template.md](template.md).

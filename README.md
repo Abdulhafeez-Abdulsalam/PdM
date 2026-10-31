@@ -29,7 +29,7 @@ npm run dev:server      # the API on http://127.0.0.1:4000 (try /api/health)
 npm run dev:connected   # the app in server mode → open http://localhost:5173
 ```
 
-Requests travel over HTTP ([ADR-0012](docs/adr/0012-fastify-server-and-http-format.md)) and live values over a WebSocket ([ADR-0013](docs/adr/0013-live-values-over-a-websocket.md)). Every browser shares one simulated plant, so open two windows and change the speed in one. In server mode you sign in as one of the demo people, and the server checks every request against that person's role ([ADR-0014](docs/adr/0014-sessions-and-server-role-checks.md)).
+Requests travel over HTTP ([ADR-0012](docs/adr/0012-fastify-server-and-http-format.md)) and live values over a WebSocket ([ADR-0013](docs/adr/0013-live-values-over-a-websocket.md)). Every browser shares one simulated plant, so open two windows and change the speed in one. In server mode you sign in as one of the demo people, and the server checks every request against that person's role ([ADR-0014](docs/adr/0014-sessions-and-server-role-checks.md)). What people do is kept in a SQLite file (`apps/server/data/pdm.sqlite`) and survives a restart; delete that folder to start afresh ([ADR-0015](docs/adr/0015-sqlite-command-log-and-replay.md)).
 
 ## Repository layout
 
