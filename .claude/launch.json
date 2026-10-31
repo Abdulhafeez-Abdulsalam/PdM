@@ -6,6 +6,18 @@
       "runtimeExecutable": "npm.cmd",
       "runtimeArgs": ["run", "dev"],
       "port": 5173
+    },
+    {
+      "name": "server",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "dev:server"],
+      "port": 4000
+    },
+    {
+      "name": "web-connected",
+      "runtimeExecutable": "npm.cmd",
+      "runtimeArgs": ["run", "dev:connected", "--", "--port", "5174", "--strictPort"],
+      "port": 5174
     }
   ]
 }
