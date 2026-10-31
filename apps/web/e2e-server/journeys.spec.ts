@@ -61,3 +61,20 @@ test("every page carries the security headers", async ({ page }) => {
   expect(headers["x-content-type-options"]).toBe("nosniff");
   expect(headers["referrer-policy"]).toBe("no-referrer");
 });
+
+test("the overlays open under the Content Security Policy: copilot, command palette, shortcut sheet", async ({ page }) => {
+  // Each adds a style to stop the page behind it scrolling; without the page's nonce the browser
+  // would block it and log an error, which fails this test.
+  await signIn(page, "Plant / Asset Manager", "/command-center");
+  await page.getByRole("button", { name: "Open the copilot (.)" }).click();
+  await page.getByRole("button", { name: "Which pumps are likely to fail in the next 30 days?" }).click();
+  await expect(page.getByText(/^Read as: /)).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("Control+k");
+  await page.getByRole("combobox", { name: "Search pages, assets and actions" }).fill("pump");
+  await expect(page.getByRole("option").first()).toBeVisible();
+  await page.keyboard.press("Escape");
+  await page.keyboard.press("?");
+  await expect(page.getByRole("dialog", { name: "Keyboard shortcuts" })).toBeVisible();
+  expect(await page.evaluate(() => document.querySelectorAll("style[nonce]").length)).toBeGreaterThan(0);
+});

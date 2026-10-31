@@ -38,10 +38,13 @@ import cookie from "@fastify/cookie";
 import fastifyStatic from "@fastify/static";
 import websocket, { type WebSocket } from "@fastify/websocket";
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest, type FastifyServerOptions } from "fastify";
+import { randomBytes } from "node:crypto";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import type { DatabaseSync } from "node:sqlite";
 import { openDatabase } from "./db";
 import { PlantStore } from "./plant";
-import { AttemptLimiter, addSecurityHeaders } from "./security";
+import { AttemptLimiter, addSecurityHeaders, contentSecurityPolicy } from "./security";
 import { SESSION_COOKIE, SessionStore, type Session } from "./sessions";
 
 /** The biggest message a browser may send: a full 300-tag subscription is about 10 KB. */
@@ -294,12 +297,35 @@ export function buildServer({
     return { ok: true, database: "ok", uptimeSeconds: Math.round(process.uptime()) };
   });
 
+  /**
+   * The app's page: index.html, with a fresh nonce for the Content Security Policy in a meta tag
+   * the app reads (main.tsx). Never cached, so every load gets a new nonce and a new version of
+   * the app is picked up at once.
+   */
+  const indexHtml = webDist ? readFileSync(join(webDist, "index.html"), "utf8") : null;
+  const sendApp = (reply: FastifyReply) => {
+    const nonce = randomBytes(16).toString("base64");
+    return reply
+      .header("Content-Security-Policy", contentSecurityPolicy(nonce))
+      .header("Cache-Control", "no-cache")
+      .type("text/html; charset=utf-8")
+      .send(
+        indexHtml!.replace(
+          "<head>",
+          `<head>
+    <meta name="csp-nonce" content="${nonce}" />`,
+        ),
+      );
+  };
+
   if (webDist) {
-    // The built app: hashed files (assets/index-3f9c….js) never change, so browsers may keep them
-    // for a year; index.html must be checked every time, so a new version is picked up.
+    // The built app's files: hashed (assets/index-3f9c….js), so they never change and browsers may
+    // keep them for a year. index.html only ever goes out through sendApp.
     void app.register(fastifyStatic, {
       root: webDist,
       wildcard: false,
+      index: false,
+      allowedPath: (path) => path !== "/index.html",
       setHeaders: (res, path) =>
         void res.header("Cache-Control", /[\\/]assets[\\/]/.test(path) ? "public, max-age=31536000, immutable" : "no-cache"),
     });
@@ -309,7 +335,7 @@ export function buildServer({
   app.setNotFoundHandler((request, reply) => {
     // The app's own pages (/assets/CBC-GT-101, /alarms…) are drawn in the browser: send the app.
     if (webDist && (request.method === "GET" || request.method === "HEAD") && !request.url.startsWith(`${API_PREFIX}/`)) {
-      return reply.header("Cache-Control", "no-cache").sendFile("index.html");
+      return sendApp(reply);
     }
     return fail(reply, { code: "not_found", message: `No such endpoint: ${request.method} ${request.url.split("?")[0]}` });
   });

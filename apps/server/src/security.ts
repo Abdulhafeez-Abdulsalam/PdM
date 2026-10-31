@@ -14,24 +14,34 @@ import type { FastifyInstance } from "fastify";
 /** Where the Command Center map loads its tiles from (apps/web/src/features/command-center/map-style.ts). */
 const MAP_TILES = "https://tiles.openfreemap.org";
 
-export const CONTENT_SECURITY_POLICY = [
-  "default-src 'self'",
-  "script-src 'self'",
-  "style-src 'self'",
-  "img-src 'self' data: blob:",
-  // The build turns the smallest font files into data: addresses inside the stylesheet. Fonts
-  // can't run code, so this is safe (found by browsing every page under this policy).
-  "font-src 'self' data:",
-  // 'self' includes this site's own WebSocket (ws://) for live values.
-  `connect-src 'self' ${MAP_TILES}`,
-  // The map draws its tiles in a worker it starts itself.
-  "worker-src 'self' blob:",
-  "object-src 'none'",
-  "base-uri 'self'",
-  "form-action 'self'",
-  // No other site may show this one in a frame (clickjacking).
-  "frame-ancestors 'none'",
-].join("; ");
+/**
+ * The policy. `styleNonce`: a one-time code (a "nonce") sent with each copy of the page. Styles
+ * carrying it may be added to the page: the dialogs add a small one to stop the page behind them
+ * scrolling (react-remove-scroll). Markup slipped into a page can't know the code, which changes
+ * with every load, so it gains nothing.
+ */
+export function contentSecurityPolicy(styleNonce?: string): string {
+  return [
+    "default-src 'self'",
+    "script-src 'self'",
+    styleNonce ? `style-src 'self' 'nonce-${styleNonce}'` : "style-src 'self'",
+    "img-src 'self' data: blob:",
+    // The build turns the smallest font files into data: addresses inside the stylesheet. Fonts
+    // can't run code, so this is safe (found by browsing every page under this policy).
+    "font-src 'self' data:",
+    // 'self' includes this site's own WebSocket (ws://) for live values.
+    `connect-src 'self' ${MAP_TILES}`,
+    // The map draws its tiles in a worker it starts itself.
+    "worker-src 'self' blob:",
+    "object-src 'none'",
+    "base-uri 'self'",
+    "form-action 'self'",
+    // No other site may show this one in a frame (clickjacking).
+    "frame-ancestors 'none'",
+  ].join("; ");
+}
+
+export const CONTENT_SECURITY_POLICY = contentSecurityPolicy();
 
 export const SECURITY_HEADERS: Record<string, string> = {
   "Content-Security-Policy": CONTENT_SECURITY_POLICY,
@@ -47,7 +57,8 @@ export const SECURITY_HEADERS: Record<string, string> = {
 
 export function addSecurityHeaders(app: FastifyInstance): void {
   app.addHook("onSend", async (_request, reply, payload) => {
-    for (const [name, value] of Object.entries(SECURITY_HEADERS)) void reply.header(name, value);
+    // A page that set its own policy (with its nonce) keeps it.
+    for (const [name, value] of Object.entries(SECURITY_HEADERS)) if (!reply.hasHeader(name)) void reply.header(name, value);
     return payload;
   });
 }

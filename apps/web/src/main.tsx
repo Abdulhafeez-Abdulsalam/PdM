@@ -4,12 +4,18 @@ import "@fontsource-variable/jetbrains-mono";
 import "./index.css";
 import "./shared/text/i18n";
 import { RouterProvider } from "@tanstack/react-router";
+import { setNonce } from "get-nonce";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { SERVER_MODE, createBackend, createSession } from "./app/backend";
 import { Providers } from "./app/providers";
 import { SessionGate } from "./app/SessionGate";
 import { createAppRouter } from "./app/router";
+
+// Server mode: the page arrives with a one-time code for the Content Security Policy (ADR-0017).
+// Styles the dialogs add (to stop the page behind them scrolling) carry it, so the browser allows them.
+const nonce = document.querySelector<HTMLMetaElement>('meta[name="csp-nonce"]')?.content;
+if (nonce) setNonce(nonce);
 
 const router = createAppRouter();
 

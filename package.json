@@ -68,6 +68,9 @@
   },
   "overrides": {
     "playwright-core": "1.63.0",
+    "seroval": "1.6.11",
+    "seroval-plugins": "1.6.11",
+    "undici": "8.12.2",
     "ws": "8.22.0"
   }
 }

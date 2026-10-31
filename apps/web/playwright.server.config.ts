@@ -33,6 +33,8 @@ export default defineConfig({
       // A fresh database for every run, beside the server's own (apps/server/data, ignored by git).
       DB_FILE: `data/e2e/pdm-${Date.now()}.sqlite`,
       LOG_LEVEL: "warn",
+      // The tests sign in more than 10 times a minute, all from this computer.
+      SIGN_IN_ATTEMPTS_PER_MINUTE: "100",
     },
   },
 });

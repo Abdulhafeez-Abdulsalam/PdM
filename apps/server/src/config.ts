@@ -11,6 +11,7 @@
  *   WEB_DIST       the built web app to serve (default apps/web/dist-server, if it has been built)
  *   LOG_LEVEL      fatal | error | warn | info | debug | trace | silent (default info)
  *   COOKIE_SECURE  "true" behind HTTPS, so the session cookie is never sent over plain HTTP (default false)
+ *   SIGN_IN_ATTEMPTS_PER_MINUTE  from one address (default 10; the browser tests sign in more often)
  */
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
@@ -27,6 +28,7 @@ const Env = z.object({
   WEB_DIST: z.string().min(1).optional(),
   LOG_LEVEL: z.enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"]).default("info"),
   COOKIE_SECURE: z.enum(["true", "false"]).default("false"),
+  SIGN_IN_ATTEMPTS_PER_MINUTE: z.coerce.number().int().min(1).default(10),
 });
 
 export interface Config {
@@ -38,6 +40,7 @@ export interface Config {
   webDist: string | null;
   logLevel: z.infer<typeof Env>["LOG_LEVEL"];
   cookieSecure: boolean;
+  signInAttemptsPerMinute: number;
 }
 
 export function loadConfig(env: Record<string, string | undefined> = process.env): Config {
@@ -56,5 +59,6 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     webDist: e.WEB_DIST ?? (existsSync(DEFAULT_WEB_DIST) ? DEFAULT_WEB_DIST : null),
     logLevel: e.LOG_LEVEL,
     cookieSecure: e.COOKIE_SECURE === "true",
+    signInAttemptsPerMinute: e.SIGN_IN_ATTEMPTS_PER_MINUTE,
   };
 }

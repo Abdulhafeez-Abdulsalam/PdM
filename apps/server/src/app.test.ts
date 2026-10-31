@@ -418,7 +418,7 @@ describe("running it properly (ADR-0017)", () => {
   it("serves the built app: its files cached for a year, its pages always fresh, the API untouched", async () => {
     const dist = mkdtempSync(join(tmpdir(), "pdm-dist-"));
     mkdirSync(join(dist, "assets"));
-    writeFileSync(join(dist, "index.html"), "<!doctype html><title>PdM</title>");
+    writeFileSync(join(dist, "index.html"), "<!doctype html><html><head><title>PdM</title></head></html>");
     writeFileSync(join(dist, "assets", "index-abc123.js"), "console.log(1)");
     const server = buildServer({ backend: makeBackend(), webDist: dist });
     try {
@@ -426,6 +426,14 @@ describe("running it properly (ADR-0017)", () => {
       expect(page.statusCode).toBe(200);
       expect(page.headers["content-type"]).toMatch(/text\/html/);
       expect(page.headers["cache-control"]).toBe("no-cache");
+      // Each copy of the page carries a fresh nonce, and its policy allows styles with exactly that one.
+      const nonceOf = (html: string) => /<meta name="csp-nonce" content="([^"]+)"/.exec(html)?.[1];
+      const nonce = nonceOf(page.body)!;
+      expect(page.headers["content-security-policy"]).toContain(`style-src 'self' 'nonce-${nonce}'`);
+      const again = await server.inject({ method: "GET", url: "/" });
+      expect(nonceOf(again.body)).not.toBe(nonce);
+      // index.html itself only ever goes out with a nonce.
+      expect(nonceOf((await server.inject({ method: "GET", url: "/index.html" })).body)).toBeTruthy();
       const script = await server.inject({ method: "GET", url: "/assets/index-abc123.js" });
       expect(script.headers["cache-control"]).toBe("public, max-age=31536000, immutable");
       const api = await server.inject({ method: "GET", url: "/api/nowhere" });
@@ -441,7 +449,14 @@ describe("running it properly (ADR-0017)", () => {
     expect(() => loadConfig({ PORT: "eighty" })).toThrow(/PORT/);
     expect(() => loadConfig({ LOG_LEVEL: "loud" })).toThrow(/LOG_LEVEL/);
     expect(() => loadConfig({ WEB_DIST: join(tmpdir(), "no-such-build") })).toThrow(/WEB_DIST/);
-    expect(loadConfig({})).toMatchObject({ port: 4000, host: "127.0.0.1", seed: 20261010, logLevel: "info", cookieSecure: false });
+    expect(loadConfig({})).toMatchObject({
+      port: 4000,
+      host: "127.0.0.1",
+      seed: 20261010,
+      logLevel: "info",
+      cookieSecure: false,
+      signInAttemptsPerMinute: 10,
+    });
     expect(loadConfig({ COOKIE_SECURE: "true", PORT: "8080" })).toMatchObject({ port: 8080, cookieSecure: true });
   });
 });

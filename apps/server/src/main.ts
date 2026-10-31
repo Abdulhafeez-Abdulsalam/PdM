@@ -10,6 +10,7 @@ import { buildServer } from "./app";
 import { loadConfig } from "./config";
 import { openDatabase } from "./db";
 import { openPlant } from "./plant";
+import { AttemptLimiter } from "./security";
 
 /** How long a clean stop may take before the process ends anyway. */
 const STOP_TIMEOUT_MS = 10_000;
@@ -29,6 +30,7 @@ const app = buildServer({
   tickMs: LIVE_FLUSH_INTERVAL_MS,
   webDist: config.webDist,
   cookieSecure: config.cookieSecure,
+  signInLimiter: new AttemptLimiter(config.signInAttemptsPerMinute, 60_000),
   // Structured logs: one JSON line per event, easy for log tools to search. Cookies never appear.
   logger: { level: config.logLevel, redact: ["req.headers.cookie", 'res.headers["set-cookie"]'] },
 });

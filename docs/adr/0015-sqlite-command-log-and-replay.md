@@ -27,7 +27,7 @@ For the database driver: **Node's built-in `node:sqlite`** (no native add-on to 
 
 ## Consequences
 - Stop the server, start it again: every work order, permit, note, limit, role change, audit entry and session is back, and the clock carries on. Tested with a real database file and a real restart, and by hand with a forced stop.
-- Start-up takes longer the further the simulated clock has run: replay moves the plant through every simulated minute (about 0.7 s per simulated day). At 3600× a long session can mean a slow start; saving a snapshot now and then would fix that if it matters.
+- Start-up takes longer the further the simulated clock has run: replay moves the plant through every simulated minute. **Measured in the [Phase 5 review](../phase-5-review.md)**, it grows faster than that: 0.7 s after 1 simulated day, 6.9 s after 7, 99 s after 30, because the alarm list only ever grows and each minute scans it. Indexes in the alarm engine, and snapshots, would fix it; recorded there as the first gap.
 - The database belongs to one plant: its seed is stored, and a different `SEED` is ignored with a warning. Delete the file to start afresh.
 - Moving to PostgreSQL later changes `db.ts`, `plant.ts` and `sessions.ts`, not the app.
 - `node:sqlite` is a release candidate, not yet "stable"; its API could still change in a later Node version.
