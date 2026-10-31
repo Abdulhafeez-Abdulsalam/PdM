@@ -2,8 +2,9 @@
  * The scripted copilot (ADR-0010, Phase 4 chunk 10). It reads a question for:
  *   - an asset id ("CBC-GT-101"), a kind of equipment ("pumps"), a place (any hierarchy name,
  *     longest match wins) and a time span ("30 days", "a week"; 30 days if none);
- * picks one of the questions it anticipated by keywords, and answers by calling the same read
- * endpoints the screens use, so it can never see more than a screen can. Every paragraph cites
+ * picks one of the questions it anticipated by keywords, and answers by calling **tools**: the
+ * read endpoints the screens use, limited to what the asker's role can see (ADR-0016). It's the
+ * scripted AI provider's copilot; a real model would get the same toolbox. Every paragraph cites
  * where its numbers came from; actions that change something are suggestions to confirm.
  */
 import {
@@ -14,9 +15,8 @@ import {
   type CopilotAction,
   type CopilotAnswer,
   type CopilotIntent,
-  type EndpointInput,
-  type EndpointName,
-  type EndpointOutput,
+  type AiToolName,
+  type AiToolbox,
 } from "@pdm/contracts";
 import { ASSET_CLASSES } from "./catalog/asset-catalog";
 import { iso } from "./clock";
@@ -25,9 +25,21 @@ import type { World } from "./world";
 interface Ctx {
   world: World;
   now: number;
-  /** The backend's own request function: the copilot only reads, through the API. */
-  request: <N extends EndpointName>(name: N, input: EndpointInput<N>) => EndpointOutput<N>;
+  /** The tools this person's role may use: the copilot reads nothing else. */
+  toolbox: AiToolbox;
 }
+
+/** The tools each question can't be answered without. */
+const NEEDS: Record<CopilotIntent, readonly AiToolName[]> = {
+  likely_failures: ["predictions.list"],
+  asset_status: ["assets.get"],
+  urgent_alarms: ["alarms.list"],
+  maintenance_backlog: ["workOrders.list", "pm.overview"],
+  value: ["financials.overview"],
+  emissions: ["esg.overview"],
+  spare_parts: ["inventory.overview"],
+  unknown: [],
+};
 
 /** Everyday words for kinds of equipment, besides each class's catalogue label. */
 const SYNONYMS: readonly (readonly [string, AssetClass])[] = [
@@ -68,6 +80,17 @@ const EXAMPLES = [
   "How much have predictions saved this year?",
   "What are our emissions?",
   "Which spare parts are running short?",
+];
+
+/** Which question each example asks (a test keeps this in step with EXAMPLES). */
+const EXAMPLE_INTENTS: readonly CopilotIntent[] = [
+  "likely_failures",
+  "asset_status",
+  "urgent_alarms",
+  "maintenance_backlog",
+  "value",
+  "emissions",
+  "spare_parts",
 ];
 
 const plural = (label: string) => {
@@ -113,7 +136,7 @@ function intentOf(q: string, assetId: string | null): CopilotIntent {
   return "unknown";
 }
 
-export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
+export async function askCopilot(req: AskRequest, ctx: Ctx): Promise<CopilotAnswer> {
   const q = req.question.toLowerCase();
   const idMatch = /\b[a-z]{2,4}(?:-[a-z]{1,4})+-\d{2,3}\b/i.exec(req.question);
   const assetId = idMatch && ctx.world.assets.has(idMatch[0].toUpperCase()) ? idMatch[0].toUpperCase() : null;
@@ -142,11 +165,22 @@ export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
     followUps: followUps.filter((f) => f.toLowerCase() !== q).slice(0, intent === "unknown" ? followUps.length : 3),
   });
 
+  const has = (tool: AiToolName) => ctx.toolbox.tools.some((t) => t.name === tool);
+  // A question about something this role's screens don't show gets that answer, not the data.
+  if (!NEEDS[intent].every(has)) {
+    return answer(
+      null,
+      [{ text: "That's outside what your role can see, so I can't answer it for you. Try one of these:", citations: [] }],
+      [],
+      EXAMPLES.filter((_, k) => NEEDS[EXAMPLE_INTENTS[k]!].every(has)),
+    );
+  }
+
   switch (intent) {
     case "likely_failures": {
       const days = daysIn(q);
       const kind = cls ? plural(ASSET_CLASSES[cls].label) : "assets";
-      const found = ctx.request("predictions.list", {
+      const found = await ctx.toolbox.call("predictions.list", {
         scopeId: scope,
         status: ["open", "acknowledged", "actioned"],
         assetClass: cls ? [cls] : undefined,
@@ -194,39 +228,53 @@ export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
     }
 
     case "asset_status": {
-      const a = ctx.request("assets.get", { assetId: assetId! });
-      const preds = ctx.request("predictions.list", { assetId: assetId!, status: ["open", "acknowledged", "actioned"], limit: 3 });
-      const alarms = ctx.request("alarms.list", { assetId: assetId!, states: ["active_unacked", "active_acked"], limit: 3 });
-      const work = ctx.request("workOrders.list", {
-        assetId: assetId!,
-        status: ["requested", "triaged", "planned", "scheduled", "approved", "in_progress"],
-        limit: 3,
-      });
+      const a = await ctx.toolbox.call("assets.get", { assetId: assetId! });
+      // Predictions, alarms and work orders only for a role that can see them.
+      const preds = has("predictions.list")
+        ? await ctx.toolbox.call("predictions.list", { assetId: assetId!, status: ["open", "acknowledged", "actioned"], limit: 3 })
+        : null;
+      const alarms = has("alarms.list")
+        ? await ctx.toolbox.call("alarms.list", { assetId: assetId!, states: ["active_unacked", "active_acked"], limit: 3 })
+        : null;
+      const work = has("workOrders.list")
+        ? await ctx.toolbox.call("workOrders.list", {
+            assetId: assetId!,
+            status: ["requested", "triaged", "planned", "scheduled", "approved", "in_progress"],
+            limit: 3,
+          })
+        : null;
+
       const assetCite: Citation = { kind: "asset", id: a.id, label: a.id };
-      const paragraphs: CopilotAnswer["paragraphs"] = [
+      const paragraphs = [
         {
           text: `${a.id} (${a.name}) is ${a.health.state}, health score ${Math.round(a.health.score)} of 100, and ${a.operatingStatus.replace(/_/g, " ")}.`,
           citations: [assetCite],
         },
-        preds.total
-          ? {
-              text: `${preds.total} open prediction${preds.total === 1 ? "" : "s"}: ${preds.items.map((p) => `${p.failureMode.label.toLowerCase()} (${pct(p.probability)})`).join(", ")}.`,
-              citations: preds.items.map((p) => ({ kind: "prediction" as const, id: p.id, label: p.id })),
-            }
-          : { text: "No open predictions.", citations: [assetCite] },
-        alarms.total
-          ? {
-              text: `${alarms.total} active alarm${alarms.total === 1 ? "" : "s"}: ${alarms.items.map((x) => `${x.message} (${x.priority.toUpperCase()})`).join("; ")}.`,
-              citations: alarms.items.map((x) => ({ kind: "alarm" as const, id: x.id, label: x.id })),
-            }
-          : { text: "No active alarms.", citations: [assetCite] },
-        work.total
-          ? {
-              text: `${work.total} open work order${work.total === 1 ? "" : "s"}: ${work.items.map((w) => `${w.number} (${w.status.replace("_", " ")})`).join(", ")}.`,
-              citations: work.items.map((w) => ({ kind: "work_order" as const, id: w.id, label: w.number })),
-            }
-          : { text: "No open work orders.", citations: [assetCite] },
-      ];
+        !preds
+          ? null
+          : preds.total
+            ? {
+                text: `${preds.total} open prediction${preds.total === 1 ? "" : "s"}: ${preds.items.map((p) => `${p.failureMode.label.toLowerCase()} (${pct(p.probability)})`).join(", ")}.`,
+                citations: preds.items.map((p) => ({ kind: "prediction" as const, id: p.id, label: p.id })),
+              }
+            : { text: "No open predictions.", citations: [assetCite] },
+        !alarms
+          ? null
+          : alarms.total
+            ? {
+                text: `${alarms.total} active alarm${alarms.total === 1 ? "" : "s"}: ${alarms.items.map((x) => `${x.message} (${x.priority.toUpperCase()})`).join("; ")}.`,
+                citations: alarms.items.map((x) => ({ kind: "alarm" as const, id: x.id, label: x.id })),
+              }
+            : { text: "No active alarms.", citations: [assetCite] },
+        !work
+          ? null
+          : work.total
+            ? {
+                text: `${work.total} open work order${work.total === 1 ? "" : "s"}: ${work.items.map((w) => `${w.number} (${w.status.replace("_", " ")})`).join(", ")}.`,
+                citations: work.items.map((w) => ({ kind: "work_order" as const, id: w.id, label: w.number })),
+              }
+            : { text: "No open work orders.", citations: [assetCite] },
+      ].filter((p): p is CopilotAnswer["paragraphs"][number] => p !== null);
       return answer(
         `${a.id} · ${a.name}`,
         paragraphs,
@@ -239,14 +287,19 @@ export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
     }
 
     case "urgent_alarms": {
-      const open = ctx.request("alarms.list", {
+      const open = await ctx.toolbox.call("alarms.list", {
         scopeId: scope,
         states: ["active_unacked", "active_acked"],
         priorities: ["p1", "p2"],
         sort: "priority",
         limit: 3,
       });
-      const unacked = ctx.request("alarms.list", { scopeId: scope, states: ["active_unacked"], priorities: ["p1", "p2"], limit: 1 });
+      const unacked = await ctx.toolbox.call("alarms.list", {
+        scopeId: scope,
+        states: ["active_unacked"],
+        priorities: ["p1", "p2"],
+        limit: 1,
+      });
       const paragraphs: CopilotAnswer["paragraphs"] = [
         {
           text: open.total
@@ -274,13 +327,13 @@ export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
     }
 
     case "maintenance_backlog": {
-      const open = ctx.request("workOrders.list", {
+      const open = await ctx.toolbox.call("workOrders.list", {
         scopeId: scope,
         status: ["requested", "triaged", "planned", "scheduled", "approved", "in_progress"],
         limit: 1,
       });
-      const doing = ctx.request("workOrders.list", { scopeId: scope, status: ["in_progress"], limit: 1 });
-      const pm = ctx.request("pm.overview", { scopeId: scope });
+      const doing = await ctx.toolbox.call("workOrders.list", { scopeId: scope, status: ["in_progress"], limit: 1 });
+      const pm = await ctx.toolbox.call("pm.overview", { scopeId: scope });
       return answer(
         `Maintenance backlog · ${scopeName}`,
         [
@@ -302,7 +355,7 @@ export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
     }
 
     case "value": {
-      const f = ctx.request("financials.overview", { scopeId: scope });
+      const f = await ctx.toolbox.call("financials.overview", { scopeId: scope });
       return answer(
         `Value from predictions · ${scopeName} · last 12 months`,
         [
@@ -321,7 +374,7 @@ export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
     }
 
     case "emissions": {
-      const e = ctx.request("esg.overview", { scopeId: scope });
+      const e = await ctx.toolbox.call("esg.overview", { scopeId: scope });
       const t = (v: number) => `${Math.round(v).toLocaleString("en-US")} t`;
       return answer(
         `Emissions · ${scopeName} · last 90 days`,
@@ -341,7 +394,7 @@ export function askCopilot(req: AskRequest, ctx: Ctx): CopilotAnswer {
     }
 
     case "spare_parts": {
-      const inv = ctx.request("inventory.overview", { scopeId: scope, status: ["short", "reorder"] });
+      const inv = await ctx.toolbox.call("inventory.overview", { scopeId: scope, status: ["short", "reorder"] });
       return answer(
         `Spare parts · ${scopeName}`,
         [

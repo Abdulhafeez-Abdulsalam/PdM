@@ -6,7 +6,7 @@ import { it } from "vitest";
 import { createMockBackend } from "./backend";
 import { DAY, HOUR, iso } from "./clock";
 
-it("prints a summary of the simulated world", () => {
+it("prints a summary of the simulated world", async () => {
   const started = performance.now();
   const b = createMockBackend({ startTime: Date.UTC(2026, 9, 10, 8) });
   const buildMs = Math.round(performance.now() - started);
@@ -57,7 +57,7 @@ it("prints a summary of the simulated world", () => {
 
   say();
   say("Daily briefing:");
-  for (const section of b.request("briefing.daily", {}).sections) {
+  for (const section of (await b.requestAsync("briefing.daily", {})).sections) {
     say(`  [${section.key}]`);
     for (const item of section.items) say(`   - ${item.text}`);
   }

@@ -165,6 +165,19 @@ describe("sign-in and the server's role checks", () => {
     expect((await engineer.fetch(`${base}/api/assets`)).status).toBe(401);
   });
 
+  it("answers the copilot through the AI provider, with only the asker's tools (ADR-0016)", async () => {
+    const esg = await signIn(base, "esg_lead");
+    const answer = await as(esg).request("copilot.ask", { question: "Which alarms are urgent right now?" });
+    expect(answer).toMatchObject({ generatedBy: "scripted" });
+    expect(answer.paragraphs[0]!.text).toMatch(/outside what your role can see/);
+    const tools = (await (await esg.fetch(`${base}/api/ai/tools`)).json()) as { provider: string; tools: { name: string }[] };
+    expect(tools.provider).toBe("scripted");
+    expect(tools.tools.map((t) => t.name)).toContain("esg.overview");
+    expect(tools.tools.map((t) => t.name)).not.toContain("alarms.list");
+    expect((await fetch(`${base}/api/ai/tools`)).status).toBe(401);
+    expect((await as(esg).request("briefing.daily", {})).sections.length).toBeGreaterThan(0);
+  });
+
   it("refuses changes sent from a page on another site, or as plain text", async () => {
     const planner = await signIn(base, "maintenance_planner");
     const control = (headers: Record<string, string>, body: string) =>

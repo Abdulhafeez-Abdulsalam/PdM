@@ -7,7 +7,12 @@
  */
 import {
   ENTERPRISE_SCOPE,
+  aiToolsFor,
   changesThings,
+  mayUseTool,
+  type AiProvider,
+  type AiToolbox,
+  type Briefing,
   endpoints,
   pickIntervalSeconds,
   type AuditEntry,
@@ -33,6 +38,7 @@ import {
   type User,
 } from "@pdm/contracts";
 import { z } from "zod";
+import { ScriptedAiProvider } from "./ai-provider";
 import { AlarmEngine } from "./alarms";
 import { ROLE_TITLES } from "./catalog/people";
 import { DETECTION_PROGRESS, rawProgress } from "./faults";
@@ -52,7 +58,6 @@ import { HseStore } from "./hse";
 import { esgOverview } from "./esg";
 import { financialsOverview } from "./financials";
 import { dataQuality, dataSources, listTags } from "./data";
-import { askCopilot } from "./copilot";
 import { HandoverStore } from "./handover";
 import { ModelRegistry, RuleStore } from "./predictive-tools";
 import { ANOMALY_THRESHOLD, anomalyHistory, anomalySummary } from "./anomaly";
@@ -81,6 +86,8 @@ export interface MockBackendOptions {
   /** Check every response against the contract. Default true (cheap, catches bugs early). */
   validateOutput?: boolean;
   role?: RoleId;
+  /** Where the copilot and briefing come from (ADR-0016). Default: the scripted provider. */
+  ai?: AiProvider;
 }
 
 /**
@@ -128,6 +135,7 @@ export class MockBackend {
   private cached: Snapshot | null = null;
   private logNumber = 1;
   private lastTickAt: number;
+  readonly ai: AiProvider;
   /** Told about every change as it happens (the server stores them, ADR-0015). Quiet during a replay. */
   onCommand: ((entry: LoggedCommand) => void) | null = null;
 
@@ -159,6 +167,54 @@ export class MockBackend {
     this.validateOutput = options.validateOutput ?? true;
     this.role = options.role ?? "executive";
     this.lastTickAt = start;
+    this.ai = options.ai ?? new ScriptedAiProvider(this);
+  }
+
+  /**
+   * Like request, and also answers the two AI endpoints (copilot.ask, briefing.daily), which come
+   * from the AI provider. Those are asynchronous because a real model is: it's a call over the
+   * network (ADR-0016). The worker and the server answer every request through here.
+   */
+  async requestAsync<N extends EndpointName>(name: N, input: EndpointInput<N>, asUserId?: string): Promise<EndpointOutput<N>> {
+    if (name !== "copilot.ask" && name !== "briefing.daily") return this.request(name, input, asUserId);
+    const def: EndpointDef = endpoints[name];
+    const parsed = def.input.safeParse(input ?? {});
+    if (!parsed.success) throw new ApiFailure("bad_request", "Invalid request", z.treeifyError(parsed.error));
+    const user = asUserId === undefined ? this.me() : this.world.users.find((u) => u.id === asUserId);
+    if (!user) throw new ApiFailure("internal", `No user ${asUserId}`);
+    const toolbox = this.toolboxFor(user);
+    const output: unknown =
+      name === "copilot.ask"
+        ? await this.ai.ask(parsed.data as EndpointInput<"copilot.ask">, toolbox)
+        : await this.ai.dailyBriefing(parsed.data as EndpointInput<"briefing.daily">, toolbox);
+    // Never trust what a provider (a model, one day) sends back: check it like any answer.
+    const check = def.output.safeParse(output);
+    if (!check.success) throw new ApiFailure("internal", `The AI provider's ${name} answer doesn't match the contract`);
+    return check.data as EndpointOutput<N>;
+  }
+
+  /** The tools a provider may use for this person: reads of what their role can see, made as them. */
+  toolboxFor(user: User): AiToolbox {
+    return {
+      tools: aiToolsFor(user.role),
+      call: async (name, input) => {
+        if (!mayUseTool(user.role, name)) throw new ApiFailure("forbidden", `The ${name} tool isn't available to a ${user.title}`);
+        return this.request(name, input, user.id);
+      },
+    };
+  }
+
+  /** The scripted daily briefing (see ai-provider.ts). */
+  scriptedBriefing(scopeId: string | undefined): Briefing {
+    return scriptedBriefing({
+      world: this.world,
+      scopeId: scopeId ?? ENTERPRISE_SCOPE,
+      assets: this.scope(scopeId),
+      snapshot: this.snapshot(),
+      overlays: this.overlays,
+      alarms: this.alarms,
+      now: this.now(),
+    });
   }
 
   private emit(command: Command): void {
@@ -472,8 +528,7 @@ export class MockBackend {
     "hse.createMoc": (request) => this.hse.createMoc(request, this.me().id, this.now()),
     "hse.mocTransition": (request) => this.hse.transitionMoc(request, this.me().id, this.now()),
     "financials.overview": ({ scopeId }) => this.financials(scopeId),
-    "copilot.ask": (request) =>
-      askCopilot(request, { world: this.world, now: this.now(), request: (name, input) => this.request(name, input) }),
+    "copilot.ask": () => aiOnly("copilot.ask"),
     "models.list": () => ({ items: this.models.list({ workOrders: this.workOrders, snapshot: this.snapshot(), now: this.now() }) }),
     "models.approve": ({ modelId, version }) => {
       const entry = this.models.approve(modelId, version, this.me().id, this.now(), {
@@ -796,16 +851,7 @@ export class MockBackend {
         },
         keys,
       ),
-    "briefing.daily": ({ scopeId }) =>
-      scriptedBriefing({
-        world: this.world,
-        scopeId: scopeId ?? ENTERPRISE_SCOPE,
-        assets: this.scope(scopeId),
-        snapshot: this.snapshot(),
-        overlays: this.overlays,
-        alarms: this.alarms,
-        now: this.now(),
-      }),
+    "briefing.daily": () => aiOnly("briefing.daily"),
 
     "workOrders.list": ({ offset, limit, scopeId, ...filters }) =>
       paginate(this.workOrders.query(filters, this.inScope(scopeId)), offset, limit),
@@ -987,4 +1033,9 @@ function paginate<T>(items: readonly T[], offset: number, limit: number) {
 
 export function createMockBackend(options?: MockBackendOptions): MockBackend {
   return new MockBackend(options);
+}
+
+/** The AI endpoints are answered by the provider, through requestAsync. */
+function aiOnly(name: string): never {
+  throw new ApiFailure("internal", `${name} comes from the AI provider: use requestAsync`);
 }

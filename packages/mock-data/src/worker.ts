@@ -27,7 +27,11 @@ scope.onmessage = (event) => {
   try {
     switch (msg.kind) {
       case "request":
-        scope.postMessage({ kind: "response", id: msg.id, ok: true, data: backend.request(msg.name, msg.input as never) });
+        // Through requestAsync, so the AI endpoints come from the AI provider (ADR-0016).
+        backend.requestAsync(msg.name, msg.input as never).then(
+          (data) => scope.postMessage({ kind: "response", id: msg.id, ok: true, data }),
+          (error: unknown) => scope.postMessage({ kind: "response", id: msg.id, ok: false, error: toApiError(error) }),
+        );
         break;
       case "control":
         scope.postMessage({ kind: "response", id: msg.id, ok: true, data: backend.control(msg.control) });

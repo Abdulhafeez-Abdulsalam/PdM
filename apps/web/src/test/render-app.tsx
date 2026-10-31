@@ -23,15 +23,20 @@ export function renderApp(url: string) {
     addEventListener: (_type, l) => (listener = l),
     terminate: () => {},
     postMessage(msg) {
+      // Pass the real error code through, exactly as the worker does.
+      const fail = (e: unknown) => {
+        const error = e instanceof ApiFailure ? e.toApiError() : { code: "internal" as const, message: String(e) };
+        if (msg.kind !== "live") emit({ kind: "response", id: msg.id, ok: false, error });
+      };
       queueMicrotask(() => {
         try {
-          if (msg.kind === "request") emit({ kind: "response", id: msg.id, ok: true, data: backend.request(msg.name, msg.input as never) });
+          // Requests through requestAsync, as in the worker: the AI endpoints come from the provider.
+          if (msg.kind === "request")
+            backend.requestAsync(msg.name, msg.input as never).then((data) => emit({ kind: "response", id: msg.id, ok: true, data }), fail);
           else if (msg.kind === "control") emit({ kind: "response", id: msg.id, ok: true, data: backend.control(msg.control) });
           else live.handle(msg.message);
         } catch (e) {
-          // Pass the real error code through, exactly as the worker does.
-          const error = e instanceof ApiFailure ? e.toApiError() : { code: "internal" as const, message: String(e) };
-          if (msg.kind !== "live") emit({ kind: "response", id: msg.id, ok: false, error });
+          fail(e);
         }
       });
     },

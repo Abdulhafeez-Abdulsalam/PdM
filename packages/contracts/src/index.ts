@@ -37,4 +37,5 @@ export * from "./realtime";
 export * from "./endpoints";
 export * from "./http";
 export * from "./access";
+export * from "./ai";
 export * from "./worker-protocol";

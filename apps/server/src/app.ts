@@ -22,6 +22,7 @@ import {
   SESSION_PATH,
   SignInRequest,
   SimulationControl,
+  aiToolsFor,
   endpoints,
   fromHttpRequest,
   mayRequest,
@@ -186,7 +187,8 @@ export function buildServer({ backend, logger = false, tickMs, db = openDatabase
           return fail(reply, { code: "forbidden", message: `${who.user.title} can't do that (${who.user.name})` });
         }
         try {
-          return backend.request(name, input as never, who.user.id);
+          // Awaited here, so a failure from the AI provider is caught below like any other.
+          return await backend.requestAsync(name, input as never, who.user.id);
         } catch (error) {
           if (error instanceof ApiFailure) return fail(reply, error.toApiError());
           // Anything else is a bug: the details go to the server's log, never to the browser.
@@ -256,6 +258,12 @@ export function buildServer({ backend, logger = false, tickMs, db = openDatabase
         connection.close();
       });
     });
+  });
+  // The tools an AI model would be given for the signed-in person (ADR-0016): look before trusting.
+  app.get(`${API_PREFIX}/ai/tools`, async (request, reply) => {
+    const who = signedIn(request);
+    if (!who) return signInFirst(reply);
+    return { provider: backend.ai.name, role: who.user.role, tools: aiToolsFor(who.user.role) };
   });
   app.get(`${API_PREFIX}/health`, async () => ({ ok: true }));
 

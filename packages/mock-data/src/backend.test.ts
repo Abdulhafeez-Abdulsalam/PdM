@@ -47,7 +47,7 @@ describe("world", () => {
 
 describe("every endpoint returns contract-valid data", () => {
   // validateOutput is on, so any shape mismatch throws.
-  it("answers all 24 endpoints", () => {
+  it("answers all 24 endpoints", async () => {
     const b = shared;
     const asset = b.request("assets.list", { limit: 1 }).items[0];
     expect(asset).toBeDefined();
@@ -72,7 +72,7 @@ describe("every endpoint returns contract-valid data", () => {
     b.request("alarms.summary", {});
     b.request("events.list", { from, to });
     b.request("kpis.get", {});
-    b.request("briefing.daily", { scopeId: "CBC" });
+    await b.requestAsync("briefing.daily", { scopeId: "CBC" });
     b.request("workOrders.list", {});
     expect(alarm.id).toMatch(/^ALM-/);
   });

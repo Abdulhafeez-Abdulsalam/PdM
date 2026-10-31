@@ -1,6 +1,6 @@
 # ADR-0010: Scripted AI behind a provider interface
 
-- **Status:** Accepted
+- **Status:** Accepted (extended by [ADR-0016](0016-ai-provider-and-role-filtered-tools.md): the provider on the server, with role-filtered tools)
 - **Date:** 2026-10-10
 
 ## Context

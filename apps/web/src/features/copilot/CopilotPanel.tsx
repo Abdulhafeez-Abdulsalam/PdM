@@ -5,7 +5,7 @@
  * dialog that says exactly what will be created. Open it from the top bar or with ".".
  */
 import { useApiMutation } from "@pdm/api-client";
-import type { CopilotAction, CopilotAnswer } from "@pdm/contracts";
+import { mayUseTool, type AiToolName, type CopilotAction, type CopilotAnswer } from "@pdm/contracts";
 import { Button, Modal, Sheet, inputClass } from "@pdm/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -19,13 +19,20 @@ import { canDo } from "../../shared/roles/roles";
 import { useGlobalSearch } from "../../shared/time-range";
 import { useToasts } from "../../shared/toast";
 
-const EXAMPLES = ["example1", "example2", "example3", "example4"] as const;
+/** The example questions, and the tool each needs: only those the role can ask are offered (ADR-0016). */
+const EXAMPLES: readonly { key: string; tool: AiToolName }[] = [
+  { key: "example1", tool: "predictions.list" },
+  { key: "example2", tool: "alarms.list" },
+  { key: "example3", tool: "financials.overview" },
+  { key: "example4", tool: "inventory.overview" },
+];
 
 export function CopilotPanel() {
   const { t } = useTranslation();
   const open = useOverlays((s) => s.open === "copilot");
   const { show, close, answers, addAnswer, takePending } = useOverlays();
   const { scopeId } = useGlobalSearch();
+  const role = usePreferences((p) => p.role);
   const [question, setQuestion] = useState("");
   const [confirming, setConfirming] = useState<Extract<CopilotAction, { kind: "create_work_order" }> | null>(null);
   const toast = useToasts((s) => s.show);
@@ -71,7 +78,7 @@ export function CopilotPanel() {
             <div className="flex flex-col gap-2 text-sm">
               <p className="text-fg-muted">{t("copilot.empty")}</p>
               <ul className="flex flex-col gap-1">
-                {EXAMPLES.map((k) => (
+                {EXAMPLES.filter((e) => mayUseTool(role, e.tool)).map(({ key: k }) => (
                   <li key={k}>
                     <Button size="sm" variant="ghost" onClick={() => ask(t(`copilot.${k}`))}>
                       {t(`copilot.${k}`)}
