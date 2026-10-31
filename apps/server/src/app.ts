@@ -1,36 +1,43 @@
 /**
- * The PdM server (Phase 5; ADR-0012, ADR-0013). It answers every endpoint in @pdm/contracts over
- * HTTP, at the method and path the contract gives (GET /api/assets/:assetId…), by running the
- * same plant simulation as demo mode. Requests are read back with the shared fromHttpRequest,
- * and the simulation checks every input and output against the contracts, exactly as in the
- * browser. Failures come back as the contract's ApiError with a matching HTTP status.
+ * The PdM server (Phase 5; ADR-0012, ADR-0013, ADR-0014). It answers every endpoint in
+ * @pdm/contracts over HTTP, at the method and path the contract gives (GET /api/assets/:assetId…),
+ * by running the same plant simulation as demo mode. Requests are read back with the shared
+ * fromHttpRequest, and the simulation checks every input and output against the contracts, exactly
+ * as in the browser. Failures come back as the contract's ApiError with a matching HTTP status.
  *
  * Live values travel over one WebSocket per browser (GET /api/live): the browser says which
  * tags and alarms it wants, and the server pushes changes and the simulation status once a
  * second. Everyone shares one plant and one simulated clock, so two browsers see the same thing.
  *
- * For now one simulated plant serves everyone, and the browser says which demo role it's
- * playing in an X-Demo-Role header. Chunk 3 replaces that with sign-in and sessions, and the
- * server's own role checks.
+ * Everything except the sign-in page needs a session (a cookie, see sessions.ts), and every
+ * request is checked against the signed-in person's role with the same rules the screens use
+ * (contracts/src/access.ts): not signed in → 401, not allowed → 403.
  */
 import {
   API_PREFIX,
   ClientMessage,
   HTTP_STATUS,
+  LIVE_CLOSE_SIGNED_OUT,
   LIVE_PATH,
-  RoleId,
+  SESSION_PATH,
+  SignInRequest,
   SimulationControl,
   endpoints,
   fromHttpRequest,
+  mayRequest,
+  type AccessLookups,
   type ApiError,
   type EndpointName,
   type LiveFrame,
+  type SessionInfo,
+  type User,
 } from "@pdm/contracts";
 import { ApiFailure, type MockBackend } from "@pdm/mock-data";
+import cookie from "@fastify/cookie";
 import websocket, { type WebSocket } from "@fastify/websocket";
 import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
+import { SESSION_COOKIE, SessionStore, type Session } from "./sessions";
 
-export const DEMO_ROLE_HEADER = "x-demo-role";
 /** The biggest message a browser may send: a full 300-tag subscription is about 10 KB. */
 const MAX_LIVE_MESSAGE_BYTES = 64 * 1024;
 /** A browser that has this much unsent data waiting is too slow to keep up: drop it, and it reconnects. */
@@ -45,11 +52,24 @@ export interface ServerOptions {
    * when running). Leave it out to tick by hand.
    */
   tickMs?: number;
+  /** Tests pass one with a clock they control. */
+  sessions?: SessionStore;
 }
 
-export function buildServer({ backend, logger = false, tickMs }: ServerOptions): FastifyInstance {
+export function buildServer({ backend, logger = false, tickMs, sessions = new SessionStore() }: ServerOptions): FastifyInstance {
   const app = Fastify({ logger });
-  const sockets = new Set<WebSocket>();
+  /** Every open live connection, and the session it belongs to. */
+  const sockets = new Map<WebSocket, string>();
+
+  const fail = (reply: FastifyReply, error: ApiError) => reply.status(HTTP_STATUS[error.code]).send(error);
+  const signInFirst = (reply: FastifyReply) => fail(reply, { code: "unauthenticated", message: "Sign in first" });
+
+  /** Who sent this request: their session and their current record (a role change applies at once). */
+  const signedIn = (request: FastifyRequest): { session: Session; user: User } | null => {
+    const session = sessions.use(request.cookies[SESSION_COOKIE]);
+    const user = session && backend.world.users.find((u) => u.id === session.userId);
+    return session && user ? { session, user } : null;
+  };
 
   const sendFrame = (socket: WebSocket, frame: LiveFrame) => {
     if (socket.readyState !== socket.OPEN) return;
@@ -62,23 +82,69 @@ export function buildServer({ backend, logger = false, tickMs }: ServerOptions):
   /** Everyone sees the same clock, speed and storyline, so a change is news for every browser. */
   const broadcastStatus = () => {
     const frame: LiveFrame = { kind: "status", status: backend.status() };
-    for (const socket of sockets) sendFrame(socket, frame);
+    for (const socket of sockets.keys()) sendFrame(socket, frame);
+  };
+  /** Close the live connections of sessions that have ended or gone idle. */
+  const closeSignedOut = () => {
+    for (const [socket, token] of sockets) if (!sessions.peek(token)) socket.close(LIVE_CLOSE_SIGNED_OUT, "Signed out");
   };
   if (tickMs !== undefined) {
     const timer = setInterval(() => {
       backend.tick();
       broadcastStatus();
+      closeSignedOut();
     }, tickMs);
     app.addHook("onClose", async () => clearInterval(timer));
   }
 
-  /** The demo role the browser is playing, if it said (chunk 1 only). */
-  const applyDemoRole = (request: FastifyRequest) => {
-    const role = RoleId.safeParse(request.headers[DEMO_ROLE_HEADER]);
-    if (role.success) backend.control({ type: "set_role", role: role.data });
-  };
+  void app.register(cookie);
+  // Changes must come as JSON. A plain-text POST is something a page on another site can send
+  // without asking first; JSON makes the browser ask (and this server never says yes).
+  app.removeContentTypeParser("text/plain");
+  // And a change sent by a browser must come from a page on this site.
+  app.addHook("onRequest", async (request, reply) => {
+    if (request.method !== "GET" && request.method !== "HEAD") return sameSiteOnly(request, reply);
+  });
 
-  const fail = (reply: FastifyReply, error: ApiError) => reply.status(HTTP_STATUS[error.code]).send(error);
+  // ─── Sign-in ───────────────────────────────────────────────────────────────
+
+  const session = `${API_PREFIX}${SESSION_PATH}`;
+  // The people to choose from: the one thing open to everyone, since it IS the sign-in page.
+  app.get(`${session}/people`, async () => backend.world.users);
+  app.get(session, async (request, reply) => {
+    const who = signedIn(request);
+    return who ? ({ user: who.user } satisfies SessionInfo) : signInFirst(reply);
+  });
+  app.post(session, async (request, reply) => {
+    const body = SignInRequest.safeParse(request.body);
+    if (!body.success) return fail(reply, { code: "bad_request", message: "Say who is signing in" });
+    const user = backend.world.users.find((u) => u.id === body.data.userId);
+    if (!user) return fail(reply, { code: "not_found", message: `No such person: ${body.data.userId}` });
+    // A fresh token at every sign-in, and the old one ends: a token someone saw earlier is worthless.
+    sessions.end(request.cookies[SESSION_COOKIE]);
+    const created = sessions.create(user.id);
+    void reply.setCookie(SESSION_COOKIE, created.token, { httpOnly: true, sameSite: "strict", path: "/" });
+    return { user } satisfies SessionInfo;
+  });
+  app.post(`${session}/end`, async (request, reply) => {
+    const token = request.cookies[SESSION_COOKIE];
+    sessions.end(token);
+    for (const [socket, owner] of sockets) if (owner === token) socket.close(LIVE_CLOSE_SIGNED_OUT, "Signed out");
+    void reply.clearCookie(SESSION_COOKIE, { path: "/" });
+    return { ok: true };
+  });
+
+  // ─── The plant's endpoints ─────────────────────────────────────────────────
+
+  const lookups: AccessLookups = {
+    workOrderStatus: (workOrderId) => {
+      try {
+        return backend.request("workOrders.get", { workOrderId }).status;
+      } catch {
+        return null;
+      }
+    },
+  };
 
   for (const name of Object.keys(endpoints) as EndpointName[]) {
     const def = endpoints[name];
@@ -86,6 +152,8 @@ export function buildServer({ backend, logger = false, tickMs }: ServerOptions):
       method: def.method,
       url: `${API_PREFIX}${def.path}`,
       handler: async (request, reply) => {
+        const who = signedIn(request);
+        if (!who) return signInFirst(reply);
         let input: unknown;
         try {
           input = fromHttpRequest(
@@ -97,9 +165,14 @@ export function buildServer({ backend, logger = false, tickMs }: ServerOptions):
         } catch (error) {
           return fail(reply, { code: "bad_request", message: (error as Error).message });
         }
-        applyDemoRole(request);
+        // Checked against the role here; an input that isn't valid is refused by the simulation
+        // below (400) before it changes anything.
+        const checked = def.input.safeParse(input);
+        if (checked.success && !mayRequest(who.user.role, name, checked.data as never, lookups)) {
+          return fail(reply, { code: "forbidden", message: `${who.user.title} can't do that (${who.user.name})` });
+        }
         try {
-          return backend.request(name, input as never);
+          return backend.request(name, input as never, who.user.id);
         } catch (error) {
           if (error instanceof ApiFailure) return fail(reply, error.toApiError());
           // Anything else is a bug: the details go to the server's log, never to the browser.
@@ -110,19 +183,32 @@ export function buildServer({ backend, logger = false, tickMs }: ServerOptions):
     });
   }
 
-  // The simulation panel's controls: speed, chaos mode, the storyline, the demo role.
+  // ─── Simulation and live values ────────────────────────────────────────────
+
+  // The simulation panel's controls: speed, chaos mode, the storyline. One plant for everyone.
   app.post(`${API_PREFIX}/simulation/control`, async (request, reply) => {
+    if (!signedIn(request)) return signInFirst(reply);
     const control = SimulationControl.safeParse(request.body);
     if (!control.success) return fail(reply, { code: "bad_request", message: "Not a simulation control" });
+    if (control.data.type === "set_role") {
+      return fail(reply, { code: "forbidden", message: "Your role comes from who you signed in as" });
+    }
     const status = backend.control(control.data);
     broadcastStatus();
     return status;
   });
+  app.get(`${API_PREFIX}/simulation/status`, async (request, reply) => (signedIn(request) ? backend.status() : signInFirst(reply)));
 
   void app.register(websocket, { options: { maxPayload: MAX_LIVE_MESSAGE_BYTES } });
   void app.register(async (live) => {
     live.get(`${API_PREFIX}${LIVE_PATH}`, { websocket: true, preValidation: sameSiteOnly }, (socket, request) => {
-      sockets.add(socket);
+      const who = signedIn(request);
+      if (!who) {
+        // Said with a close code the browser can read, so it knows to show the sign-in page.
+        socket.close(LIVE_CLOSE_SIGNED_OUT, "Sign in first");
+        return;
+      }
+      sockets.set(socket, who.session.token);
       const connection = backend.connect((message) => sendFrame(socket, { kind: "live", message }));
       sendFrame(socket, { kind: "status", status: backend.status() });
 
@@ -150,7 +236,6 @@ export function buildServer({ backend, logger = false, tickMs }: ServerOptions):
       });
     });
   });
-  app.get(`${API_PREFIX}/simulation/status`, async () => backend.status());
   app.get(`${API_PREFIX}/health`, async () => ({ ok: true }));
 
   // An unknown /api path is an ApiError too, so the browser always gets the same shape.
@@ -161,9 +246,10 @@ export function buildServer({ backend, logger = false, tickMs }: ServerOptions):
 }
 
 /**
- * Browsers let any web page open a WebSocket to any address, this computer's included, and send
- * this site's cookies with it. So a browser's connection must come from a page on this same site.
- * (Programs that aren't browsers send no Origin; chunk 3's sign-in covers those.)
+ * Browsers let any web page send requests, and open WebSockets, to any address (this computer's
+ * included), with this site's cookies attached. So a browser's change or live connection must come
+ * from a page on this same site. Programs that aren't browsers send no Origin, and need a session
+ * like everyone else.
  */
 async function sameSiteOnly(request: FastifyRequest, reply: FastifyReply) {
   const origin = request.headers.origin;
@@ -175,7 +261,9 @@ async function sameSiteOnly(request: FastifyRequest, reply: FastifyReply) {
     // "null" or nonsense: not this site.
   }
   if (host !== request.headers.host) {
-    return reply.status(403).send({ code: "bad_request", message: "Live connections are only for pages on this site" });
+    return reply
+      .status(HTTP_STATUS.forbidden)
+      .send({ code: "forbidden", message: "Only pages on this site may do that" } satisfies ApiError);
   }
 }
 

@@ -1,3 +1,4 @@
+import { MODULE_IDS } from "@pdm/contracts";
 import { describe, expect, it } from "vitest";
 import { ALL_MODULE_IDS, ALL_ROLES, accessFor, canDo, canSee, homeFor } from "./roles";
 
@@ -20,6 +21,10 @@ describe("role-based views (ADR-0008, IA §4)", () => {
       expect(canSee(role, homeFor(role)), role).toBe(true);
       expect(canSee(role, "command-center"), role).toBe(true);
     }
+  });
+
+  it("has the same modules as the rules the server checks (one copy, in the contracts)", () => {
+    expect([...ALL_MODULE_IDS].sort()).toEqual([...MODULE_IDS].sort());
   });
 
   it("only operators acknowledge alarms; several roles can raise work orders from them", () => {

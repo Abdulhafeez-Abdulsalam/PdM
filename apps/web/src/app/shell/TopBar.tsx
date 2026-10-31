@@ -1,12 +1,13 @@
 import { useConnectionState } from "@pdm/api-client";
 import { RoleId } from "@pdm/contracts";
-import { Select, cx } from "@pdm/ui";
+import { Button, Select, cx } from "@pdm/ui";
 import { Link } from "@tanstack/react-router";
 import { Menu, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { THEMES, TIME_ZONE_MODES, UNIT_SYSTEMS, usePreferences } from "../../shared/preferences";
 import { ScopeSelector } from "../../features/hierarchy/ScopeSelector";
 import { useOverlays } from "../../shared/overlays";
+import { useSession } from "../SessionGate";
 import { TIME_RANGES, useGlobalSearch, useSetGlobalSearch } from "../../shared/time-range";
 
 export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
@@ -42,12 +43,7 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         <AssistButtons />
         <TimeRangeSelect />
         <span className="hidden sm:inline-flex">
-          <Select
-            label={t("topBar.role")}
-            value={prefs.role}
-            options={RoleId.options.map((r) => ({ value: r, label: t(`roles.${r}`) }))}
-            onChange={(role) => prefs.set({ role })}
-          />
+          <WhoAmI />
         </span>
         <DisplayMenu />
         <ConnectionIndicator />
@@ -136,15 +132,37 @@ function DisplayMenu() {
           onChange={(timeZone) => prefs.set({ timeZone })}
         />
         <span className="sm:hidden">
-          <Select
-            label={t("topBar.role")}
-            value={prefs.role}
-            options={RoleId.options.map((r) => ({ value: r, label: t(`roles.${r}`) }))}
-            onChange={(role) => prefs.set({ role })}
-          />
+          <WhoAmI />
         </span>
       </div>
     </details>
+  );
+}
+
+/** Demo mode: the role to view the app as. Server mode: who is signed in, and signing out (ADR-0014). */
+function WhoAmI() {
+  const { t } = useTranslation();
+  const prefs = usePreferences();
+  const session = useSession();
+  if (session) {
+    return (
+      <span className="flex items-center gap-2 text-sm">
+        <span className="max-w-40 truncate">
+          <span className="text-fg-muted">{t("session.signedInAs")}</span> <span className="font-medium">{session.user.name}</span>
+        </span>
+        <Button size="sm" onClick={session.signOut}>
+          {t("session.signOut")}
+        </Button>
+      </span>
+    );
+  }
+  return (
+    <Select
+      label={t("topBar.role")}
+      value={prefs.role}
+      options={RoleId.options.map((r) => ({ value: r, label: t(`roles.${r}`) }))}
+      onChange={(role) => prefs.set({ role })}
+    />
   );
 }
 

@@ -66,7 +66,7 @@ export const list = <T extends z.ZodType>(item: T) => z.object({ items: z.array(
 
 /** Every failed request returns this shape. */
 export const ApiError = z.object({
-  code: z.enum(["bad_request", "not_found", "conflict", "too_many_tags", "unavailable", "internal"]),
+  code: z.enum(["bad_request", "unauthenticated", "forbidden", "not_found", "conflict", "too_many_tags", "unavailable", "internal"]),
   message: z.string(),
   details: z.unknown().optional(),
 });

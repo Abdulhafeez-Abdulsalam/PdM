@@ -10,6 +10,8 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { formatDate } from "../../shared/format";
+import { usePreferences } from "../../shared/preferences";
+import { canDo } from "../../shared/roles/roles";
 import { useToasts } from "../../shared/toast";
 import { ReliabilityNav } from "./ReliabilityNav";
 
@@ -19,6 +21,10 @@ export function RcaListPage() {
   const { t } = useTranslation();
   const search = searchSchema.parse(useSearch({ strict: false }));
   const list = useApiQuery("rca.list", {}, { refetchInterval: 60_000 });
+  const mayStart = canDo(
+    usePreferences((p) => p.role),
+    "rca.edit",
+  );
 
   useEffect(() => {
     document.title = `${t("rca.listTitle")} · ${t("app.name")}`;
@@ -88,7 +94,7 @@ export function RcaListPage() {
             </div>
           )}
         </section>
-        <NewRca defaultAsset={search.asset ?? ""} />
+        {mayStart && <NewRca defaultAsset={search.asset ?? ""} />}
       </div>
     </div>
   );

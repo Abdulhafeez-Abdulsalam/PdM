@@ -2,7 +2,7 @@
   "name": "@pdm/server",
   "version": "0.1.0",
   "private": true,
-  "description": "The PdM server: answers every endpoint in @pdm/contracts over HTTP and pushes live values over a WebSocket, running one shared plant simulation (Phase 5, ADR-0012, ADR-0013).",
+  "description": "The PdM server: answers every endpoint in @pdm/contracts over HTTP and pushes live values over a WebSocket, running one shared plant simulation, with demo sign-in and role checks (Phase 5, ADR-0012–0014).",
   "type": "module",
   "scripts": {
     "dev": "tsx watch src/main.ts",
@@ -12,6 +12,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@fastify/cookie": "11.1.3",
     "@fastify/websocket": "11.3.4",
     "@pdm/contracts": "*",
     "@pdm/mock-data": "*",
@@ -21,6 +22,7 @@
     "@pdm/api-client": "*",
     "@types/node": "^24.19.2",
     "@types/ws": "^8.18.1",
-    "tsx": "^4.23.15"
+    "tsx": "^4.23.15",
+    "ws": "8.22.0"
   }
 }

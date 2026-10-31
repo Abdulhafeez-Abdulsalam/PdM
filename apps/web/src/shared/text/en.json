@@ -95,6 +95,16 @@
     "units": "Units",
     "timeZone": "Time zone"
   },
+  "session": {
+    "title": "Sign in",
+    "intro": "Choose who you are. This is a demo sign-in, so there's no password: the server starts a session for that person and checks every request against their role.",
+    "signingIn": "Signing in…",
+    "checking": "Checking who you are…",
+    "unreachable": "Can't reach the server. Is it running (npm run dev:server)?",
+    "retry": "Try again",
+    "signedInAs": "Signed in as",
+    "signOut": "Sign out"
+  },
   "timeRange": {
     "live": "Live",
     "1h": "Last hour",

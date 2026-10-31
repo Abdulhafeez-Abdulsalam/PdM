@@ -2,42 +2,13 @@
  * Work-order lifecycle rules for the UI: which moves a role may make, how Kanban columns map
  * to statuses, and what dropping a card on a column means. Pure functions — easy to test.
  *
- * The moves themselves come from WORK_ORDER_TRANSITIONS in the contract, so the UI and the
- * backend can never disagree about what's allowed; this file only adds "who".
+ * The moves themselves, and who may make them, come from the contracts, so the UI and the
+ * server can never disagree about what's allowed.
  */
-import { WORK_ORDER_TRANSITIONS, canTransition, type RoleId, type WorkOrder, type WorkOrderStatus } from "@pdm/contracts";
-import { canDo, type Action } from "../../shared/roles/roles";
+import { canTransition, mayMove, type RoleId, type WorkOrder, type WorkOrderStatus } from "@pdm/contracts";
 
-/** The permission needed to move a work order INTO a status. */
-const ACTION_FOR: Record<WorkOrderStatus, Action> = {
-  requested: "workOrder.schedule",
-  triaged: "workOrder.schedule",
-  planned: "workOrder.schedule",
-  scheduled: "workOrder.schedule",
-  approved: "workOrder.approve",
-  in_progress: "workOrder.execute",
-  completed: "workOrder.close",
-  verified: "workOrder.verify",
-  closed: "workOrder.schedule",
-  cancelled: "workOrder.cancel",
-};
-
-/** Reopening completed work (completed → in_progress) is a verifier's call, not the technician's. */
-function actionFor(from: WorkOrderStatus, to: WorkOrderStatus): Action {
-  return from === "completed" && to === "in_progress" ? "workOrder.verify" : ACTION_FOR[to];
-}
-
-export function mayMove(role: RoleId, from: WorkOrderStatus, to: WorkOrderStatus): boolean {
-  if (to === "completed") return from === "in_progress" && canDo(role, "workOrder.close");
-  return canTransition(from, to) && canDo(role, actionFor(from, to));
-}
-
-/** Every next status this role may move this work order to (close-out included as "completed"). */
-export function allowedMoves(role: RoleId, wo: Pick<WorkOrder, "status">): WorkOrderStatus[] {
-  const next: WorkOrderStatus[] = [...WORK_ORDER_TRANSITIONS[wo.status]];
-  if (wo.status === "in_progress") next.unshift("completed");
-  return next.filter((to) => mayMove(role, wo.status, to));
-}
+/** Who may make which move is decided in the contracts, so the board and the server agree (ADR-0014). */
+export { allowedMoves, mayMove } from "@pdm/contracts";
 
 /** Text-catalog key for a move's button: moving completed work back to in-progress is a "reopen". */
 export function moveLabelKey(from: WorkOrderStatus, to: WorkOrderStatus): string {

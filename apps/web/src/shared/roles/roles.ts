@@ -1,124 +1,13 @@
 /**
- * Simple role-based views (ADR-0008). Decides what each role SEES — for usability.
- * ⚠️ This is NOT security: anything sent to the browser can be read. The backend must
- * check every request.
- *
- * The matrix below is the table from information architecture §4, one row per module,
- * one letter per role in this column order:
+ * Role-based views (ADR-0008). The rules (the module matrix, the actions, who may move a work
+ * order) live in @pdm/contracts, so the screens and the server use one copy (ADR-0014): what this
+ * decides to SHOW is exactly what the server will ALLOW. In demo mode nothing checks, and the
+ * role picker lets you try each role; in server mode the server refuses anything else (403).
  */
 import { RoleId } from "@pdm/contracts";
 import { BUILT_MODULES, MODULES, type ModuleId } from "../modules";
 
-const COLUMNS: readonly RoleId[] = [
-  "executive",
-  "plant_manager",
-  "reliability_engineer",
-  "condition_analyst",
-  "control_room_operator",
-  "maintenance_planner",
-  "field_technician",
-  "hse_officer",
-  "procurement",
-  "esg_lead",
-  "system_admin",
-];
-
-/** U = use (view + act) · V = view only · - = hidden */
-const MATRIX: Record<ModuleId, string> = {
-  //                 Exe PlM Rel CMA Ops Pln Tec HSE Pro ESG Adm
-  "command-center": "UUUUUUVUVVV",
-  assets: /*      */ "VUUUUUVVVVU",
-  predictive: /*  */ "VVUUVV----U",
-  alarms: /*      */ "VVVVUVVV--V",
-  maintenance: /* */ "VUVVVUVVV-V",
-  reliability: /* */ "VVUV-V-V--V",
-  operations: /*  */ "VUVVUV-V-VV",
-  twin: /*        */ "VVUUUVVV--V",
-  inventory: /*   */ "VVV--UV-U-V",
-  hse: /*         */ "VVV-VVVU-VV",
-  esg: /*         */ "VV-----V-UV",
-  financials: /*  */ "UUV--V--VVV",
-  reports: /*     */ "UUUUUU-UUUU",
-  field: /*       */ "-V---VUV--V",
-  data: /*        */ "--VU------U",
-  admin: /*       */ "----------U",
-};
-
-export type Access = "use" | "view" | "none";
-
-export function accessFor(role: RoleId, module: ModuleId): Access {
-  const letter = MATRIX[module][COLUMNS.indexOf(role)];
-  return letter === "U" ? "use" : letter === "V" ? "view" : "none";
-}
-
-/** Should this module appear in the menu / be openable for this role? */
-export function canSee(role: RoleId, module: ModuleId): boolean {
-  return accessFor(role, module) !== "none";
-}
-
-// ─── Actions (buttons) ────────────────────────────────────────────────────────
-
-export const ACTIONS = {
-  "alarm.acknowledge": ["control_room_operator"],
-  "alarm.shelve": ["control_room_operator"],
-  "alarm.createWorkOrder": ["control_room_operator", "plant_manager", "maintenance_planner", "reliability_engineer"],
-  "prediction.feedback": ["reliability_engineer", "condition_analyst", "field_technician"],
-  "prediction.triage": ["reliability_engineer", "condition_analyst"],
-  "prediction.createWorkOrder": ["reliability_engineer", "condition_analyst", "maintenance_planner", "plant_manager"],
-  "workOrder.approve": ["plant_manager"],
-  /** Triage, plan, schedule, re-plan, and finally close. */
-  "workOrder.schedule": ["maintenance_planner"],
-  "workOrder.execute": ["field_technician"],
-  /** The technician's close-out (ISO 14224 coding). */
-  "workOrder.close": ["field_technician"],
-  "workOrder.verify": ["maintenance_planner", "reliability_engineer"],
-  "workOrder.cancel": ["maintenance_planner", "plant_manager"],
-  /** Place a purchase order for spare parts. */
-  "inventory.order": ["procurement", "maintenance_planner"],
-  /** Issue a permit to work. */
-  "permit.issue": ["hse_officer"],
-  /** Report a near miss, equipment damage or a release: anyone who works on site. */
-  "incident.report": [
-    "hse_officer",
-    "field_technician",
-    "control_room_operator",
-    "maintenance_planner",
-    "plant_manager",
-    "reliability_engineer",
-  ],
-  /** Propose a change; review and approve (or reject) it; mark it implemented. */
-  "moc.propose": [
-    "reliability_engineer",
-    "condition_analyst",
-    "maintenance_planner",
-    "plant_manager",
-    "hse_officer",
-    "control_room_operator",
-  ],
-  "moc.review": ["hse_officer", "plant_manager"],
-  /** Leave a note for the next shift. */
-  "handover.note": [
-    "control_room_operator",
-    "plant_manager",
-    "maintenance_planner",
-    "reliability_engineer",
-    "condition_analyst",
-    "hse_officer",
-  ],
-  "moc.implement": ["maintenance_planner"],
-  "threshold.edit": ["reliability_engineer", "condition_analyst", "system_admin"],
-  "model.approve": ["reliability_engineer", "condition_analyst", "system_admin"],
-  "admin.manage": ["system_admin"],
-} as const satisfies Record<string, readonly RoleId[]>;
-
-export type Action = keyof typeof ACTIONS | "asset.addToWatchlist" | "layout.edit";
-
-/** Should this button be shown to this role? */
-export function canDo(role: RoleId, action: Action): boolean {
-  if (action === "asset.addToWatchlist") return canSee(role, "assets");
-  if (action === "layout.edit") return accessFor(role, "command-center") === "use";
-  return (ACTIONS[action] as readonly RoleId[]).includes(role);
-}
+export { ACTIONS, accessFor, canDo, canSee, type Access, type Action } from "@pdm/contracts";
 
 // ─── Home pages (information architecture §5) ────────────────────────────────
 

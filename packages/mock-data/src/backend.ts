@@ -107,6 +107,8 @@ export class MockBackend {
   private readonly hubs = new Set<LiveHub>();
   private readonly validateOutput: boolean;
   private role: RoleId;
+  /** Set only while answering a request for a known person (see request). */
+  private actingUserId: string | null = null;
   private cached: Snapshot | null = null;
   private logNumber = 1;
 
@@ -167,8 +169,22 @@ export class MockBackend {
   /**
    * Answer one API request. Input is checked against the contract first (bad input → bad_request),
    * and in development the output is checked too, so a bug in the mock can't leak bad data into the UI.
+   *
+   * `asUserId`: who is asking, when the server knows (a signed-in person). Without it, as in demo
+   * mode, "me" is the first person with the role chosen in the simulation panel.
    */
-  request<N extends EndpointName>(name: N, input: EndpointInput<N>): EndpointOutput<N> {
+  request<N extends EndpointName>(name: N, input: EndpointInput<N>, asUserId?: string): EndpointOutput<N> {
+    if (asUserId === undefined) return this.answer(name, input);
+    const before = this.actingUserId;
+    this.actingUserId = asUserId;
+    try {
+      return this.answer(name, input);
+    } finally {
+      this.actingUserId = before;
+    }
+  }
+
+  private answer<N extends EndpointName>(name: N, input: EndpointInput<N>): EndpointOutput<N> {
     const def: EndpointDef | undefined = endpoints[name];
     if (!def) throw new ApiFailure("not_found", `Unknown endpoint ${String(name)}`);
     const parsed = def.input.safeParse(input ?? {});
@@ -236,6 +252,11 @@ export class MockBackend {
   }
 
   private me(): User {
+    if (this.actingUserId !== null) {
+      const user = this.world.users.find((u) => u.id === this.actingUserId);
+      if (!user) throw new ApiFailure("internal", `No user ${this.actingUserId}`);
+      return user;
+    }
     const user = this.world.usersWithRole(this.role)[0];
     if (!user) throw new ApiFailure("internal", `No user with role ${this.role}`);
     return user;

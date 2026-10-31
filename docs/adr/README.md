@@ -21,5 +21,6 @@ Rules:
 | [0011](0011-typescript-6-for-tooling.md) | TypeScript 6 (not 7) so linting works | Accepted |
 | [0012](0012-fastify-server-and-http-format.md) | A Fastify server, and how requests travel over HTTP | Accepted |
 | [0013](0013-live-values-over-a-websocket.md) | Live values over a WebSocket, one shared plant | Accepted |
+| [0014](0014-sessions-and-server-role-checks.md) | Demo sign-in, sessions, and the server's role checks | Accepted |
 
 Template for new ADRs: [template.md](template.md).

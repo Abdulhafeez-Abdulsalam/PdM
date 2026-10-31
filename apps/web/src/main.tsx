@@ -6,8 +6,9 @@ import "./shared/text/i18n";
 import { RouterProvider } from "@tanstack/react-router";
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import { createBackend } from "./app/backend";
+import { SERVER_MODE, createBackend, createSession } from "./app/backend";
 import { Providers } from "./app/providers";
+import { SessionGate } from "./app/SessionGate";
 import { createAppRouter } from "./app/router";
 
 const router = createAppRouter();
@@ -18,7 +19,13 @@ if (!root) throw new Error("Missing <div id='root'> in index.html");
 createRoot(root).render(
   <StrictMode>
     <Providers backend={createBackend()}>
-      <RouterProvider router={router} />
+      {SERVER_MODE ? (
+        <SessionGate session={createSession()}>
+          <RouterProvider router={router} />
+        </SessionGate>
+      ) : (
+        <RouterProvider router={router} />
+      )}
     </Providers>
   </StrictMode>,
 );

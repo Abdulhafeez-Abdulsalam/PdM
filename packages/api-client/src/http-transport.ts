@@ -7,16 +7,21 @@
  * as the same "live" and "status" messages the worker posts. If the connection drops, it is
  * opened again (waiting a little longer each time), and the new connection is told again which
  * tags and alarms this browser is watching.
+ *
+ * Who is asking travels in the session cookie (ADR-0014), which the browser attaches by itself.
+ * When the server says nobody is signed in (a 401, or the live connection closed with
+ * LIVE_CLOSE_SIGNED_OUT), the transport stops reconnecting and tells onSignedOut listeners, so the
+ * app can show the sign-in page; after signing in, resume() starts again.
  */
 import {
   API_PREFIX,
   ApiError,
+  LIVE_CLOSE_SIGNED_OUT,
   LIVE_PATH,
   toHttpRequest,
   type ClientMessage,
   type EndpointName,
   type LiveFrame,
-  type RoleId,
   type ServerMessage,
   type SimulationControl,
   type SimulationStatus,
@@ -25,8 +30,6 @@ import { ApiRequestError, type ConnectionState, type Transport } from "./transpo
 
 const REQUEST_TIMEOUT_MS = 15_000;
 const NO_CONNECTION = { code: "unavailable", message: "No connection" } as const;
-/** Chunk 1 only: tells the server which demo role this browser is playing (sessions replace it in chunk 3). */
-const DEMO_ROLE_HEADER = "X-Demo-Role";
 /** Wait before reconnecting: 1 s, then 2, 4, 8, and at most 10 s, so a stopped server isn't hammered. */
 const RETRY_FIRST_MS = 1000;
 const RETRY_MAX_MS = 10_000;
@@ -38,6 +41,8 @@ export interface HttpTransportOptions {
   fetch?: typeof fetch;
   /** Open the live connection. Off in tests that only make requests. */
   live?: boolean;
+  /** Tests open the WebSocket themselves (to send a cookie, which a browser does by itself). */
+  openSocket?: (url: string) => WebSocket;
 }
 
 export class HttpTransport implements Transport {
@@ -48,11 +53,14 @@ export class HttpTransport implements Transport {
   private readonly messageHandlers = new Set<(m: ServerMessage) => void>();
   private readonly statusHandlers = new Set<(s: SimulationStatus) => void>();
   private readonly connectionHandlers = new Set<(s: ConnectionState) => void>();
+  private readonly signedOutHandlers = new Set<() => void>();
+  private readonly openSocket: (url: string) => WebSocket;
   private connection: ConnectionState = "connecting";
   private lastStatus: SimulationStatus | null = null;
   private disconnected = false;
   private closed = false;
-  private role: RoleId | null = null;
+  /** The server said nobody is signed in: stop reconnecting until resume(). */
+  private signedOut = false;
   private socket: WebSocket | null = null;
   private retryTimer: ReturnType<typeof setTimeout> | null = null;
   private retryDelay = RETRY_FIRST_MS;
@@ -60,10 +68,16 @@ export class HttpTransport implements Transport {
   private readonly watchedTags = new Set<string>();
   private watchedAlarms: string | null = null;
 
-  constructor({ baseUrl = "", fetch: fetchImpl = globalThis.fetch.bind(globalThis), live = true }: HttpTransportOptions = {}) {
+  constructor({
+    baseUrl = "",
+    fetch: fetchImpl = globalThis.fetch.bind(globalThis),
+    live = true,
+    openSocket = (url) => new WebSocket(url),
+  }: HttpTransportOptions = {}) {
     this.baseUrl = baseUrl;
     this.fetch = fetchImpl;
     this.live = live;
+    this.openSocket = openSocket;
     this.openLive();
   }
 
@@ -89,7 +103,6 @@ export class HttpTransport implements Transport {
         headers: {
           Accept: "application/json",
           ...(body === undefined ? {} : { "Content-Type": "application/json" }),
-          ...(this.role ? { [DEMO_ROLE_HEADER]: this.role } : {}),
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       });
@@ -108,6 +121,7 @@ export class HttpTransport implements Transport {
     const data: unknown = await response.json().catch(() => null);
     // With a live connection, that connection says whether we're live; without one, an answer does.
     if (!this.live || this.socket?.readyState === WebSocket.OPEN) this.setConnection("live");
+    if (response.status === 401) this.reportSignedOut();
     if (!response.ok) {
       const error = ApiError.safeParse(data);
       throw new ApiRequestError(error.success ? error.data : { code: "internal", message: `Server answered ${response.status}` });
@@ -126,7 +140,6 @@ export class HttpTransport implements Transport {
   }
 
   async control(control: SimulationControl): Promise<SimulationStatus> {
-    if (control.type === "set_role") this.role = control.role;
     const status = (await this.call("POST", `${API_PREFIX}/simulation/control`, control)) as SimulationStatus;
     this.publishStatus(status);
     return status;
@@ -146,8 +159,8 @@ export class HttpTransport implements Transport {
   }
 
   private openLive(): void {
-    if (!this.live || this.closed || this.disconnected || this.socket) return;
-    const socket = new WebSocket(this.liveUrl());
+    if (!this.live || this.closed || this.disconnected || this.signedOut || this.socket) return;
+    const socket = this.openSocket(this.liveUrl());
     this.socket = socket;
     socket.onopen = () => {
       this.retryDelay = RETRY_FIRST_MS;
@@ -157,10 +170,11 @@ export class HttpTransport implements Transport {
       if (this.watchedAlarms) this.sendNow({ type: "subscribe_alarms", scopeId: this.watchedAlarms });
     };
     socket.onmessage = (event: MessageEvent) => this.receive(event.data);
-    socket.onclose = () => {
+    socket.onclose = (event: CloseEvent) => {
       if (this.socket !== socket) return;
       this.socket = null;
-      if (this.closed || this.disconnected) return;
+      if (event.code === LIVE_CLOSE_SIGNED_OUT) this.reportSignedOut();
+      if (this.closed || this.disconnected || this.signedOut) return;
       this.setConnection("offline");
       this.retryTimer = setTimeout(() => {
         this.retryTimer = null;
@@ -168,6 +182,26 @@ export class HttpTransport implements Transport {
       }, this.retryDelay);
       this.retryDelay = Math.min(this.retryDelay * 2, RETRY_MAX_MS);
     };
+  }
+
+  /** Nobody is signed in (any more): stop reconnecting and say so, once. */
+  private reportSignedOut(): void {
+    if (this.signedOut) return;
+    this.signedOut = true;
+    this.closeLive();
+    for (const h of this.signedOutHandlers) h();
+  }
+
+  /** Someone has signed in: open the live connection again. */
+  resume(): void {
+    this.signedOut = false;
+    this.retryDelay = RETRY_FIRST_MS;
+    this.openLive();
+  }
+
+  onSignedOut(handler: () => void): () => void {
+    this.signedOutHandlers.add(handler);
+    return () => this.signedOutHandlers.delete(handler);
   }
 
   private closeLive(): void {

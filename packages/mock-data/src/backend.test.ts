@@ -190,6 +190,18 @@ describe("operator actions", () => {
     expect(b.request("alarms.unshelve", { alarmId: alarm.id }).state).toBe("active_acked");
   });
 
+  it("answers as a named person when the server says who is asking, and audits that person", () => {
+    const { backend: b } = makeBackend();
+    const operator = b.request("users.list", { role: "control_room_operator", limit: 2 }).items[1]!;
+    expect(b.request("me.get", {}, operator.id)).toEqual(operator);
+    const alarm = b.request("alarms.list", { states: ["active_unacked"], limit: 1 }).items[0]!;
+    const [acked] = b.request("alarms.acknowledge", { alarmIds: [alarm.id] }, operator.id).items;
+    expect(acked!.acknowledgedBy).toBe(operator.id);
+    expect(b.request("admin.audit", { limit: 1 }).items[0]).toMatchObject({ userId: operator.id, action: "alarms.acknowledge" });
+    // Afterwards, back to the demo role: nobody stays "signed in" inside the simulation.
+    expect(b.request("me.get", {}).role).toBe("executive");
+  });
+
   it("creating a work order from an alarm links them (acceptance criterion C)", () => {
     const { backend: b } = makeBackend();
     const alarm = b.request("alarms.list", { limit: 1 }).items[0]!;

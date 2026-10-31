@@ -12,6 +12,8 @@ import { SearchX, X } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { formatDate } from "../../shared/format";
+import { usePreferences } from "../../shared/preferences";
+import { canDo } from "../../shared/roles/roles";
 import { useToasts } from "../../shared/toast";
 import { FishboneDiagram } from "./Fishbone";
 import { ReliabilityNav } from "./ReliabilityNav";
@@ -52,6 +54,12 @@ function Editor({ rca }: { rca: Rca }) {
   const [fishbone, setFishbone] = useState<Fishbone>(rca.fishbone);
   const [rootCause, setRootCause] = useState(rca.rootCause);
   const closed = rca.status === "closed";
+  // Only those who "use" Reliability work on an investigation; everyone else may read it.
+  const may = canDo(
+    usePreferences((p) => p.role),
+    "rca.edit",
+  );
+  const readOnly = closed || !may;
   const dirty = JSON.stringify([whys, fishbone, rootCause]) !== JSON.stringify([rca.whys, rca.fishbone, rca.rootCause]);
 
   const done = (next: Rca, message: string) => {
@@ -84,22 +92,22 @@ function Editor({ rca }: { rca: Rca }) {
             {t("rca.col.status")}: <strong>{t(`rca.status.${rca.status}`)}</strong>
           </p>
           <div className="flex flex-wrap gap-2">
-            {!closed && (
+            {may && !closed && (
               <Button onClick={() => save()} disabled={!dirty || update.isPending}>
                 {t("rca.save")}
               </Button>
             )}
-            {rca.status === "open" && (
+            {may && rca.status === "open" && (
               <Button variant="secondary" onClick={() => save("in_review")} disabled={update.isPending}>
                 {t("rca.sendForReview")}
               </Button>
             )}
-            {rca.status === "in_review" && (
+            {may && rca.status === "in_review" && (
               <Button variant="secondary" onClick={() => save("closed")} disabled={update.isPending || !rootCause.trim()}>
                 {t("rca.close")}
               </Button>
             )}
-            {closed && (
+            {may && closed && (
               <Button variant="secondary" onClick={() => save("open")} disabled={update.isPending}>
                 {t("rca.reopen")}
               </Button>
@@ -125,7 +133,7 @@ function Editor({ rca }: { rca: Rca }) {
                       className={inputClass}
                       value={w}
                       maxLength={300}
-                      readOnly={closed}
+                      readOnly={readOnly}
                       onChange={(e) => setWhys(whys.map((x, j) => (j === i ? e.target.value : x)))}
                     />
                   )}
@@ -148,7 +156,7 @@ function Editor({ rca }: { rca: Rca }) {
               key={c}
               category={c}
               causes={fishbone[c]}
-              readOnly={closed}
+              readOnly={readOnly}
               onChange={(next) => setFishbone({ ...fishbone, [c]: next })}
             />
           ))}
@@ -166,7 +174,7 @@ function Editor({ rca }: { rca: Rca }) {
               className={`${inputClass} min-h-20`}
               value={rootCause}
               maxLength={1000}
-              readOnly={closed}
+              readOnly={readOnly}
               onChange={(e) => setRootCause(e.target.value)}
             />
           )}
@@ -281,6 +289,10 @@ function Actions({ rca, onDone }: { rca: Rca; onDone: (next: Rca, message: strin
   const [raise, setRaise] = useState(true);
   const add = useApiMutation("rca.addAction", { onError: (e) => toast("error", e.message) });
   const closed = rca.status === "closed";
+  const may = canDo(
+    usePreferences((p) => p.role),
+    "rca.edit",
+  );
   const submit = (e: FormEvent) => {
     e.preventDefault();
     add.mutate(
@@ -318,7 +330,7 @@ function Actions({ rca, onDone }: { rca: Rca; onDone: (next: Rca, message: strin
           ))}
         </ul>
       )}
-      {!closed && (
+      {may && !closed && (
         <form onSubmit={submit} className="flex flex-col gap-2 sm:flex-row sm:items-end">
           <div className="flex-1">
             <Field label={t("rca.actionLabel")}>

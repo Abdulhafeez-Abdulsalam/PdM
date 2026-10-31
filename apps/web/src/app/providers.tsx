@@ -1,11 +1,11 @@
 /** App-wide wiring: data cache, API, theme, and keeping the backend's demo role in sync. */
-import { ApiProvider, ApiRequestError, useApiContext, type ApiContextValue } from "@pdm/api-client";
+import { ApiProvider, ApiRequestError, HttpTransport, useApiContext, type ApiContextValue } from "@pdm/api-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePreferences } from "../shared/preferences";
 
 /** Errors that won't change if we ask again. */
-const DEFINITE = new Set<string>(["not_found", "bad_request", "conflict", "too_many_tags"]);
+const DEFINITE = new Set<string>(["not_found", "bad_request", "unauthenticated", "forbidden", "conflict", "too_many_tags"]);
 
 function makeQueryClient() {
   return new QueryClient({
@@ -48,11 +48,15 @@ function ThemeSync() {
   return null;
 }
 
-/** Tells the mock backend which role is selected, so "me" and role-specific data match. */
+/**
+ * Demo mode: tells the mock backend which role is selected, so "me" and role-specific data match.
+ * (On the server the role comes from who signed in, and it refuses to be told.)
+ */
 function RoleSync() {
   const role = usePreferences((p) => p.role);
   const { transport } = useApiContext();
   useEffect(() => {
+    if (transport instanceof HttpTransport) return;
     void transport.control({ type: "set_role", role });
   }, [transport, role]);
   return null;

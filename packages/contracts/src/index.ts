@@ -36,4 +36,5 @@ export * from "./briefing";
 export * from "./realtime";
 export * from "./endpoints";
 export * from "./http";
+export * from "./access";
 export * from "./worker-protocol";

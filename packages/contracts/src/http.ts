@@ -9,7 +9,9 @@
  *   - POST: the whole input travels as a JSON body.
  * The server then checks the input against the endpoint's schema, exactly as the mock does.
  */
-import type { ApiError } from "./common";
+import { z } from "zod";
+import { Id, type ApiError } from "./common";
+import { User } from "./users";
 import { endpoints, pathParams, type EndpointName, type HttpMethod } from "./endpoints";
 import type { FromWorker } from "./worker-protocol";
 
@@ -19,6 +21,10 @@ export const API_PREFIX = "/api";
 /** The HTTP status for each kind of failure. */
 export const HTTP_STATUS: Record<ApiError["code"], number> = {
   bad_request: 400,
+  /** Not signed in (or the session ended). */
+  unauthenticated: 401,
+  /** Signed in, but this person's role may not do this. */
+  forbidden: 403,
   not_found: 404,
   conflict: 409,
   too_many_tags: 422,
@@ -33,6 +39,23 @@ export const HTTP_STATUS: Record<ApiError["code"], number> = {
  */
 export const LIVE_PATH = "/live";
 export type LiveFrame = Extract<FromWorker, { kind: "live" | "status" }>;
+/** The server closes the live connection with this code when nobody is signed in (or they sign out). */
+export const LIVE_CLOSE_SIGNED_OUT = 4401;
+
+/**
+ * Sign-in (Phase 5 chunk 3, ADR-0014). Not endpoints of the plant: they're about the session.
+ *   GET  /api/session/people  the demo people to choose from (open to all: it's the sign-in page)
+ *   GET  /api/session         who is signed in (401 if nobody)
+ *   POST /api/session         sign in as { userId }; the answer sets the session cookie
+ *   POST /api/session/end     sign out
+ * Demo sign-in: choosing a person is enough. Passwords (or a company login) come later.
+ */
+export const SESSION_PATH = "/session";
+export const SessionPeople = z.array(User);
+export const SignInRequest = z.object({ userId: Id });
+export type SignInRequest = z.infer<typeof SignInRequest>;
+export const SessionInfo = z.object({ user: User });
+export type SessionInfo = z.infer<typeof SessionInfo>;
 
 export interface HttpRequest {
   method: HttpMethod;
