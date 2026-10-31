@@ -29,14 +29,14 @@ npm run dev:server      # the API on http://127.0.0.1:4000 (try /api/health)
 npm run dev:connected   # the app in server mode → open http://localhost:5173
 ```
 
-Live values over the server arrive in Phase 5 chunk 2; see [ADR-0012](docs/adr/0012-fastify-server-and-http-format.md) for how requests travel.
+Requests travel over HTTP ([ADR-0012](docs/adr/0012-fastify-server-and-http-format.md)) and live values over a WebSocket ([ADR-0013](docs/adr/0013-live-values-over-a-websocket.md)). Every browser shares one simulated plant, so open two windows and change the speed in one.
 
 ## Repository layout
 
 | Folder | What's inside |
 |---|---|
 | `apps/web` | The application (Vite + React) |
-| `apps/server` | The server (Fastify): the same requests over HTTP (Phase 5) |
+| `apps/server` | The server (Fastify): the same requests over HTTP, live values over a WebSocket (Phase 5) |
 | `packages/contracts` | Data shapes shared by the app and any backend |
 | `packages/api-client` | How the app requests data and receives live updates |
 | `packages/mock-data` | The simulated backend (runs in a Web Worker) |

@@ -815,19 +815,22 @@ export class MockBackend {
 
   // ─── Time & live data ──────────────────────────────────────────────────────
 
-  /** Advance the simulation to "now" and push live updates. Called once per second by the worker. */
+  /** Advance the simulation to "now" and push live updates. Called once per second by the worker or the server. */
   tick(): void {
     const now = this.now();
     this.storyline.tick(now);
     this.alarms.tick(now);
     this.invalidate();
-    for (const hub of this.hubs) hub.tick(now);
+    // Drained once and shared, so every open connection (several on the server) sees every change.
+    const changed = this.alarms.drainChanges();
+    for (const hub of this.hubs) hub.tick(now, changed);
   }
 
   /** Push alarm changes straight away (after an operator action) instead of waiting for the next tick. */
   private flushLive(): void {
     const now = this.now();
-    for (const hub of this.hubs) hub.flushAlarms(now);
+    const changed = this.alarms.drainChanges();
+    for (const hub of this.hubs) hub.sendAlarms(now, changed);
   }
 
   /** Open a live connection. `send` receives every server message. */

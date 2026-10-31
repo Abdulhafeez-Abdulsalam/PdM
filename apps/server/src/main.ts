@@ -12,9 +12,7 @@ const port = Number(process.env.PORT ?? 4000);
 const seed = Number(process.env.SEED ?? 20261010);
 
 const backend = createMockBackend({ seed });
-// The plant moves on by itself, once a second, as it does in the browser's worker: the storyline
-// advances, alarms are raised and cleared.
-setInterval(() => backend.tick(), LIVE_FLUSH_INTERVAL_MS);
-
-const app = buildServer({ backend, logger: true });
+// The plant moves on by itself once a second, as it does in the browser's worker (the storyline
+// advances, alarms are raised and cleared), and every connected browser hears about it.
+const app = buildServer({ backend, logger: true, tickMs: LIVE_FLUSH_INTERVAL_MS });
 await app.listen({ port, host: "127.0.0.1" });

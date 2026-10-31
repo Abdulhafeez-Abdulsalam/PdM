@@ -1,7 +1,8 @@
 import { ApiRequestError, HttpTransport, createApiClient } from "@pdm/api-client";
 import { endpoints } from "@pdm/contracts";
 import { createMockBackend } from "@pdm/mock-data";
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import type { LiveFrame, ServerMessage, SimulationStatus } from "@pdm/contracts";
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { buildServer } from "./app";
 
 const START = Date.UTC(2026, 9, 10, 8, 0, 0);
@@ -17,7 +18,7 @@ describe("the server over real HTTP", () => {
   beforeAll(async () => {
     // Port 0: the operating system picks a free one.
     const address = await server.listen({ port: 0, host: "127.0.0.1" });
-    transport = new HttpTransport({ baseUrl: address, pollStatus: false });
+    transport = new HttpTransport({ baseUrl: address, live: false });
     api = createApiClient(transport);
   });
   afterAll(async () => {
@@ -68,6 +69,88 @@ describe("the server over real HTTP", () => {
     expect((await api.request("me.get", {})).role).toBe("hse_officer");
     const bad = await server.inject({ method: "POST", url: "/api/simulation/control", payload: { type: "set_speed", speed: 7 } });
     expect(bad.statusCode).toBe(400);
+  });
+});
+
+describe("live values over a WebSocket", () => {
+  const server = buildServer({ backend: makeBackend(), tickMs: 20 });
+  let base: string;
+  const browsers: HttpTransport[] = [];
+
+  /** A browser in server mode: its transport, and everything it has heard. */
+  const openBrowser = () => {
+    const transport = new HttpTransport({ baseUrl: base });
+    browsers.push(transport);
+    const heard: ServerMessage[] = [];
+    const statuses: SimulationStatus[] = [];
+    transport.onMessage((m) => heard.push(m));
+    transport.onStatus((s) => statuses.push(s));
+    let state = "";
+    transport.onConnection((s) => (state = s));
+    const values = (tagId: string) => heard.filter((m) => m.type === "tag_values" && m.values.some((v) => v.tagId === tagId));
+    return { transport, heard, statuses, values, isLive: () => state === "live" };
+  };
+
+  beforeAll(async () => {
+    base = await server.listen({ port: 0, host: "127.0.0.1" });
+  });
+  afterAll(async () => {
+    for (const b of browsers) b.close();
+    await server.close();
+  });
+
+  it("streams the tags a browser asks for, and only to that browser", async () => {
+    const a = openBrowser();
+    const b = openBrowser();
+    await vi.waitFor(() => expect(a.isLive() && b.isLive()).toBe(true));
+    a.transport.send({ type: "subscribe_tags", tagIds: ["CBC-GT-101.POWER"] });
+    await vi.waitFor(() => expect(a.values("CBC-GT-101.POWER").length).toBeGreaterThan(0));
+    expect(b.values("CBC-GT-101.POWER")).toHaveLength(0);
+  });
+
+  it("shares one plant: a change of speed in one browser reaches the other", async () => {
+    const a = openBrowser();
+    const b = openBrowser();
+    await vi.waitFor(() => expect(a.isLive() && b.isLive()).toBe(true));
+    await a.transport.control({ type: "set_speed", speed: 600 });
+    await vi.waitFor(() => expect(b.statuses.at(-1)?.speed).toBe(600));
+  });
+
+  it("reconnects after the connection drops, and asks for its tags again", async () => {
+    const a = openBrowser();
+    a.transport.send({ type: "subscribe_tags", tagIds: ["CBC-GT-101.EXH_TEMP"] }); // before it's even open
+    await vi.waitFor(() => expect(a.values("CBC-GT-101.EXH_TEMP").length).toBeGreaterThan(0));
+    a.transport.setDisconnected(true);
+    expect(a.isLive()).toBe(false);
+    a.heard.length = 0;
+    a.transport.setDisconnected(false);
+    await vi.waitFor(() => expect(a.values("CBC-GT-101.EXH_TEMP").length).toBeGreaterThan(0));
+  });
+
+  it("answers a message that isn't a live message with an error, and stays open", async () => {
+    const socket = new WebSocket(`${base.replace("http", "ws")}/api/live`);
+    const frames: LiveFrame[] = [];
+    socket.onmessage = (event) => frames.push(JSON.parse(String(event.data)) as LiveFrame);
+    await vi.waitFor(() => expect(socket.readyState).toBe(WebSocket.OPEN));
+    socket.send("not json");
+    socket.send(JSON.stringify({ type: "subscribe_tags", tagIds: [] }));
+    await vi.waitFor(() =>
+      expect(frames.filter((f) => f.kind === "live" && f.message.type === "error" && f.message.error.code === "bad_request")).toHaveLength(
+        2,
+      ),
+    );
+    expect(frames[0]?.kind).toBe("status"); // the status comes first, so the app knows "now" at once
+    expect(socket.readyState).toBe(WebSocket.OPEN);
+    socket.close();
+  });
+
+  it("refuses a live connection from a page on another site", async () => {
+    const response = await server.inject({
+      method: "GET",
+      url: "/api/live",
+      headers: { origin: "https://evil.example", host: "127.0.0.1:4000", connection: "Upgrade", upgrade: "websocket" },
+    });
+    expect(response.statusCode).toBe(403);
   });
 });
 

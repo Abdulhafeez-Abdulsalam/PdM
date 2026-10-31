@@ -3,17 +3,19 @@
  * each request with the shared toHttpRequest so the browser and the server agree on the format.
  * The rest of the app can't tell it from the WorkerTransport.
  *
- * Still to come (chunk 2): live tag values over a WebSocket. Until then the simulation status
- * (the app's "now") is fetched once a second, the pace the worker sends it, and live
- * subscriptions are accepted but nothing arrives.
+ * Live tag values, alarm changes and the simulation status arrive over one WebSocket (ADR-0013),
+ * as the same "live" and "status" messages the worker posts. If the connection drops, it is
+ * opened again (waiting a little longer each time), and the new connection is told again which
+ * tags and alarms this browser is watching.
  */
 import {
   API_PREFIX,
   ApiError,
-  LIVE_FLUSH_INTERVAL_MS,
+  LIVE_PATH,
   toHttpRequest,
   type ClientMessage,
   type EndpointName,
+  type LiveFrame,
   type RoleId,
   type ServerMessage,
   type SimulationControl,
@@ -25,19 +27,23 @@ const REQUEST_TIMEOUT_MS = 15_000;
 const NO_CONNECTION = { code: "unavailable", message: "No connection" } as const;
 /** Chunk 1 only: tells the server which demo role this browser is playing (sessions replace it in chunk 3). */
 const DEMO_ROLE_HEADER = "X-Demo-Role";
+/** Wait before reconnecting: 1 s, then 2, 4, 8, and at most 10 s, so a stopped server isn't hammered. */
+const RETRY_FIRST_MS = 1000;
+const RETRY_MAX_MS = 10_000;
 
 export interface HttpTransportOptions {
   /** Where the server is: "" (same site, the default) or e.g. "http://127.0.0.1:4000". */
   baseUrl?: string;
   /** Tests pass a fake; the default is the browser's (or Node's) fetch. */
   fetch?: typeof fetch;
-  /** Ask the server for the simulation status once a second. Off in tests. */
-  pollStatus?: boolean;
+  /** Open the live connection. Off in tests that only make requests. */
+  live?: boolean;
 }
 
 export class HttpTransport implements Transport {
   private readonly baseUrl: string;
   private readonly fetch: typeof fetch;
+  private readonly live: boolean;
   private readonly inFlight = new Set<AbortController>();
   private readonly messageHandlers = new Set<(m: ServerMessage) => void>();
   private readonly statusHandlers = new Set<(s: SimulationStatus) => void>();
@@ -45,13 +51,20 @@ export class HttpTransport implements Transport {
   private connection: ConnectionState = "connecting";
   private lastStatus: SimulationStatus | null = null;
   private disconnected = false;
+  private closed = false;
   private role: RoleId | null = null;
-  private readonly poller: ReturnType<typeof setInterval> | null;
+  private socket: WebSocket | null = null;
+  private retryTimer: ReturnType<typeof setTimeout> | null = null;
+  private retryDelay = RETRY_FIRST_MS;
+  /** What this browser is watching, so a new connection can be told again. */
+  private readonly watchedTags = new Set<string>();
+  private watchedAlarms: string | null = null;
 
-  constructor({ baseUrl = "", fetch: fetchImpl = globalThis.fetch.bind(globalThis), pollStatus = true }: HttpTransportOptions = {}) {
+  constructor({ baseUrl = "", fetch: fetchImpl = globalThis.fetch.bind(globalThis), live = true }: HttpTransportOptions = {}) {
     this.baseUrl = baseUrl;
     this.fetch = fetchImpl;
-    this.poller = pollStatus ? setInterval(() => void this.refreshStatus(), LIVE_FLUSH_INTERVAL_MS) : null;
+    this.live = live;
+    this.openLive();
   }
 
   private setConnection(state: ConnectionState): void {
@@ -59,6 +72,8 @@ export class HttpTransport implements Transport {
     this.connection = state;
     for (const h of this.connectionHandlers) h(state);
   }
+
+  // ─── Requests (HTTP) ───────────────────────────────────────────────────────
 
   /** One HTTP call; any failure becomes an ApiRequestError, as the worker's would. */
   private async call(method: "GET" | "POST", url: string, body: unknown): Promise<unknown> {
@@ -91,7 +106,8 @@ export class HttpTransport implements Transport {
       this.inFlight.delete(abort);
     }
     const data: unknown = await response.json().catch(() => null);
-    this.setConnection("live");
+    // With a live connection, that connection says whether we're live; without one, an answer does.
+    if (!this.live || this.socket?.readyState === WebSocket.OPEN) this.setConnection("live");
     if (!response.ok) {
       const error = ApiError.safeParse(data);
       throw new ApiRequestError(error.success ? error.data : { code: "internal", message: `Server answered ${response.status}` });
@@ -116,23 +132,86 @@ export class HttpTransport implements Transport {
     return status;
   }
 
-  private async refreshStatus(): Promise<void> {
-    if (this.disconnected) return;
-    try {
-      this.publishStatus((await this.call("GET", `${API_PREFIX}/simulation/status`, undefined)) as SimulationStatus);
-    } catch {
-      // Already reflected in the connection state; the next tick tries again.
-    }
-  }
-
   private publishStatus(status: SimulationStatus): void {
     this.lastStatus = status;
     for (const h of this.statusHandlers) h(status);
   }
 
+  // ─── Live (WebSocket) ──────────────────────────────────────────────────────
+
+  private liveUrl(): string {
+    const url = new URL(`${this.baseUrl}${API_PREFIX}${LIVE_PATH}`, globalThis.location?.href);
+    url.protocol = url.protocol === "https:" ? "wss:" : "ws:";
+    return url.href;
+  }
+
+  private openLive(): void {
+    if (!this.live || this.closed || this.disconnected || this.socket) return;
+    const socket = new WebSocket(this.liveUrl());
+    this.socket = socket;
+    socket.onopen = () => {
+      this.retryDelay = RETRY_FIRST_MS;
+      this.setConnection("live");
+      // A new connection knows nothing about this browser: say again what it's watching.
+      if (this.watchedTags.size > 0) this.sendNow({ type: "subscribe_tags", tagIds: [...this.watchedTags] });
+      if (this.watchedAlarms) this.sendNow({ type: "subscribe_alarms", scopeId: this.watchedAlarms });
+    };
+    socket.onmessage = (event: MessageEvent) => this.receive(event.data);
+    socket.onclose = () => {
+      if (this.socket !== socket) return;
+      this.socket = null;
+      if (this.closed || this.disconnected) return;
+      this.setConnection("offline");
+      this.retryTimer = setTimeout(() => {
+        this.retryTimer = null;
+        this.openLive();
+      }, this.retryDelay);
+      this.retryDelay = Math.min(this.retryDelay * 2, RETRY_MAX_MS);
+    };
+  }
+
+  private closeLive(): void {
+    if (this.retryTimer) clearTimeout(this.retryTimer);
+    this.retryTimer = null;
+    const socket = this.socket;
+    this.socket = null;
+    socket?.close();
+  }
+
+  private receive(data: unknown): void {
+    let frame: LiveFrame;
+    try {
+      frame = JSON.parse(String(data)) as LiveFrame;
+    } catch {
+      return;
+    }
+    if (frame.kind === "status") this.publishStatus(frame.status);
+    else if (frame.kind === "live") for (const h of this.messageHandlers) h(frame.message);
+  }
+
+  private sendNow(message: ClientMessage): void {
+    if (this.socket?.readyState === WebSocket.OPEN) this.socket.send(JSON.stringify(message));
+  }
+
   send(message: ClientMessage): void {
-    // Live subscriptions travel over the WebSocket (chunk 2); until then they're dropped.
-    void message;
+    switch (message.type) {
+      case "subscribe_tags":
+        for (const id of message.tagIds) this.watchedTags.add(id);
+        break;
+      case "unsubscribe_tags":
+        for (const id of message.tagIds) this.watchedTags.delete(id);
+        break;
+      case "subscribe_alarms":
+        this.watchedAlarms = message.scopeId;
+        break;
+      case "unsubscribe_alarms":
+        this.watchedAlarms = null;
+        break;
+      case "ping":
+        break;
+    }
+    // Not connected yet? Nothing lost: the connection sends what's watched when it opens.
+    this.sendNow(message);
   }
 
   onMessage(handler: (m: ServerMessage) => void): () => void {
@@ -158,15 +237,18 @@ export class HttpTransport implements Transport {
     if (disconnected) {
       // Requests in flight are lost with the connection: fail them now rather than after the timeout.
       for (const abort of this.inFlight) abort.abort();
+      this.closeLive();
       this.setConnection("offline");
     } else {
-      this.setConnection(this.lastStatus ? "live" : "connecting");
-      void this.refreshStatus();
+      this.setConnection(this.live ? "connecting" : this.lastStatus ? "live" : "connecting");
+      this.retryDelay = RETRY_FIRST_MS;
+      this.openLive();
     }
   }
 
   close(): void {
-    if (this.poller) clearInterval(this.poller);
+    this.closed = true;
+    this.closeLive();
     for (const abort of this.inFlight) abort.abort();
   }
 }

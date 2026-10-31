@@ -11,6 +11,7 @@
  */
 import type { ApiError } from "./common";
 import { endpoints, pathParams, type EndpointName, type HttpMethod } from "./endpoints";
+import type { FromWorker } from "./worker-protocol";
 
 /** Every API path starts here, so the app's own pages and the API never collide. */
 export const API_PREFIX = "/api";
@@ -24,6 +25,14 @@ export const HTTP_STATUS: Record<ApiError["code"], number> = {
   unavailable: 503,
   internal: 500,
 };
+
+/**
+ * The live connection (Phase 5 chunk 2, ADR-0013): one WebSocket at API_PREFIX + LIVE_PATH.
+ * The browser sends the ClientMessages from realtime.ts as JSON text. The server sends the same
+ * "live" and "status" envelopes the demo worker posts, so both transports read them alike.
+ */
+export const LIVE_PATH = "/live";
+export type LiveFrame = Extract<FromWorker, { kind: "live" | "status" }>;
 
 export interface HttpRequest {
   method: HttpMethod;

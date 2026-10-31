@@ -231,6 +231,17 @@ describe("live data", () => {
     const last = received.at(-1);
     expect(last?.type === "error" && last.error.code).toBe("too_many_tags");
   });
+
+  it("tells every open connection about an alarm change, not just the first (the server has several)", () => {
+    const { backend: b } = makeBackend();
+    const inboxes: ServerMessage[][] = [[], []];
+    for (const inbox of inboxes) b.connect((m) => inbox.push(m)).handle({ type: "subscribe_alarms", scopeId: ENTERPRISE_SCOPE });
+    const alarm = b.request("alarms.list", { states: ["active_unacked"], limit: 1 }).items[0]!;
+    b.request("alarms.acknowledge", { alarmIds: [alarm.id] });
+    for (const inbox of inboxes) {
+      expect(inbox.some((m) => m.type === "alarm_changed" && m.alarm.id === alarm.id && m.alarm.state === "active_acked")).toBe(true);
+    }
+  });
 });
 
 describe("demo storyline: gas turbine compressor fouling", () => {

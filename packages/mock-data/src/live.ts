@@ -2,7 +2,7 @@
  * One live connection: remembers which tags and which alarm scope the client wants,
  * and once per tick sends only what changed (ADR-0005).
  */
-import { MAX_SUBSCRIBED_TAGS, type ClientMessage, type ServerMessage } from "@pdm/contracts";
+import { MAX_SUBSCRIBED_TAGS, type Alarm, type ClientMessage, type ServerMessage } from "@pdm/contracts";
 import type { AlarmEngine } from "./alarms";
 import { iso } from "./clock";
 import { type ChaosWindows, tagValue } from "./signals";
@@ -69,9 +69,10 @@ export class LiveHub {
     return this.tagIds.size;
   }
 
-  tick(now: number): void {
+  /** `changedAlarms`: drained once by the backend and shared, so every connection sees every change. */
+  tick(now: number, changedAlarms: readonly Alarm[]): void {
     this.sendTagValues(now);
-    this.flushAlarms(now);
+    this.sendAlarms(now, changedAlarms);
   }
 
   private sendTagValues(now: number): void {
@@ -88,12 +89,8 @@ export class LiveHub {
     if (values.length > 0) this.send({ type: "tag_values", seq: this.seq++, t: iso(now), values });
   }
 
-  /**
-   * Send alarm changes in the subscribed scope, then fresh counts if anything changed.
-   * Note: draining is shared, so this assumes one connection per backend — true in the worker.
-   */
-  flushAlarms(now: number): void {
-    const changed = this.alarms.drainChanges();
+  /** Send alarm changes in the subscribed scope, then fresh counts if anything changed. */
+  sendAlarms(now: number, changed: readonly Alarm[]): void {
     if (!this.alarmScope) return;
     const scopeId = this.alarmScope;
     const relevant = changed.filter((a) => this.world.assets.get(a.assetId)?.scopeIds.has(scopeId));
