@@ -14,6 +14,7 @@ import {
   type AlarmKind,
   type AlarmListParams,
   type AlarmState,
+  type TagLimits,
   type AlarmSummary,
   type User,
 } from "@pdm/contracts";
@@ -45,6 +46,15 @@ interface AlarmRecord {
   /** The state to go back to when un-shelved. */
   heldState: AlarmState | null;
   raisedAtMs: number;
+  /** Raise order (the number in its id): the order the alarms are kept in. */
+  seq: number;
+}
+
+interface Crossing {
+  level: 0 | 1 | 2;
+  t: number;
+  limit: number;
+  key: string;
 }
 
 const SHELVE_REASONS = [
@@ -65,7 +75,9 @@ export class AlarmEngine {
   private readonly chatterTags: TagRecord[];
   private readonly operators: User[];
   /** Every time an alarm sounded, for the analytics page (ISA-18.2 counts each annunciation). */
-  private readonly log: Activation[] = [];
+  private log: Activation[] = [];
+  /** How many of the log's first entries are in time order; the rest were added since (see sortLog). */
+  private logSorted = 0;
   /**
    * While true, alarms are only written to the log, not kept as live alarms. Used at start-up
    * to fill a week of history without changing the alarm list every other screen shows.
@@ -76,6 +88,28 @@ export class AlarmEngine {
    * so the log counts its re-soundings the same way however fast the simulation catches up.
    */
   private readonly chatterActiveUntil = new Map<string, number>();
+
+  // ─── Indexes ───────────────────────────────────────────────────────────────
+  // Each simulated minute needs only a few of the alarms: those still waiting to return to normal,
+  // the shelved ones, and the cleared ones old enough to forget. Looking through every alarm
+  // instead made each minute slower than the last, as unacknowledged alarms pile up in an
+  // unattended plant (13,000 after 16 simulated days), and replaying a month took 99 s (Phase 5
+  // review). These are kept up to date by markChanged, which every change of an alarm goes through.
+
+  /** Alarms not yet returned to normal, in raise order (the order the step used to visit them). */
+  private readonly waiting = new Set<AlarmRecord>();
+  /** The same, by tag: the alarm currently sounding on a tag is the first of these that isn't cleared. */
+  private readonly waitingByTag = new Map<string, Set<AlarmRecord>>();
+  private readonly shelved = new Set<AlarmRecord>();
+  /** Cleared alarms (a final state), in the order they returned to normal, to forget after RETENTION. */
+  private readonly clearedQueue: { at: number; record: AlarmRecord }[] = [];
+  private readonly queued = new WeakSet<AlarmRecord>();
+  /**
+   * Each fault's limit crossings on each tag, with their keys, worked out once and kept until the
+   * tag's limits are edited (an edit replaces the limits object). Working them out afresh every
+   * minute made garbage the collector had to clear, slower and slower as the alarm list grew.
+   */
+  private readonly crossings = new Map<Fault, Map<TagRecord, { limits: TagLimits; list: Crossing[] }>>();
 
   constructor(
     private readonly world: World,
@@ -103,6 +137,11 @@ export class AlarmEngine {
     this.processReturns(now);
     this.seedStanding(now);
     this.autoAcknowledgeOld(now);
+    // The starting conditions set some states directly: build the indexes from scratch, in order.
+    this.waiting.clear();
+    this.waitingByTag.clear();
+    this.shelved.clear();
+    for (const record of this.records.values()) this.index(record);
     this.processedUntil = now;
     this.changed.clear();
   }
@@ -161,8 +200,10 @@ export class AlarmEngine {
         message: input.message,
       });
     if (this.logOnly) return;
-    const id = `ALM-${String(this.nextNumber++).padStart(6, "0")}`;
+    const seq = this.nextNumber++;
+    const id = `ALM-${String(seq).padStart(6, "0")}`;
     const record: AlarmRecord = {
+      seq,
       rtnAt: input.rtnAt,
       faultId: input.faultId,
       heldState: null,
@@ -193,6 +234,38 @@ export class AlarmEngine {
 
   private markChanged(record: AlarmRecord): void {
     this.changed.set(record.alarm.id, record.alarm);
+    this.index(record);
+  }
+
+  /** Put an alarm in (or take it out of) the indexes its current state belongs in. */
+  private index(record: AlarmRecord): void {
+    const a = record.alarm;
+    if (a.returnedToNormalAt === null) {
+      this.waiting.add(record);
+      if (a.tagId) {
+        let onTag = this.waitingByTag.get(a.tagId);
+        if (!onTag) this.waitingByTag.set(a.tagId, (onTag = new Set()));
+        onTag.add(record);
+      }
+    } else {
+      this.waiting.delete(record);
+      if (a.tagId) this.waitingByTag.get(a.tagId)?.delete(record);
+    }
+    if (a.state === "shelved") this.shelved.add(record);
+    else this.shelved.delete(record);
+    if (a.state === "cleared" && a.returnedToNormalAt && !this.queued.has(record)) {
+      this.queued.add(record);
+      const at = Date.parse(a.returnedToNormalAt);
+      // Keep the queue in time order (after any with the same time).
+      let lo = 0;
+      let hi = this.clearedQueue.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (this.clearedQueue[mid]!.at <= at) lo = mid + 1;
+        else hi = mid;
+      }
+      this.clearedQueue.splice(lo, 0, { at, record });
+    }
   }
 
   /** Background alarms, chattering bad actors, chaos floods — processed one simulated minute at a time. */
@@ -297,11 +370,10 @@ export class AlarmEngine {
   private processFaults(now: number): void {
     for (const fault of this.world.faults) {
       for (const tag of fault.asset.tags) {
-        for (const crossing of limitCrossings(fault, tag)) {
-          const key = `${fault.id}:${tag.tag.id}:${crossing.level}`;
-          if (crossing.t > now || this.faultKeys.has(key)) continue;
+        for (const crossing of this.crossingsOf(fault, tag)) {
+          if (crossing.t > now || this.faultKeys.has(crossing.key)) continue;
           if (fault.resolvedAt !== null && crossing.t >= fault.resolvedAt) continue;
-          this.faultKeys.add(key);
+          this.faultKeys.add(crossing.key);
           const high = tag.template.bad === "high";
           this.raise({
             t: crossing.t,
@@ -319,8 +391,10 @@ export class AlarmEngine {
       }
 
       const detectedAt = timeAtProgress(fault, DETECTION_PROGRESS);
+      // The cheap checks first, so the key is only built when it might be needed.
+      if (fault.asset.data.criticality < 4 || detectedAt > now) continue;
       const key = `${fault.id}:prediction`;
-      if (fault.asset.data.criticality >= 4 && detectedAt <= now && !this.faultKeys.has(key)) {
+      if (!this.faultKeys.has(key)) {
         if (fault.resolvedAt !== null && detectedAt >= fault.resolvedAt) continue;
         this.faultKeys.add(key);
         const days = Math.round((fault.failAt - detectedAt) / DAY);
@@ -340,13 +414,24 @@ export class AlarmEngine {
     }
   }
 
+  private crossingsOf(fault: Fault, tag: TagRecord): Crossing[] {
+    let byTag = this.crossings.get(fault);
+    if (!byTag) this.crossings.set(fault, (byTag = new Map()));
+    let entry = byTag.get(tag);
+    if (!entry || entry.limits !== tag.tag.limits) {
+      const list = limitCrossings(fault, tag).map((c) => ({ ...c, key: `${fault.id}:${tag.tag.id}:${c.level}` }));
+      entry = { limits: tag.tag.limits, list };
+      byTag.set(tag, entry);
+    }
+    return entry.list;
+  }
+
   /** Background alarms clearing by themselves; fault alarms clearing after a repair. */
   private processReturns(now: number): void {
     const resolved = new Map<string, number>();
     for (const f of this.world.faults) if (f.resolvedAt !== null && f.resolvedAt <= now) resolved.set(f.id, f.resolvedAt);
 
-    for (const record of this.records.values()) {
-      if (record.alarm.returnedToNormalAt) continue;
+    for (const record of this.waiting) {
       const rtn = record.faultId ? resolved.get(record.faultId) : record.rtnAt !== null && record.rtnAt <= now ? record.rtnAt : undefined;
       if (rtn === undefined) continue;
       this.returnToNormal(record, rtn);
@@ -364,8 +449,9 @@ export class AlarmEngine {
   }
 
   private processShelveExpiry(now: number): void {
-    for (const record of this.records.values()) {
-      if (record.alarm.state === "shelved" && record.alarm.shelve && Date.parse(record.alarm.shelve.until) <= now) {
+    // In raise order, as before; restoring changes the set, so go through a copy.
+    for (const record of [...this.shelved].sort((x, y) => x.seq - y.seq)) {
+      if (record.alarm.shelve && Date.parse(record.alarm.shelve.until) <= now) {
         this.restoreFromShelf(record);
       }
     }
@@ -374,21 +460,41 @@ export class AlarmEngine {
   private prune(now: number): void {
     const oldest = now - LOG_RETENTION - HOUR;
     if (this.log.length > 0 && this.log[0]!.t < oldest) {
-      this.log.sort((a, b) => a.t - b.t);
-      this.log.splice(
-        0,
-        this.log.findIndex((a) => a.t >= oldest),
-      );
-    }
-    for (const [id, record] of this.records) {
-      if (
-        record.alarm.state === "cleared" &&
-        record.alarm.returnedToNormalAt &&
-        now - Date.parse(record.alarm.returnedToNormalAt) > RETENTION
-      ) {
-        this.records.delete(id);
+      this.sortLog();
+      // The first entry new enough to keep (none: keep everything, as before).
+      let lo = 0;
+      let hi = this.log.length;
+      while (lo < hi) {
+        const mid = (lo + hi) >> 1;
+        if (this.log[mid]!.t < oldest) lo = mid + 1;
+        else hi = mid;
       }
+      if (lo < this.log.length) this.log.splice(0, lo);
+      this.logSorted = this.log.length;
     }
+    // Cleared alarms are forgotten a while after they returned to normal: only the queue's front can be due.
+    let due = 0;
+    while (due < this.clearedQueue.length && now - this.clearedQueue[due]!.at > RETENTION) due++;
+    for (const { record } of this.clearedQueue.splice(0, due)) this.records.delete(record.alarm.id);
+  }
+
+  /**
+   * Sort the log by time, keeping the order of entries with the same time: exactly what sorting the
+   * whole log would do, but the front is already sorted, so only what was added since is sorted
+   * and then merged in.
+   */
+  private sortLog(): void {
+    if (this.logSorted >= this.log.length) return;
+    const head = this.log;
+    const tail = head.slice(this.logSorted).sort((a, b) => a.t - b.t);
+    const merged: Activation[] = [];
+    let i = 0;
+    let j = 0;
+    while (i < this.logSorted && j < tail.length) merged.push(head[i]!.t <= tail[j]!.t ? head[i++]! : tail[j++]!);
+    while (i < this.logSorted) merged.push(head[i++]!);
+    while (j < tail.length) merged.push(tail[j++]!);
+    this.log = merged;
+    this.logSorted = merged.length;
   }
 
   // ─── Starting conditions ───────────────────────────────────────────────────
@@ -452,9 +558,7 @@ export class AlarmEngine {
   }
 
   private findActive(tagId: string): AlarmRecord | undefined {
-    for (const r of this.records.values()) {
-      if (r.alarm.tagId === tagId && r.alarm.returnedToNormalAt === null && r.alarm.state !== "cleared") return r;
-    }
+    for (const r of this.waitingByTag.get(tagId) ?? []) if (r.alarm.state !== "cleared") return r;
     return undefined;
   }
 

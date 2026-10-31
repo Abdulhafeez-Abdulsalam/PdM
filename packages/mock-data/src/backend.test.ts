@@ -171,6 +171,28 @@ describe("faults, health, predictions and risk", () => {
 });
 
 describe("operator actions", () => {
+  it("brings alarms shelved until the same moment back in the order they were raised", () => {
+    const { backend: b, advance } = makeBackend();
+    // Long-standing alarms (raised days ago, never clearing by themselves), so nothing else changes them.
+    // Raise order is the order they were created in: their ids.
+    const standing = b
+      .request("alarms.list", { states: ["active_acked", "active_unacked"], limit: 500, sort: "newest" })
+      .items.filter((a) => Date.parse(a.raisedAt) < START - 2 * DAY)
+      .sort((x, y) => x.id.localeCompare(y.id));
+    const [first, second] = standing;
+    const until = iso(START + 2 * HOUR);
+    // Shelved in the opposite order to how they were raised.
+    for (const a of [second!, first!]) b.request("alarms.shelve", { alarmId: a.id, reason: "Transmitter being replaced", until });
+    const heard: ServerMessage[] = [];
+    b.connect((m) => heard.push(m)).handle({ type: "subscribe_alarms", scopeId: ENTERPRISE_SCOPE });
+    advance(3 * HOUR);
+    const back = heard.flatMap((m) =>
+      m.type === "alarm_changed" && (m.alarm.id === first!.id || m.alarm.id === second!.id) ? [m.alarm] : [],
+    );
+    expect(back.map((a) => a.id)).toEqual([first!.id, second!.id]);
+    expect(back.every((a) => a.state !== "shelved")).toBe(true);
+  });
+
   it("acknowledge → shelve (reason + ≤ 24 h) → unshelve", () => {
     const { backend: b } = makeBackend();
     const alarm = b.request("alarms.list", { states: ["active_unacked"], limit: 1 }).items[0]!;

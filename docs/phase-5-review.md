@@ -63,6 +63,8 @@ It grows faster than the simulated time, because **the alarm list only ever grow
 
 The fix is understood and contained: keep small indexes (alarms waiting to clear, shelved alarms, the active alarm per tag) instead of scanning every record, tidy up hourly instead of every minute, and, if needed, save a snapshot now and then so a restart replays only what came after it. It's listed first under "Gaps" for a decision.
 
+**Fixed after the review** (chosen as the next step): the alarm engine keeps indexes of the alarms each minute needs (those waiting to clear, the shelved ones, the cleared ones due to be forgotten, the active one on each tag), sorts only what was added to the history since the last tidy-up, and works out each fault's limit crossings once instead of every minute. Re-measured: 0.4 s after 1 day, 5.6 s after 7, 27 s after 30, 49 s after 60, a steady 0.8–0.9 s per simulated day. The alarms are exactly the same: a 12-day busy run (acknowledgements, shelving, chaos, the storyline) gave identical alarms, summaries and analytics at all 48 checkpoints before and after. See [learning note 44](learning/44-making-it-scale-without-changing-it.md).
+
 ## Found and fixed during this review
 
 | Finding | How it was found | Fix |
@@ -86,7 +88,7 @@ Fixed earlier in Phase 5, while building (each in its chunk's commit and learnin
 
 | Item | Notes |
 |---|---|
-| **Restart time grows with simulated time** | See the measurement above. The first thing to fix before anyone runs the server for long. |
+| **Restart time grows with simulated time** | Fixed after the review: now in step with simulated time (about 0.85 s per simulated day). A month of running still means about half a minute to restart; snapshots would make it nearly instant. |
 | **`npm audit` still lists 15 moderate findings** | All in `minimatch`/`glob`: in the lint tooling (developer machines only) and in `@fastify/static`, which uses `glob` once at start-up to list the built app's own files, not anything a request controls. The only "fixes" offered are major downgrades that would break those tools; to be re-checked when the tools release fixes. |
 | **Demo sign-in** | Choose a person, no password (as decided). A real deployment needs the company's sign-in (OIDC/SAML) or passwords. |
 | **Reads are open to anyone signed in** | By decision: pages share data across modules. Only the AI tools follow the module matrix. Live values and the alarm bar's counts aren't filtered by role either. Nothing is scoped by site (a technician sees every site). |
@@ -107,7 +109,7 @@ Phase 5 runs on this laptop by decision. Before real people use it over a networ
 1. **HTTPS**, with `COOKIE_SECURE=true` and an HSTS header.
 2. **Real identity**: the company's single sign-on, or passwords stored with a slow hash; a sign-in limiter shared between servers.
 3. **Scoping by site** where people should see only their own plant.
-4. **Fast restarts**: the alarm engine indexes and snapshots above, or per-record tables (and perhaps PostgreSQL) once the data stops being a simulation.
+4. **Fast restarts**: snapshots (the alarm engine indexes are done), or per-record tables (and perhaps PostgreSQL) once the data stops being a simulation.
 5. **Backups** of the database file, and a tested restore.
 6. **Monitoring**: something polling `/api/health`, collecting the JSON logs, and alerting a person.
 7. **A process manager or container** that restarts the server, sends it SIGTERM to stop, and gives it its settings.
