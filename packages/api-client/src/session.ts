@@ -37,15 +37,16 @@ export function createSessionClient({ baseUrl = "", fetch: fetchImpl = globalThi
 
   return {
     async current() {
-      const { status, data } = await call("");
-      return status === 401 ? null : SessionInfo.parse(data).user;
+      return SessionInfo.parse((await call("")).data).user;
     },
     async people() {
       return SessionPeople.parse((await call("/people")).data);
     },
     async signIn(userId) {
       const body: SignInRequest = { userId };
-      return SessionInfo.parse((await call("", body)).data).user;
+      const user = SessionInfo.parse((await call("", body)).data).user;
+      if (!user) throw new ApiRequestError({ code: "internal", message: "Signed in, but the server didn't say as whom" });
+      return user;
     },
     async signOut() {
       await call("/end", {});

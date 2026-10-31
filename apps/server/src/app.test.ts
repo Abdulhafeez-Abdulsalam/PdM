@@ -4,12 +4,14 @@ import { createMockBackend } from "@pdm/mock-data";
 import type { FastifyInstance } from "fastify";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import NodeWebSocket from "ws";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { buildServer } from "./app";
+import { loadConfig } from "./config";
 import { migrationFiles, openDatabase } from "./db";
 import { openPlant } from "./plant";
+import { AttemptLimiter, CONTENT_SECURITY_POLICY, SECURITY_HEADERS } from "./security";
 import { SESSION_IDLE_MS, SessionStore } from "./sessions";
 
 const START = Date.UTC(2026, 9, 10, 8, 0, 0);
@@ -377,5 +379,69 @@ describe("routes", () => {
       expect(server.hasRoute({ method: def.method, url: `/api${def.path}` }), `${def.method} ${def.path}`).toBe(true);
     }
     await server.close();
+  });
+});
+
+describe("running it properly (ADR-0017)", () => {
+  it("puts the security headers, Content Security Policy included, on every answer", async () => {
+    const server = buildServer({ backend: makeBackend() });
+    for (const url of ["/api/health", "/api/assets", "/api/nowhere"]) {
+      const response = await server.inject({ method: "GET", url });
+      for (const [name, value] of Object.entries(SECURITY_HEADERS))
+        expect(response.headers[name.toLowerCase()], `${url} ${name}`).toBe(value);
+    }
+    expect(CONTENT_SECURITY_POLICY).toContain("script-src 'self'");
+    expect(CONTENT_SECURITY_POLICY).not.toContain("unsafe");
+    await server.close();
+  });
+
+  it("says whether it can reach its database", async () => {
+    const server = buildServer({ backend: makeBackend() });
+    expect((await server.inject({ method: "GET", url: "/api/health" })).json()).toMatchObject({ ok: true, database: "ok" });
+    await server.close();
+  });
+
+  it("limits sign-in attempts from one address, then lets it try again after a while", async () => {
+    let now = 0;
+    const server = buildServer({ backend: makeBackend(), signInLimiter: new AttemptLimiter(3, 60_000, () => now) });
+    const attempt = () => server.inject({ method: "POST", url: "/api/session", payload: { userId: "NOBODY" } });
+    for (let i = 0; i < 3; i++) expect((await attempt()).statusCode).toBe(404); // counted, even though they fail
+    const refused = await attempt();
+    expect(refused.statusCode).toBe(429);
+    expect(refused.json()).toMatchObject({ code: "rate_limited" });
+    expect(Number(refused.headers["retry-after"])).toBeGreaterThan(0);
+    now += 60_000;
+    expect((await attempt()).statusCode).toBe(404);
+    await server.close();
+  });
+
+  it("serves the built app: its files cached for a year, its pages always fresh, the API untouched", async () => {
+    const dist = mkdtempSync(join(tmpdir(), "pdm-dist-"));
+    mkdirSync(join(dist, "assets"));
+    writeFileSync(join(dist, "index.html"), "<!doctype html><title>PdM</title>");
+    writeFileSync(join(dist, "assets", "index-abc123.js"), "console.log(1)");
+    const server = buildServer({ backend: makeBackend(), webDist: dist });
+    try {
+      const page = await server.inject({ method: "GET", url: "/assets/CBC-GT-101/vibration" });
+      expect(page.statusCode).toBe(200);
+      expect(page.headers["content-type"]).toMatch(/text\/html/);
+      expect(page.headers["cache-control"]).toBe("no-cache");
+      const script = await server.inject({ method: "GET", url: "/assets/index-abc123.js" });
+      expect(script.headers["cache-control"]).toBe("public, max-age=31536000, immutable");
+      const api = await server.inject({ method: "GET", url: "/api/nowhere" });
+      expect(api.statusCode).toBe(404);
+      expect(api.json()).toMatchObject({ code: "not_found" });
+    } finally {
+      await server.close();
+      rmSync(dist, { recursive: true, force: true });
+    }
+  });
+
+  it("checks its settings at start-up and says which one is wrong", () => {
+    expect(() => loadConfig({ PORT: "eighty" })).toThrow(/PORT/);
+    expect(() => loadConfig({ LOG_LEVEL: "loud" })).toThrow(/LOG_LEVEL/);
+    expect(() => loadConfig({ WEB_DIST: join(tmpdir(), "no-such-build") })).toThrow(/WEB_DIST/);
+    expect(loadConfig({})).toMatchObject({ port: 4000, host: "127.0.0.1", seed: 20261010, logLevel: "info", cookieSecure: false });
+    expect(loadConfig({ COOKIE_SECURE: "true", PORT: "8080" })).toMatchObject({ port: 8080, cookieSecure: true });
   });
 });

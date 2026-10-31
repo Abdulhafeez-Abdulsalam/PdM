@@ -28,6 +28,8 @@ export const HTTP_STATUS: Record<ApiError["code"], number> = {
   not_found: 404,
   conflict: 409,
   too_many_tags: 422,
+  /** Too many attempts in a short time (signing in): wait, then try again. */
+  rate_limited: 429,
   unavailable: 503,
   internal: 500,
 };
@@ -45,7 +47,7 @@ export const LIVE_CLOSE_SIGNED_OUT = 4401;
 /**
  * Sign-in (Phase 5 chunk 3, ADR-0014). Not endpoints of the plant: they're about the session.
  *   GET  /api/session/people  the demo people to choose from (open to all: it's the sign-in page)
- *   GET  /api/session         who is signed in (401 if nobody)
+ *   GET  /api/session         who is signed in ({ user: null } if nobody: an answer, not an error)
  *   POST /api/session         sign in as { userId }; the answer sets the session cookie
  *   POST /api/session/end     sign out
  * Demo sign-in: choosing a person is enough. Passwords (or a company login) come later.
@@ -54,7 +56,7 @@ export const SESSION_PATH = "/session";
 export const SessionPeople = z.array(User);
 export const SignInRequest = z.object({ userId: Id });
 export type SignInRequest = z.infer<typeof SignInRequest>;
-export const SessionInfo = z.object({ user: User });
+export const SessionInfo = z.object({ user: User.nullable() });
 export type SessionInfo = z.infer<typeof SessionInfo>;
 
 export interface HttpRequest {

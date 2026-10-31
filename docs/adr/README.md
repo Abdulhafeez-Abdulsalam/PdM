@@ -24,5 +24,6 @@ Rules:
 | [0014](0014-sessions-and-server-role-checks.md) | Demo sign-in, sessions, and the server's role checks | Accepted |
 | [0015](0015-sqlite-command-log-and-replay.md) | SQLite, a command log, and replay on restart | Accepted |
 | [0016](0016-ai-provider-and-role-filtered-tools.md) | The AI provider on the server, and tools filtered by role | Accepted |
+| [0017](0017-running-the-server.md) | Running the server properly | Accepted |
 
 Template for new ADRs: [template.md](template.md).

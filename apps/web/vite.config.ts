@@ -18,8 +18,8 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
-    // e2e/ holds Playwright tests, which run in a real browser with `npm run e2e`.
-    exclude: [...configDefaults.exclude, "e2e/**"],
+    // e2e/ and e2e-server/ hold Playwright tests, which run in a real browser (`npm run e2e`, `npm run e2e:server`).
+    exclude: [...configDefaults.exclude, "e2e/**", "e2e-server/**"],
     // Whole-journey tests compile lazily-loaded pages on first use; allow time for that. 45 s since
     // Phase 4 chunk 4: run alone, the slowest tests take 5–10 s, but with 30 test files sharing a
     // laptop's CPU in `npm run check` a few went just past the old 20 s now and then.

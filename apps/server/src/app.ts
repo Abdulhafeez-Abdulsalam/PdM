@@ -35,11 +35,13 @@ import {
 } from "@pdm/contracts";
 import { ApiFailure, type MockBackend } from "@pdm/mock-data";
 import cookie from "@fastify/cookie";
+import fastifyStatic from "@fastify/static";
 import websocket, { type WebSocket } from "@fastify/websocket";
-import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest } from "fastify";
+import Fastify, { type FastifyInstance, type FastifyReply, type FastifyRequest, type FastifyServerOptions } from "fastify";
 import type { DatabaseSync } from "node:sqlite";
 import { openDatabase } from "./db";
 import { PlantStore } from "./plant";
+import { AttemptLimiter, addSecurityHeaders } from "./security";
 import { SESSION_COOKIE, SessionStore, type Session } from "./sessions";
 
 /** The biggest message a browser may send: a full 300-tag subscription is about 10 KB. */
@@ -49,8 +51,8 @@ const MAX_UNSENT_BYTES = 1024 * 1024;
 
 export interface ServerOptions {
   backend: MockBackend;
-  /** Log each request (on when running, off in tests). */
-  logger?: boolean;
+  /** Log each request (on when running, off in tests): true, or pino options such as { level }. */
+  logger?: FastifyServerOptions["logger"];
   /**
    * Move the plant on and push the status to every browser this often (LIVE_FLUSH_INTERVAL_MS
    * when running). Leave it out to tick by hand.
@@ -60,10 +62,26 @@ export interface ServerOptions {
   db?: DatabaseSync;
   /** Tests pass one with a clock they control. */
   sessions?: SessionStore;
+  /** The built web app to serve alongside the API (ADR-0017), or null for the API alone. */
+  webDist?: string | null;
+  /** Send the session cookie only over HTTPS (on whenever the site is served over HTTPS). */
+  cookieSecure?: boolean;
+  /** Sign-in attempts allowed per address: 10 a minute unless a test says otherwise. */
+  signInLimiter?: AttemptLimiter;
 }
 
-export function buildServer({ backend, logger = false, tickMs, db = openDatabase(":memory:"), sessions }: ServerOptions): FastifyInstance {
+export function buildServer({
+  backend,
+  logger = false,
+  tickMs,
+  db = openDatabase(":memory:"),
+  sessions,
+  webDist = null,
+  cookieSecure = false,
+  signInLimiter = new AttemptLimiter(10, 60_000),
+}: ServerOptions): FastifyInstance {
   const app = Fastify({ logger });
+  addSecurityHeaders(app);
   sessions ??= new SessionStore(db);
   const plant = new PlantStore(db);
   /** Who moved a simulation control, while it's being moved (the change itself doesn't say). */
@@ -126,11 +144,12 @@ export function buildServer({ backend, logger = false, tickMs, db = openDatabase
   const session = `${API_PREFIX}${SESSION_PATH}`;
   // The people to choose from: the one thing open to everyone, since it IS the sign-in page.
   app.get(`${session}/people`, async () => backend.world.users);
-  app.get(session, async (request, reply) => {
-    const who = signedIn(request);
-    return who ? ({ user: who.user } satisfies SessionInfo) : signInFirst(reply);
-  });
+  app.get(session, async (request) => ({ user: signedIn(request)?.user ?? null }) satisfies SessionInfo);
   app.post(session, async (request, reply) => {
+    if (!signInLimiter.allow(request.ip)) {
+      void reply.header("Retry-After", String(signInLimiter.retryAfterSeconds(request.ip)));
+      return fail(reply, { code: "rate_limited", message: "Too many sign-in attempts: wait a minute, then try again" });
+    }
     const body = SignInRequest.safeParse(request.body);
     if (!body.success) return fail(reply, { code: "bad_request", message: "Say who is signing in" });
     const user = backend.world.users.find((u) => u.id === body.data.userId);
@@ -138,7 +157,7 @@ export function buildServer({ backend, logger = false, tickMs, db = openDatabase
     // A fresh token at every sign-in, and the old one ends: a token someone saw earlier is worthless.
     sessions.end(request.cookies[SESSION_COOKIE]);
     const created = sessions.create(user.id);
-    void reply.setCookie(SESSION_COOKIE, created.token, { httpOnly: true, sameSite: "strict", path: "/" });
+    void reply.setCookie(SESSION_COOKIE, created.token, { httpOnly: true, sameSite: "strict", secure: cookieSecure, path: "/" });
     return { user } satisfies SessionInfo;
   });
   app.post(`${session}/end`, async (request, reply) => {
@@ -265,12 +284,35 @@ export function buildServer({ backend, logger = false, tickMs, db = openDatabase
     if (!who) return signInFirst(reply);
     return { provider: backend.ai.name, role: who.user.role, tools: aiToolsFor(who.user.role) };
   });
-  app.get(`${API_PREFIX}/health`, async () => ({ ok: true }));
+  // For whoever watches the service: is it up, and can it reach its database?
+  app.get(`${API_PREFIX}/health`, async (_request, reply) => {
+    try {
+      db.prepare("SELECT 1").get();
+    } catch {
+      return reply.status(503).send({ ok: false, database: "unreachable" });
+    }
+    return { ok: true, database: "ok", uptimeSeconds: Math.round(process.uptime()) };
+  });
+
+  if (webDist) {
+    // The built app: hashed files (assets/index-3f9c….js) never change, so browsers may keep them
+    // for a year; index.html must be checked every time, so a new version is picked up.
+    void app.register(fastifyStatic, {
+      root: webDist,
+      wildcard: false,
+      setHeaders: (res, path) =>
+        void res.header("Cache-Control", /[\\/]assets[\\/]/.test(path) ? "public, max-age=31536000, immutable" : "no-cache"),
+    });
+  }
 
   // An unknown /api path is an ApiError too, so the browser always gets the same shape.
-  app.setNotFoundHandler((request, reply) =>
-    fail(reply, { code: "not_found", message: `No such endpoint: ${request.method} ${request.url.split("?")[0]}` }),
-  );
+  app.setNotFoundHandler((request, reply) => {
+    // The app's own pages (/assets/CBC-GT-101, /alarms…) are drawn in the browser: send the app.
+    if (webDist && (request.method === "GET" || request.method === "HEAD") && !request.url.startsWith(`${API_PREFIX}/`)) {
+      return reply.header("Cache-Control", "no-cache").sendFile("index.html");
+    }
+    return fail(reply, { code: "not_found", message: `No such endpoint: ${request.method} ${request.url.split("?")[0]}` });
+  });
   return app;
 }
 

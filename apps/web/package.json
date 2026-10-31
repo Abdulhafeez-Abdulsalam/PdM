@@ -7,12 +7,14 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "build:connected": "vite build --mode server --outDir dist-server",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p e2e/tsconfig.json",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "eslint .",
-    "e2e": "playwright test"
+    "e2e": "playwright test",
+    "e2e:server": "playwright test --config playwright.server.config.ts"
   },
   "dependencies": {
     "@dnd-kit/core": "^6.3.1",

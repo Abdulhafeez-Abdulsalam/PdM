@@ -6,7 +6,7 @@
  * The signed-in person's role becomes the app's role, so the menus and buttons match what the
  * server will allow. In demo mode there's no gate, and the role picker chooses the role.
  */
-import { HttpTransport, useApiContext, type SessionClient } from "@pdm/api-client";
+import { ApiRequestError, HttpTransport, useApiContext, type SessionClient } from "@pdm/api-client";
 import type { User } from "@pdm/contracts";
 import { Button } from "@pdm/ui";
 import { useQueryClient } from "@tanstack/react-query";
@@ -88,6 +88,8 @@ function SignInPage({
   const [people, setPeople] = useState<User[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
+  /** What the server said when it refused (e.g. too many attempts), shown instead of "can't reach". */
+  const [refusal, setRefusal] = useState<string | null>(null);
 
   useEffect(() => {
     document.title = `${t("session.title")} · ${t("app.name")}`;
@@ -99,9 +101,11 @@ function SignInPage({
 
   const signIn = (user: User) => {
     setBusy(user.id);
-    session.signIn(user.id).then(onSignedIn, () => {
+    setRefusal(null);
+    session.signIn(user.id).then(onSignedIn, (error: unknown) => {
       setBusy(null);
-      setFailed(true);
+      if (error instanceof ApiRequestError && error.code !== "unavailable") setRefusal(error.message);
+      else setFailed(true);
     });
   };
 
@@ -134,6 +138,11 @@ function SignInPage({
       ) : (
         <>
           <p className="max-w-prose text-fg-muted">{t("session.intro")}</p>
+          {refusal && (
+            <p role="alert" className="rounded-lg border border-line bg-surface p-3">
+              {refusal}
+            </p>
+          )}
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             {[...groups].map(([role, members]) => (
               <section key={role} aria-labelledby={`role-${role}`} className="rounded-lg border border-line bg-surface p-3">

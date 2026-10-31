@@ -16,6 +16,7 @@
     "dev:server": "npm run dev -w @pdm/server",
     "start:server": "npm start -w @pdm/server",
     "dev:connected": "npm run dev -w @pdm/web -- --mode server",
+    "start": "npm run build:connected -w @pdm/web && npm run start:server",
     "build": "turbo run build",
     "test": "turbo run test",
     "typecheck": "turbo run typecheck",
@@ -25,7 +26,8 @@
     "check": "prettier --check . && turbo run typecheck lint test --concurrency=50%",
     "test:watch": "npm run test:watch -w @pdm/web",
     "prepare": "husky",
-    "e2e": "npm run e2e --workspace @pdm/web"
+    "e2e": "npm run e2e --workspace @pdm/web",
+    "e2e:server": "npm run e2e:server --workspace @pdm/web"
   },
   "lint-staged": {
     "*.{ts,tsx}": [

@@ -5,7 +5,7 @@ import { useEffect, useState, type ReactNode } from "react";
 import { usePreferences } from "../shared/preferences";
 
 /** Errors that won't change if we ask again. */
-const DEFINITE = new Set<string>(["not_found", "bad_request", "unauthenticated", "forbidden", "conflict", "too_many_tags"]);
+const DEFINITE = new Set<string>(["not_found", "bad_request", "unauthenticated", "forbidden", "conflict", "too_many_tags", "rate_limited"]);
 
 function makeQueryClient() {
   return new QueryClient({

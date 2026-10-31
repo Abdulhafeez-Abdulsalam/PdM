@@ -1,42 +1,64 @@
 /**
- * Starts the PdM server: `npm run dev:server` (restarts when a file changes) or
- * `npm run start:server`. Settings come from environment variables:
- *   PORT     where to listen (default 4000); only this computer can connect (127.0.0.1)
- *   SEED     which simulated plant, for a new database (default 20261010, the same as demo mode)
- *   DB_FILE  the database file (default apps/server/data/pdm.sqlite). Delete it to start afresh.
+ * Starts the PdM server. `npm start` (from the repository root) builds the web app and runs this,
+ * serving the app and the API together; `npm run dev:server` runs the API alone and restarts when a
+ * file changes. Settings come from environment variables: see config.ts.
  */
 import { LIVE_FLUSH_INTERVAL_MS } from "@pdm/contracts";
 import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
-import { fileURLToPath } from "node:url";
 import { buildServer } from "./app";
+import { loadConfig } from "./config";
 import { openDatabase } from "./db";
 import { openPlant } from "./plant";
 
-const port = Number(process.env.PORT ?? 4000);
-const seed = Number(process.env.SEED ?? 20261010);
-const dbFile = process.env.DB_FILE ?? fileURLToPath(new URL("../data/pdm.sqlite", import.meta.url));
+/** How long a clean stop may take before the process ends anyway. */
+const STOP_TIMEOUT_MS = 10_000;
 
-mkdirSync(dirname(dbFile), { recursive: true });
-const db = openDatabase(dbFile);
+const config = loadConfig();
+mkdirSync(dirname(config.dbFile), { recursive: true });
+const db = openDatabase(config.dbFile);
 // Rebuild the plant: the same simulation, with every change people made, made again (ADR-0015).
 const started = performance.now();
-const { backend, store, replayed, keptSeed } = openPlant(db, { seed });
+const { backend, store, replayed, keptSeed } = openPlant(db, { seed: config.seed });
 
 // The plant moves on by itself once a second, as it does in the browser's worker (the storyline
 // advances, alarms are raised and cleared), and every connected browser hears about it.
-const app = buildServer({ backend, db, logger: true, tickMs: LIVE_FLUSH_INTERVAL_MS });
-app.log.info(`Database ${dbFile}: replayed ${replayed} changes in ${Math.round(performance.now() - started)} ms`);
-if (keptSeed !== null) app.log.warn(`This database belongs to the plant with seed ${keptSeed}, so SEED=${seed} is ignored`);
+const app = buildServer({
+  backend,
+  db,
+  tickMs: LIVE_FLUSH_INTERVAL_MS,
+  webDist: config.webDist,
+  cookieSecure: config.cookieSecure,
+  // Structured logs: one JSON line per event, easy for log tools to search. Cookies never appear.
+  logger: { level: config.logLevel, redact: ["req.headers.cookie", 'res.headers["set-cookie"]'] },
+});
+app.log.info({ dbFile: config.dbFile, replayed, ms: Math.round(performance.now() - started) }, "Plant rebuilt from the database");
+if (keptSeed !== null) app.log.warn(`This database belongs to the plant with seed ${keptSeed}, so SEED=${config.seed} is ignored`);
+app.log.info(config.webDist ? { webDist: config.webDist } : {}, config.webDist ? "Serving the web app" : "API only (no built web app)");
+if (config.host !== "127.0.0.1" && config.host !== "localhost") {
+  app.log.warn(`Listening on ${config.host}: other computers can reach this server. It has demo sign-in only.`);
+}
 
-// Stopping (Ctrl+C, or the dev server restarting): note where the clock got to, and close the file cleanly.
-const stop = async () => {
+/**
+ * A clean stop (Ctrl+C, or a service manager asking): stop taking requests, let those in progress
+ * finish, close the live connections, note where the clock got to, close the database. If that
+ * takes too long, end anyway.
+ */
+let stopping = false;
+const stop = async (signal: string) => {
+  if (stopping) return;
+  stopping = true;
+  app.log.info({ signal }, "Stopping");
+  setTimeout(() => {
+    app.log.error("Didn't stop in time; ending now");
+    process.exit(1);
+  }, STOP_TIMEOUT_MS).unref();
   await app.close();
   store.saveClock(backend.now());
   db.close();
   process.exit(0);
 };
-process.once("SIGINT", () => void stop());
-process.once("SIGTERM", () => void stop());
+process.once("SIGINT", () => void stop("SIGINT"));
+process.once("SIGTERM", () => void stop("SIGTERM"));
 
-await app.listen({ port, host: "127.0.0.1" });
+await app.listen({ port: config.port, host: config.host });

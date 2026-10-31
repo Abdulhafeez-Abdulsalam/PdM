@@ -22,14 +22,42 @@ Every commit automatically lints and formats the files you changed, and checks t
 
 The app runs entirely in your browser on simulated data — no server or account needed. Use the **Simulation** panel at the bottom of the left menu to speed up time or start the demo storyline.
 
-**With the server (Phase 5, in progress).** The same app can talk to a real server instead of the in-browser simulation. In two terminals:
+## How to run it with the server
+
+The same app can talk to a real server instead of the in-browser simulation: you sign in as one of the demo people, the server checks every request against that person's role, and what people do is kept in a database and survives a restart.
+
+**To use it** (one command builds the app and starts the server, which serves the app and the API together):
 
 ```bash
-npm run dev:server      # the API on http://127.0.0.1:4000 (try /api/health)
+npm start               # → open http://127.0.0.1:4000
+```
+
+**To work on it** (two terminals; both reload when you change a file):
+
+```bash
+npm run dev:server      # the API on http://127.0.0.1:4000
 npm run dev:connected   # the app in server mode → open http://localhost:5173
 ```
 
-Requests travel over HTTP ([ADR-0012](docs/adr/0012-fastify-server-and-http-format.md)) and live values over a WebSocket ([ADR-0013](docs/adr/0013-live-values-over-a-websocket.md)). Every browser shares one simulated plant, so open two windows and change the speed in one. In server mode you sign in as one of the demo people, and the server checks every request against that person's role ([ADR-0014](docs/adr/0014-sessions-and-server-role-checks.md)). What people do is kept in a SQLite file (`apps/server/data/pdm.sqlite`) and survives a restart; delete that folder to start afresh ([ADR-0015](docs/adr/0015-sqlite-command-log-and-replay.md)).
+**Settings** are environment variables, checked at start-up (a wrong one stops the server and says which):
+
+| Variable | Default | What it's for |
+|---|---|---|
+| `PORT` | `4000` | Where the server listens |
+| `HOST` | `127.0.0.1` | Which network address; the default means only this computer can connect |
+| `DB_FILE` | `apps/server/data/pdm.sqlite` | The database file. Stop the server and delete it to start afresh |
+| `SEED` | `20261010` | Which simulated plant, for a new database |
+| `WEB_DIST` | `apps/web/dist-server` | The built app to serve (built by `npm start`) |
+| `LOG_LEVEL` | `info` | How much to log: `error`, `warn`, `info`, `debug`… |
+| `COOKIE_SECURE` | `false` | Set to `true` when the site is served over HTTPS |
+
+**Is it up?** `http://127.0.0.1:4000/api/health` answers `{"ok":true,"database":"ok",…}`. Logs are one JSON line per event. Stop it with Ctrl+C: it finishes what it's doing, saves where the simulated clock got to, and closes the database.
+
+**Tests against the real server:** `npm run e2e:server` builds the app, starts the server with a fresh database and runs the main journeys in Chrome (about 30 seconds).
+
+**Before putting it on the internet**, it would still need HTTPS (and `COOKIE_SECURE=true`), real accounts instead of demo sign-in, backups of the database file, and monitoring. See [ADR-0017](docs/adr/0017-running-the-server.md).
+
+How it works: [ADR-0012](docs/adr/0012-fastify-server-and-http-format.md) (HTTP), [ADR-0013](docs/adr/0013-live-values-over-a-websocket.md) (live values), [ADR-0014](docs/adr/0014-sessions-and-server-role-checks.md) (sign-in and roles), [ADR-0015](docs/adr/0015-sqlite-command-log-and-replay.md) (the database), [ADR-0016](docs/adr/0016-ai-provider-and-role-filtered-tools.md) (the AI provider), [ADR-0017](docs/adr/0017-running-the-server.md) (running it).
 
 ## Repository layout
 
