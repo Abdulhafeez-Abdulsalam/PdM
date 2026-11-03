@@ -16,7 +16,10 @@ async function signIn(page: Page, roleHeading: string, path = "/") {
 }
 
 test("sign in, and the role decides what the screen offers and what the server allows", async ({ page }) => {
-  await signIn(page, "Executive / VP Ops", "/alarms");
+  // The unacknowledged list: every row there would offer Acknowledge to someone allowed to. (The
+  // list draws only the rows in view, so on the full list those could all be acknowledged ones.)
+  await signIn(page, "Executive / VP Ops", "/alarms?view=list&show=unacked");
+  await expect(page.getByRole("row", { name: /^P\d / }).first()).toBeVisible();
   await expect(page.getByRole("button", { name: /^Acknowledge ALM-/ })).toHaveCount(0);
   // A page with its button hidden could still send the request: the server refuses it.
   const alarms = await page.request.get('/api/alarms?states=["active_unacked"]&limit=1');
@@ -26,7 +29,9 @@ test("sign in, and the role decides what the screen offers and what the server a
 });
 
 test("an operator acknowledges an alarm, and it stays acknowledged after a reload", async ({ page }) => {
-  await signIn(page, "Control Room Operator", "/alarms?view=list&show=active");
+  // Unacknowledged ones only: the list draws just the rows in view, and on the full list those
+  // can all be acknowledged already.
+  await signIn(page, "Control Room Operator", "/alarms?view=list&show=unacked");
   const ack = page.getByRole("button", { name: /^Acknowledge ALM-/ }).first();
   const id = ((await ack.getAttribute("aria-label")) ?? "").replace("Acknowledge ", "");
   type Listed = { items: { id: string; assetId: string; state: string }[] };
