@@ -53,6 +53,21 @@ test("criterion D: typed work survives the browser going offline, and a reload",
   await expect(page.getByText(/completed and sent for verification/)).toBeVisible();
 });
 
+test("a long alarm list draws only the rows in view, and the keyboard still walks all of it", async ({ page }) => {
+  await open(page, "/alarms?view=list&show=all", { role: "control_room_operator" });
+  const table = page.locator("main table");
+  const total = Number(await table.getAttribute("aria-rowcount")) - 1; // less the header row
+  test.skip(total <= 100, `only ${total} alarms right now: too few to need virtualising`);
+  const drawn = page.locator('main tbody tr[tabindex="0"]');
+  expect(await drawn.count()).toBeLessThan(60); // of `total`
+  // Screen readers are told every row's place in the whole list.
+  await drawn.first().focus();
+  for (let n = 0; n < 80; n++) await page.keyboard.press("ArrowDown");
+  const focused = page.locator(":focus");
+  await expect(focused).toHaveAttribute("aria-rowindex", "82");
+  await expect(focused).toBeInViewport();
+});
+
 test("the plant manager approves work by dragging the card with the mouse", async ({ page }) => {
   await open(page, "/maintenance", { role: "plant_manager" });
   const scheduled = page.getByRole("region", { name: /^Scheduled, \d+ work orders$/ });

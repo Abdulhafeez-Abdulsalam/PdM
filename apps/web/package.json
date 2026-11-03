@@ -28,6 +28,7 @@
     "@pdm/ui": "*",
     "@tanstack/react-query": "^5.104.1",
     "@tanstack/react-router": "^1.170.42",
+    "@tanstack/react-virtual": "3.14.21",
     "get-nonce": "^1.0.1",
     "i18next": "^26.4.3",
     "lucide-react": "^1.55.0",

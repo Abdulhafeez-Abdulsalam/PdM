@@ -3,12 +3,19 @@
  *
  * Keyboard: ↑/↓ move between rows; on a row, A = acknowledge, S = shelve, W = work order.
  * Action buttons only appear for roles allowed to use them (ADR-0008).
+ *
+ * Long lists are virtualised (Phase 6 chunk 2): only the rows in view, and a few either side, are
+ * drawn. Every row shows "raised 3 min ago", so the whole list redraws every second; with every row
+ * drawn, a 266-alarm list froze the page for up to ~100 ms each second, worse in a flood. The table
+ * still tells screen readers how many rows there are and where each is (aria-rowcount/rowindex),
+ * and ↑/↓ scroll a row into view before focusing it.
  */
 import type { Alarm } from "@pdm/contracts";
 import { Button, PriorityIcon, cx } from "@pdm/ui";
 import { Link } from "@tanstack/react-router";
+import { useVirtualizer } from "@tanstack/react-virtual";
 import { Archive, ArchiveRestore, Check, ClipboardPlus, Repeat, Timer } from "lucide-react";
-import { useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { formatAgo, makeTimeFormatter } from "../../shared/format";
 import { usePreferences } from "../../shared/preferences";
@@ -25,6 +32,16 @@ const CHATTERING_COUNT = 5;
 
 const ACTIVE = new Set(["active_unacked", "active_acked"]);
 const NEEDS_ACK = new Set(["active_unacked", "rtn_unacked"]);
+
+/** Up to this many rows the whole list is drawn (an asset's tab, a quiet plant); above it, only what's in view. */
+const VIRTUALIZE_ABOVE = 60;
+/** First guesses at row heights; each drawn row is then measured (badges can make a row taller). */
+const ROW_ESTIMATE = 49;
+const GROUP_ESTIMATE = 30;
+
+/** What the table body shows, in order: alarms, and (when grouping) a heading before each asset's alarms. */
+type Item = { kind: "group"; alarm: Alarm } | { kind: "alarm"; alarm: Alarm; index: number };
+const keyOf = (item: Item) => (item.kind === "group" ? `g-${item.alarm.assetId}` : item.alarm.id);
 
 interface Props {
   alarms: readonly Alarm[];
@@ -72,6 +89,63 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
   const ackable = rows.filter((a) => NEEDS_ACK.has(a.state));
   const selectedAckable = ackable.filter((a) => selected.has(a.id));
 
+  const items = useMemo(() => {
+    const out: Item[] = [];
+    rows.forEach((a, index) => {
+      if (groupByAsset && groups.starts.has(a.id)) out.push({ kind: "group", alarm: a });
+      out.push({ kind: "alarm", alarm: a, index });
+    });
+    return out;
+  }, [rows, groups, groupByAsset]);
+  const itemIndex = useMemo(() => new Map(items.map((item, k) => [keyOf(item), k])), [items]);
+
+  // The page scrolls inside the app's <main>, not the window; the list starts some way down it
+  // (filters, headings, the table's header), which the virtualiser must know to work out what's in view.
+  // Only where the page can be measured: every browser can (ResizeObserver); the unit tests' jsdom
+  // can't lay a page out at all, so there the whole list is drawn, as it always was.
+  const virtual = items.length > VIRTUALIZE_ABOVE && typeof ResizeObserver !== "undefined";
+  const tbodyRef = useRef<HTMLTableSectionElement>(null);
+  const [scrollMargin, setScrollMargin] = useState(0);
+  // eslint-disable-next-line react-hooks/incompatible-library -- only matters with the React Compiler, which this app doesn't use
+  const virtualizer = useVirtualizer({
+    count: items.length,
+    enabled: virtual,
+    getScrollElement: () => tbodyRef.current?.closest("main") ?? null,
+    estimateSize: (k) => (items[k]?.kind === "group" ? GROUP_ESTIMATE : ROW_ESTIMATE),
+    getItemKey: (k) => keyOf(items[k]!),
+    overscan: 8,
+    scrollMargin,
+    // Let React batch the redraws while scrolling, instead of one synchronous redraw per scroll
+    // event: measured, fast scrolling's worst frame was about twice as long with them.
+    useFlushSync: false,
+    // Before anything is measured: draw enough rows for a typical screen.
+    initialRect: { width: 1200, height: 900 },
+  });
+  useLayoutEffect(() => {
+    const body = tbodyRef.current;
+    const main = body?.closest("main");
+    if (!virtual || !body || !main || typeof ResizeObserver === "undefined") return;
+    // Measured whenever the page's layout changes (and once at the start, as observing begins).
+    const observer = new ResizeObserver(() => {
+      const margin = body.getBoundingClientRect().top - main.getBoundingClientRect().top + main.scrollTop;
+      setScrollMargin((old) => (Math.abs(old - margin) > 1 ? margin : old));
+    });
+    observer.observe(main);
+    if (main.firstElementChild) observer.observe(main.firstElementChild);
+    return () => observer.disconnect();
+  }, [virtual]);
+
+  // ↑/↓ to a row that isn't drawn yet: scroll it into view, then focus it once it's there.
+  const pendingFocus = useRef<{ id: string; index: number } | null>(null);
+  useEffect(() => {
+    const pending = pendingFocus.current;
+    const row = pending ? rowRefs.current.get(pending.id) : undefined;
+    if (row) {
+      pendingFocus.current = null;
+      row.focus();
+    }
+  });
+
   const ack = (ids: string[]) => {
     if (ids.length === 0) return;
     acknowledge.mutate({ alarmIds: ids });
@@ -82,11 +156,19 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
     if (e.target !== e.currentTarget) return; // a button inside the row has focus
     const move = (to: number) => {
       const next = rows[to];
-      if (next) rowRefs.current.get(next.id)?.focus();
+      if (!next) return;
+      const row = rowRefs.current.get(next.id);
+      if (row) row.focus();
+      else {
+        pendingFocus.current = { id: next.id, index: to };
+        virtualizer.scrollToIndex(itemIndex.get(next.id) ?? 0, { align: "auto" });
+      }
     };
+    // Count from the row on its way into view, if any: a quick second press still moves one further.
+    const from = pendingFocus.current?.index ?? index;
     const key = e.key.toLowerCase();
-    if (e.key === "ArrowDown") move(index + 1);
-    else if (e.key === "ArrowUp") move(index - 1);
+    if (e.key === "ArrowDown") move(from + 1);
+    else if (e.key === "ArrowUp") move(from - 1);
     else if (key === "a" && may.ack && NEEDS_ACK.has(alarm.state)) ack([alarm.id]);
     else if (key === "s" && may.shelve && alarm.state !== "shelved" && alarm.state !== "cleared") setShelveTarget(alarm);
     else if (key === "w" && may.wo && !alarm.workOrderId) setWoTarget(alarm);
@@ -95,6 +177,20 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
   };
 
   const columns = (anyAction ? 1 : 0) + (showAsset ? 1 : 0) + 6;
+
+  // What to draw: every item, or (virtualised) those in view, with empty rows standing in for the rest.
+  const measure = virtual ? virtualizer.measureElement : undefined;
+  const inView = virtual ? virtualizer.getVirtualItems() : [];
+  const drawn = virtual ? inView.map((v) => ({ item: items[v.index]!, k: v.index })) : items.map((item, k) => ({ item, k }));
+  const spaceAbove = inView[0] ? inView[0].start - scrollMargin : 0;
+  const lastInView = inView.at(-1);
+  const spaceBelow = lastInView ? virtualizer.getTotalSize() - (lastInView.end - scrollMargin) : 0;
+  const spacer = (key: string, height: number) =>
+    height > 0 ? (
+      <tr key={key} aria-hidden="true">
+        <td colSpan={columns} className="p-0" style={{ height }} />
+      </tr>
+    ) : null;
 
   return (
     <>
@@ -108,10 +204,10 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
         </div>
       )}
       <div className="relative -mx-4 overflow-x-auto">
-        <table className="w-full min-w-[880px] text-sm">
+        <table className="w-full min-w-[880px] text-sm" aria-rowcount={items.length + 1}>
           <caption className="sr-only">{caption}</caption>
           <thead>
-            <tr className="border-b border-line text-left text-xs text-fg-muted">
+            <tr aria-rowindex={1} className="border-b border-line text-left text-xs text-fg-muted">
               {anyAction && (
                 <th scope="col" className="w-8 px-4 py-2">
                   {may.ack && (
@@ -149,28 +245,33 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
               </th>
             </tr>
           </thead>
-          <tbody>
-            {rows.map((a, i) => {
-              const groupHeader =
-                groupByAsset && groups.starts.has(a.id) ? (
-                  <tr key={`g-${a.assetId}`} className="bg-sunken">
+          <tbody ref={tbodyRef}>
+            {spacer("space-above", spaceAbove)}
+            {drawn.map(({ item, k }) => {
+              const a = item.alarm;
+              if (item.kind === "group")
+                return (
+                  <tr key={keyOf(item)} data-index={k} ref={measure} aria-rowindex={k + 2} className="bg-sunken">
                     <th colSpan={columns} scope="colgroup" className="px-4 py-1.5 text-left text-xs font-semibold">
                       {a.assetId} · {t("alarmTable.groupCount", { count: groups.counts.get(a.assetId) ?? 0 })}
                     </th>
                   </tr>
-                ) : null;
+                );
+              const i = item.index;
               const raised = Date.parse(a.raisedAt);
               const standing = ACTIVE.has(a.state) && now - raised > STANDING_AFTER_MS;
               const value = a.value !== null && a.quantity ? toDisplay(a.value, a.quantity, units) : null;
               const limit = a.limit !== null && a.quantity ? toDisplay(a.limit, a.quantity, units) : null;
               const unacked = NEEDS_ACK.has(a.state);
-              return [
-                groupHeader,
+              return (
                 <tr
                   key={a.id}
+                  data-index={k}
+                  aria-rowindex={k + 2}
                   ref={(el) => {
                     if (el) rowRefs.current.set(a.id, el);
                     else rowRefs.current.delete(a.id);
+                    measure?.(el);
                   }}
                   tabIndex={0}
                   onKeyDown={(e) => onRowKey(e, a, i)}
@@ -279,9 +380,10 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                       )}
                     </span>
                   </td>
-                </tr>,
-              ];
+                </tr>
+              );
             })}
+            {spacer("space-below", spaceBelow)}
           </tbody>
         </table>
       </div>
