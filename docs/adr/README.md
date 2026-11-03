@@ -25,5 +25,6 @@ Rules:
 | [0015](0015-sqlite-command-log-and-replay.md) | SQLite, a command log, and replay on restart | Accepted |
 | [0016](0016-ai-provider-and-role-filtered-tools.md) | The AI provider on the server, and tools filtered by role | Accepted |
 | [0017](0017-running-the-server.md) | Running the server properly | Accepted |
+| [0018](0018-ci-on-github-actions.md) | Continuous integration on GitHub Actions | Accepted |
 
 Template for new ADRs: [template.md](template.md).

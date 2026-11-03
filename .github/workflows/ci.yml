@@ -1,0 +1,56 @@
+# Checks every push and pull request (Phase 6 chunk 1, ADR-0018): the same `npm run check` as
+# before every commit on the laptop, and the browser tests against the real server. Two jobs on
+# two machines, side by side. Free for public repositories on GitHub's standard runners.
+#
+# Actions are pinned to an exact commit (the version is in the comment): a tag can be moved to
+# other code, a commit can't.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Read the code, nothing else: no workflow here writes anything or uses a secret.
+permissions:
+  contents: read
+
+# A newer push to the same branch cancels the older run still going.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: Formatting, types, lint and tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run check
+
+  server-e2e:
+    name: Browser tests against the real server
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Uses the runner's own Google Chrome (playwright config: channel "chrome"); nothing to download.
+      - run: npm run e2e:server
+      - name: Keep what a failing test saw (trace, screenshot) for 14 days
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: server-e2e-results
+          path: apps/web/test-results/
+          retention-days: 14

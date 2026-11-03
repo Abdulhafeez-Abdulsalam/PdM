@@ -1,0 +1,35 @@
+# The full demo-mode browser suite (Phase 6 chunk 1, ADR-0018): 135 tests including accessibility
+# on every screen in three themes and the performance test. About 20 minutes on the laptop, so not
+# on every push: every Monday, and whenever started from the Actions tab ("Run workflow").
+name: Browser tests (demo mode)
+
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays, 03:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  e2e:
+    name: All demo-mode browser tests
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npm run e2e
+      - name: Keep the test report for 14 days
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: demo-e2e-report
+          path: |
+            apps/web/playwright-report/
+            apps/web/test-results/
+          retention-days: 14

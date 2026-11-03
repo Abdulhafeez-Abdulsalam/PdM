@@ -10,7 +10,7 @@ Each chunk is small and reviewable, with its own commit (pushed to GitHub) and l
 
 | # | Chunk | What you'd see | Notes |
 |---|---|---|---|
-| 1 | **CI on GitHub** | Every push to GitHub runs formatting, types, lint and all unit and server tests, plus the 12 server-mode browser tests; a green tick or red cross on each commit, and a badge in the README. The 21-minute demo-mode browser suite runs weekly and on demand | GitHub Actions, free for public repositories on standard runners. To check in the chunk: whether the runners have Chrome (the tests use the installed Chrome) |
+| 1 ✅ | **CI on GitHub** | Every push to GitHub runs formatting, types, lint and all unit and server tests, plus the 12 server-mode browser tests; a green tick or red cross on each commit, and a badge in the README. The 21-minute demo-mode browser suite runs weekly and on demand | GitHub Actions, free for public repositories on standard runners. To check in the chunk: whether the runners have Chrome (the tests use the installed Chrome) |
 | 2 | **Long lists stay fast: virtualised tables** | The alarm list during a flood, the asset registry, the tag browser and the audit log draw only the rows on screen, so thousands of rows scroll smoothly; keyboard and screen-reader behaviour stay as they are | TanStack Virtual (from the prompt's own stack, §2). Spec §2: "10k+ rows" |
 | 3 | **The synchronised event timeline** | One timeline on Asset 360 and the alarms page with every kind of event in its own lane (alarms, operator actions, maintenance, process events, predictions), sharing its time axis with the sensor chart above it: zoom or brush one, the other follows; click an event to see it | Spec §6.5 "a single synchronized canvas". Built on the existing `events.list` endpoint |
 | 4 | **A component catalogue: Storybook** | Every shared component (`packages/ui`, `packages/charts`) in every state the prompt lists: loading, empty, error, stale, extreme values; in all three themes; with the accessibility checker built in | Spec §10. Its stories double as screenshot tests (scope decision 9) |
@@ -18,6 +18,8 @@ Each chunk is small and reviewable, with its own commit (pushed to GitHub) and l
 | 6 | **Documentation for visitors** | A rewritten README (what it is, both modes, screenshots, how to run, where to read); a contribution guide; a docs index; the MIT licence | Spec §10: "comprehensive README… contribution guide" |
 | 7 | **Demo walkthrough script** | A 15–20 minute script for stakeholders: the storyline from first anomaly to verified repair, shown through the roles that live it, with what to click, what to say and timings; plus an automated run of it that takes the README's screenshots | Spec §11's final deliverable |
 | 8 | **Phase 6 review** | Criteria re-tested, the master prompt's checklist gone through one last time: built, changed (and why), or still open | |
+
+**What chunk 1 added:** [ADR-0018](adr/0018-ci-on-github-actions.md): `.github/workflows/ci.yml` (every push and pull request: `npm run check` and `npm run e2e:server` on two machines side by side) and `e2e-demo.yml` (the demo-mode suite every Monday and on demand), on `ubuntu-24.04` (which has Chrome and Node 24), read-only permissions, actions pinned to exact commits, time limits, failure evidence kept 14 days; a CI badge in the README. See [learning note 45](learning/45-continuous-integration.md).
 
 ## Decisions (made 2026-11-03)
 

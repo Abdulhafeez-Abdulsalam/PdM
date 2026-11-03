@@ -1,5 +1,7 @@
 # PdM — Predictive Maintenance Platform (Frontend)
 
+[![CI](https://github.com/Abdulhafeez-Abdulsalam/PdM/actions/workflows/ci.yml/badge.svg)](https://github.com/Abdulhafeez-Abdulsalam/PdM/actions/workflows/ci.yml)
+
 The web frontend of a Predictive Maintenance & Asset Performance platform for an energy company working in **oil & gas**, **gas-to-power** and **solar**.
 
 It helps people spot equipment that is about to fail, before it fails, and organise the maintenance to fix it.
