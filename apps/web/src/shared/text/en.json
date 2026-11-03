@@ -1136,7 +1136,27 @@
       "maintenance": "Maintenance",
       "process": "Process",
       "prediction": "Predictions"
-    }
+    },
+    "lanes": "Event timeline, {{count}} events: {{counts}}. Use the arrow keys to step through them.",
+    "keys": "Click an event to see it. Drag the slider, or hold Ctrl and scroll, to zoom. On the keyboard: ← → step through events, + − zoom, Shift+← → pan, 0 shows everything.",
+    "follows": {
+      "charts": "The charts above zoom with it.",
+      "list": "The list below keeps to the part in view."
+    },
+    "pick": "Pick an event to see what it was.",
+    "selected": "Selected event",
+    "open": {
+      "prediction": "Open the prediction",
+      "maintenance": "Open the work order",
+      "alarm": "See the asset's alarms",
+      "asset": "Open the asset"
+    },
+    "listAll_one": "{{count}} event",
+    "listAll_other": "{{count}} events",
+    "listZoomed_one": "{{count}} event from {{from}} to {{to}}",
+    "listZoomed_other": "{{count}} events from {{from}} to {{to}}",
+    "assetEvents": "Events on the same time axis ({{count}})",
+    "assetEventsZoomed": "Events, and the charts above, from {{from}} to {{to}}"
   },
   "console": {
     "intro": "Every prediction in the current scope, ranked by money at risk. Open one to decide what to do.",

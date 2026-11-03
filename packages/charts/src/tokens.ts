@@ -35,6 +35,22 @@ export function readChartColors(): ChartColors {
   };
 }
 
+/** Status colours for marks: the health states, plus "neutral" for things that have none. */
+export type Tone = "healthy" | "watch" | "degraded" | "warning" | "critical" | "offline" | "maintenance" | "neutral";
+
+export function readToneColors(): Record<Tone, string> {
+  return {
+    healthy: token("--pdm-health-healthy", "#137a3a"),
+    watch: token("--pdm-health-watch", "#0e7490"),
+    degraded: token("--pdm-health-degraded", "#94590a"),
+    warning: token("--pdm-health-warning", "#c2410c"),
+    critical: token("--pdm-health-critical", "#b91c1c"),
+    offline: token("--pdm-health-offline", "#626976"),
+    maintenance: token("--pdm-health-maintenance", "#6d28d9"),
+    neutral: token("--pdm-series-1", "#2a78d6"),
+  };
+}
+
 /** Canvas drawing available? (Not in some test environments or locked-down browsers.) */
 export function canvasAvailable(): boolean {
   try {

@@ -68,6 +68,45 @@ test("a long alarm list draws only the rows in view, and the keyboard still walk
   await expect(focused).toBeInViewport();
 });
 
+test("the event lanes share the sensor charts' time axis: zoom either and the other follows", async ({ page }) => {
+  await open(page, "/assets/PBU-PMP-106/telemetry?range=30d", { role: "reliability_engineer" });
+  const lanes = page.getByRole("application", { name: /^Event timeline, [1-9]\d* events/ });
+  await expect(lanes).toBeVisible();
+  const whole = page.getByRole("heading", { name: /^Events on the same time axis/ });
+  const zoomed = page.getByRole("heading", { name: /^Events, and the charts above, from .+ to .+$/ });
+  await expect(whole).toBeVisible();
+
+  // Zoom a sensor chart with Ctrl + the mouse wheel: the lanes follow, and the heading says so.
+  const chart = page.locator("figure [role=img]").first();
+  await chart.scrollIntoViewIfNeeded();
+  const box = (await chart.boundingBox())!;
+  await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
+  await page.keyboard.down("Control");
+  await page.mouse.wheel(0, -600);
+  await page.keyboard.up("Control");
+  await expect(zoomed).toBeVisible();
+
+  // From the keyboard: 0 shows the whole range again, → picks an event and says what it was.
+  await lanes.focus();
+  await page.keyboard.press("0");
+  await expect(whole).toBeVisible();
+  await page.keyboard.press("ArrowRight");
+  const picked = page.getByRole("region", { name: "Selected event" });
+  await expect(picked.getByRole("link").or(picked.getByRole("button"))).toBeVisible();
+});
+
+test("zooming the alarm page's event lanes narrows the list to the part in view", async ({ page }) => {
+  await open(page, "/alarms?view=timeline", { role: "control_room_operator" });
+  const lanes = page.getByRole("application", { name: /^Event timeline, [1-9]\d* events/ });
+  await expect(page.getByRole("heading", { name: /^\d+ events?$/ })).toBeVisible();
+  await lanes.focus();
+  await page.keyboard.press("+");
+  await page.keyboard.press("+");
+  await expect(page.getByRole("heading", { name: /^\d+ events? from .+ to .+$/ })).toBeVisible();
+  await page.keyboard.press("0");
+  await expect(page.getByRole("heading", { name: /^\d+ events?$/ })).toBeVisible();
+});
+
 test("the plant manager approves work by dragging the card with the mouse", async ({ page }) => {
   await open(page, "/maintenance", { role: "plant_manager" });
   const scheduled = page.getByRole("region", { name: /^Scheduled, \d+ work orders$/ });

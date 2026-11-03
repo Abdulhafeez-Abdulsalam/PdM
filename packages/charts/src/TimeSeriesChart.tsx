@@ -8,6 +8,9 @@
  * One series per chart, one y-axis, always: several measurements become several stacked
  * charts sharing a crosshair (`group`), never a dual-axis plot.
  * Values must already be converted to display units.
+ *
+ * To line it up with other charts (e.g. an EventLanesChart below), give them all the same
+ * `group`, `xRange` and `gridLeft`: then zooming or panning one moves all of them.
  */
 import { LineChart } from "echarts/charts";
 import { DataZoomComponent, GridComponent, MarkLineComponent, TooltipComponent } from "echarts/components";
@@ -15,6 +18,7 @@ import * as echarts from "echarts/core";
 import { CanvasRenderer } from "echarts/renderers";
 import { useEffect, useRef } from "react";
 import { readChartColors } from "./tokens";
+import { connectGroup, useKeepZoom, type TimeWindow } from "./zoom";
 
 echarts.use([LineChart, GridComponent, TooltipComponent, DataZoomComponent, MarkLineComponent, CanvasRenderer]);
 
@@ -40,6 +44,10 @@ export interface TimeSeriesChartProps {
   limits?: readonly LimitLine[];
   /** Charts with the same group share a crosshair and zoom. */
   group?: string;
+  /** The time axis's range (ms). Without it, the axis fits the data. */
+  xRange?: TimeWindow;
+  /** A fixed left margin (px) instead of one that fits the value labels, so stacked charts line up. */
+  gridLeft?: number;
   height?: number;
   /** Re-draw when this changes (pass the theme name). */
   themeKey?: string;
@@ -63,31 +71,28 @@ function withGaps<T>(points: readonly SeriesPoint[], intervalMs: number, pick: (
 }
 
 export function TimeSeriesChart(props: TimeSeriesChartProps) {
-  const { points, intervalMs, limits = [], group, height = 220, themeKey, ariaLabel, formatValue, formatTime, labels } = props;
+  const { points, intervalMs, limits = [], group, xRange, gridLeft, height = 220, themeKey } = props;
+  const { ariaLabel, formatValue, formatTime, labels } = props;
   const el = useRef<HTMLDivElement>(null);
   const chartRef = useRef<echarts.ECharts | null>(null);
+  const zoom = useKeepZoom(xRange, group);
 
   useEffect(() => {
     if (!el.current) return;
     const chart = echarts.init(el.current, undefined, { renderer: "canvas" });
     chartRef.current = chart;
+    const unbind = zoom.bind(chart);
     const resize = new ResizeObserver(() => chart.resize());
     resize.observe(el.current);
     return () => {
+      unbind();
       resize.disconnect();
       chart.dispose();
       chartRef.current = null;
     };
-  }, []);
+  }, [zoom]);
 
-  useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart) return;
-    if (group) {
-      chart.group = group;
-      echarts.connect(group);
-    }
-  }, [group]);
+  useEffect(() => connectGroup(chartRef.current, group), [group]);
 
   useEffect(() => {
     const chart = chartRef.current;
@@ -99,9 +104,14 @@ export function TimeSeriesChart(props: TimeSeriesChartProps) {
     chart.setOption(
       {
         animation: false,
-        grid: { left: 8, right: 12, top: 12, bottom: 24, containLabel: true },
+        grid:
+          gridLeft === undefined
+            ? { left: 8, right: 12, top: 12, bottom: 24, containLabel: true }
+            : { left: gridLeft, right: 12, top: 12, bottom: 24, containLabel: false },
         xAxis: {
           type: "time",
+          min: xRange?.from,
+          max: xRange?.to,
           axisLine: { lineStyle: { color: c.axis } },
           axisTick: { show: false },
           axisLabel: { color: c.textMuted, hideOverlap: true },
@@ -113,7 +123,7 @@ export function TimeSeriesChart(props: TimeSeriesChartProps) {
           axisLabel: { color: c.textMuted, formatter: (v: number) => formatValue(v) },
           splitLine: { lineStyle: { color: c.grid } },
         },
-        dataZoom: [{ type: "inside", zoomOnMouseWheel: "ctrl", moveOnMouseMove: true }],
+        dataZoom: [{ type: "inside", zoomOnMouseWheel: "ctrl", moveOnMouseMove: true, ...zoom.percent() }],
         tooltip: {
           trigger: "axis",
           backgroundColor: c.surface,
@@ -177,7 +187,7 @@ export function TimeSeriesChart(props: TimeSeriesChartProps) {
       },
       { notMerge: true },
     );
-  }, [points, intervalMs, limits, themeKey, formatValue, formatTime, labels]);
+  }, [points, intervalMs, limits, xRange, gridLeft, themeKey, formatValue, formatTime, labels, zoom]);
 
   return <div ref={el} role="img" aria-label={ariaLabel} style={{ height, width: "100%" }} />;
 }

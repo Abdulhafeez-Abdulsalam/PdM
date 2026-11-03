@@ -3,12 +3,12 @@
  * (never one chart with two y-axes). Every chart has a table view (accessibility).
  */
 import { useApiQuery } from "@pdm/api-client";
-import { TimeSeriesChart, canvasAvailable, type LimitLine, type SeriesPoint } from "@pdm/charts";
+import { TimeSeriesChart, canvasAvailable, newChartGroup, type LimitLine, type SeriesPoint, type TimeWindow } from "@pdm/charts";
 import { MAX_SERIES_PER_CHART, type HistoryPoint, type Tag } from "@pdm/contracts";
 import { Button, Skeleton, cx } from "@pdm/ui";
 import { keepPreviousData } from "@tanstack/react-query";
 import { ChartLine, Table } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeTimeFormatter } from "../../shared/format";
 import { usePreferences } from "../../shared/preferences";
@@ -23,16 +23,19 @@ interface Props {
   range?: TimeRange;
   siteTimeZone?: string;
   height?: number;
+  /** Share zoom with other charts on the same time axis (e.g. the event lanes below). */
+  sync?: { group: string; span: TimeWindow; gridLeft: number };
 }
 
-export function TagCharts({ tags, range: rangeOverride, siteTimeZone, height = 200 }: Props) {
+export function TagCharts({ tags, range: rangeOverride, siteTimeZone, height = 200, sync }: Props) {
   const { t } = useTranslation();
   const global = useGlobalSearch();
   const range = rangeOverride ?? global.range;
   const { now } = useSimNow();
   const span = roundedWindow(range, now);
   const shown = tags.slice(0, MAX_SERIES_PER_CHART);
-  const group = useId();
+  const [ownGroup] = useState(newChartGroup);
+  const group = sync?.group ?? ownGroup;
   const [asTable, setAsTable] = useState(() => !canvasAvailable());
 
   const history = useApiQuery(
@@ -78,6 +81,8 @@ export function TagCharts({ tags, range: rangeOverride, siteTimeZone, height = 2
           group={group}
           height={height}
           siteTimeZone={siteTimeZone}
+          xRange={sync?.span}
+          gridLeft={sync?.gridLeft}
         />
       ))}
     </div>
@@ -92,8 +97,10 @@ function TagChart(props: {
   group: string;
   height: number;
   siteTimeZone?: string;
+  xRange?: TimeWindow;
+  gridLeft?: number;
 }) {
-  const { tag, points, intervalMs, asTable, group, height, siteTimeZone } = props;
+  const { tag, points, intervalMs, asTable, group, height, siteTimeZone, xRange, gridLeft } = props;
   const { t } = useTranslation();
   const units = usePreferences((p) => p.units);
   const theme = usePreferences((p) => p.theme);
@@ -156,6 +163,8 @@ function TagChart(props: {
           intervalMs={intervalMs}
           limits={limits}
           group={group}
+          xRange={xRange}
+          gridLeft={gridLeft}
           height={height}
           themeKey={theme}
           ariaLabel={summary}
