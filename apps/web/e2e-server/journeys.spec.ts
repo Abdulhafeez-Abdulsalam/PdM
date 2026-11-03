@@ -29,13 +29,19 @@ test("an operator acknowledges an alarm, and it stays acknowledged after a reloa
   await signIn(page, "Control Room Operator", "/alarms?view=list&show=active");
   const ack = page.getByRole("button", { name: /^Acknowledge ALM-/ }).first();
   const id = ((await ack.getAttribute("aria-label")) ?? "").replace("Acknowledge ", "");
+  type Listed = { items: { id: string; assetId: string; state: string }[] };
+  const before = (await (await page.request.get('/api/alarms?states=["active_unacked","rtn_unacked"]&limit=500')).json()) as Listed;
+  const { assetId } = before.items.find((a) => a.id === id)!;
   await ack.click();
   await expect(page.getByRole("button", { name: `Acknowledge ${id}` })).toHaveCount(0);
   await page.reload();
   await settle(page);
-  const saved = await page.request.get(`/api/alarms?limit=200`);
-  const alarm = ((await saved.json()) as { items: { id: string; state: string }[] }).items.find((a) => a.id === id);
-  expect(alarm?.state).toMatch(/_acked$/);
+  // Acknowledged, an active alarm stays (active_acked); one that had already returned to normal
+  // is cleared, and the alarm list leaves cleared alarms out unless asked: so ask for both.
+  const after = (await (
+    await page.request.get(`/api/alarms?assetId="${assetId}"&states=["active_acked","cleared"]&limit=500`)
+  ).json()) as Listed;
+  expect(after.items.find((a) => a.id === id)?.state).toMatch(/^(active_acked|cleared)$/);
 });
 
 test("live values arrive over the WebSocket", async ({ page }) => {
