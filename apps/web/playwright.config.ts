@@ -8,6 +8,10 @@
 import { defineConfig } from "@playwright/test";
 
 const PORT = 4174;
+// On GitHub (which sets CI), also report each failure as an annotation: readable on the run's page
+// and through GitHub's public API, without signing in (ADR-0018).
+declare const process: { env: Record<string, string | undefined> };
+const onCI = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: "e2e",
@@ -15,7 +19,7 @@ export default defineConfig({
   workers: 1,
   timeout: 90_000,
   expect: { timeout: 15_000 },
-  reporter: [["list"], ["html", { open: "never" }]],
+  reporter: [["list"], ["html", { open: "never" }], ...(onCI ? [["github"] as const] : [])],
   use: {
     baseURL: `http://localhost:${PORT}`,
     channel: "chrome",

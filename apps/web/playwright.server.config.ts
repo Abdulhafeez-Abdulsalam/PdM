@@ -8,13 +8,17 @@
 import { defineConfig } from "@playwright/test";
 
 const PORT = 4175;
+// On GitHub (which sets CI), also report each failure as an annotation: readable on the run's page
+// and through GitHub's public API, without signing in (ADR-0018).
+declare const process: { env: Record<string, string | undefined> };
+const onCI = Boolean(process.env.CI);
 
 export default defineConfig({
   testDir: "e2e-server",
   workers: 1,
   timeout: 90_000,
   expect: { timeout: 15_000 },
-  reporter: [["list"]],
+  reporter: [["list"], ...(onCI ? [["github"] as const] : [])],
   use: {
     // 127.0.0.1, the address the server listens on, so pages and the API are one site.
     baseURL: `http://127.0.0.1:${PORT}`,
