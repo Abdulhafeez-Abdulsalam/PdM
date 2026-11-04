@@ -131,6 +131,18 @@ for (const [name, url, role] of SCREENS) {
   });
 }
 
+test("the on-call list passes axe in every theme", async ({ page }) => {
+  const failures: string[] = [];
+  for (const theme of THEMES) {
+    await open(page, "/alarms", { role: "control_room_operator", theme });
+    await page.locator("summary", { hasText: "On call now" }).click();
+    await expect(page.getByRole("table", { name: "On call now" })).toBeVisible();
+    const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    for (const v of violations) failures.push(`[${theme}] ${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+  }
+  expect(failures).toEqual([]);
+});
+
 test("the notification panel passes axe in every theme", async ({ page }) => {
   const failures: string[] = [];
   for (const theme of THEMES) {

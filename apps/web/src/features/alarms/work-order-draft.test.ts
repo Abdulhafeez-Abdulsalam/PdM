@@ -20,6 +20,7 @@ const alarm: Alarm = {
   shelve: null,
   workOrderId: null,
   occurrenceCount: 1,
+  escalation: null,
 };
 
 const NOW = Date.UTC(2026, 9, 10, 9);

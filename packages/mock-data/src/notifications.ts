@@ -98,6 +98,20 @@ export class NotificationStore {
         read: a.state !== "active_unacked" && a.state !== "rtn_unacked",
       });
     }
+    for (const a of alarms) {
+      if (a.escalation?.to !== user.id) continue;
+      out.push({
+        id: `ntf-esc-${a.id}-${a.escalation.level}`,
+        kind: "escalation",
+        t: a.escalation.at,
+        title: `${a.id} escalated to you`,
+        detail: `${a.priority.toUpperCase()} on ${a.assetId}: ${a.message}`,
+        severity: ALARM_PRIORITY_HEALTH[a.priority],
+        assetId: a.assetId,
+        refId: a.id,
+        read: a.state !== "active_unacked" && a.state !== "rtn_unacked",
+      });
+    }
     for (const wo of workOrders) {
       const toPlan = user.role === "maintenance_planner" && wo.status === "requested";
       if ((wo.assigneeId !== user.id && !toPlan) || DONE.includes(wo.status)) continue;

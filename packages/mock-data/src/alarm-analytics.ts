@@ -33,6 +33,8 @@ const sourceKey = (a: Activation) => a.tagId ?? `${a.assetId}:prediction`;
 
 export function alarmAnalytics(input: {
   log: readonly Activation[];
+  /** Every step up the on-call chain. */
+  escalations: readonly { t: number; assetId: string }[];
   /** Current alarms in scope (for standing, shelved and suppressed). */
   alarms: readonly Alarm[];
   /** Sites (control rooms) in scope, with their names. */
@@ -128,6 +130,7 @@ export function alarmAnalytics(input: {
     top10SharePercent: total === 0 ? 0 : r1((badActors.reduce((sum, s) => sum + s.count, 0) / total) * 100),
     chattering,
     priorities,
+    escalated: input.escalations.filter((e) => e.t >= from && e.t < to && input.inScope(e.assetId)).length,
     standing: input.alarms.filter((a) => active(a) && now - Date.parse(a.raisedAt) > DAY).length,
     shelved: input.alarms.filter((a) => a.state === "shelved").length,
     suppressed: input.alarms.filter((a) => a.state === "suppressed" || a.state === "out_of_service").length,

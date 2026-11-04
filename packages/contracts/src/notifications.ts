@@ -2,7 +2,7 @@ import { z } from "zod";
 import { HealthState, Id, Timestamp } from "./common";
 
 /** What a notification is about. */
-export const NotificationKind = z.enum(["alarm", "work_order", "prediction"]);
+export const NotificationKind = z.enum(["alarm", "escalation", "work_order", "prediction"]);
 export type NotificationKind = z.infer<typeof NotificationKind>;
 
 /** One thing that needs attention. Worked out from the plant: only read and snooze are kept. */

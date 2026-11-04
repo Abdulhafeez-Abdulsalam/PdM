@@ -152,6 +152,7 @@ function Headline({ a }: { a: AlarmAnalytics }) {
         target={t("analytics.target.chattering", { count: CHATTER_COUNT, minutes: CHATTER_MINUTES })}
         footer={<VerdictBadge verdict={below(a.chattering.length, 0)} />}
       />
+      <KpiCard label={t("analytics.kpi.escalated")} value={String(a.escalated)} target={t("analytics.target.escalated")} />
       <KpiCard
         label={t("analytics.kpi.standing")}
         value={String(a.standing)}

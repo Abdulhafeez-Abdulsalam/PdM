@@ -78,6 +78,8 @@ Every step here is also acted out by an automated test (`apps/web/e2e/walkthroug
 
 > Two clicks. From an alarm to a work order, assigned, with the evidence attached.
 
+**If asked** what happens if nobody answers: go to **Alarms & Events** and open **On call now**. An urgent alarm nobody acknowledges moves up by itself, from the operator to the plant manager to an executive, and lights the next person's bell. An operator can also press the arrow on a row, or E, to send it up by hand.
+
 ## Scene 5: planning the work (2 minutes)
 
 **Do:** set **Viewing as** to **Maintenance Planner**. Open **Maintenance**.

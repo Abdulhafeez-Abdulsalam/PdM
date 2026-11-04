@@ -8,6 +8,7 @@
 import {
   ENTERPRISE_SCOPE,
   aiToolsFor,
+  type Alarm,
   changesThings,
   isAudited,
   type NotificationList,
@@ -155,8 +156,13 @@ export class MockBackend {
     this.handover = new HandoverStore(this.world);
     this.models = new ModelRegistry(this.world);
     this.rules = new RuleStore(this.world);
-    this.alarms = new AlarmEngine(this.world, this.chaos, start, (alarm, title, t) =>
-      this.addLog({ kind: "operator_action", t: iso(t), assetId: alarm.assetId, title, detail: null, severity: null, refId: alarm.id }),
+    this.alarms = new AlarmEngine(
+      this.world,
+      this.chaos,
+      start,
+      (alarm, title, t) =>
+        this.addLog({ kind: "operator_action", t: iso(t), assetId: alarm.assetId, title, detail: null, severity: null, refId: alarm.id }),
+      (alarm, t) => this.logEscalation(alarm, t),
     );
     this.storyline = new Storyline(this.world, this.workOrders, this.overlays, (e) => this.addLog({ ...e, assetId: STORYLINE_ASSET_ID }));
     // A short discussion on assets with a well-developed fault (only those: the comments talk
@@ -207,6 +213,30 @@ export class MockBackend {
         return this.request(name, input, user.id);
       },
     };
+  }
+
+  /** On the timeline always; in the audit log here when it moved by itself (a request is audited anyway). */
+  private logEscalation(alarm: Alarm, t: number): void {
+    const name = alarm.escalation?.toName ?? "";
+    this.addLog({
+      kind: "operator_action",
+      t: iso(t),
+      assetId: alarm.assetId,
+      title: `Alarm escalated to ${name}`,
+      detail: alarm.message,
+      severity: null,
+      refId: alarm.id,
+    });
+    if (alarm.escalation?.by !== null) return;
+    this.audit.push({
+      id: `AU-${String(this.audit.length + 1).padStart(5, "0")}`,
+      at: iso(t),
+      userId: "system",
+      action: "alarms.escalate",
+      description: "Nobody answered in time, so the alarm moved up the on-call chain",
+      targetId: alarm.id,
+      detail: `To ${name}`,
+    });
   }
 
   private myNotifications(params: NotificationListParams): NotificationList {
@@ -835,6 +865,18 @@ export class MockBackend {
       const alarm = this.alarms.shelve(alarmId, reason, Date.parse(until), this.me().id, this.now());
       this.flushLive();
       return alarm;
+    },
+    "alarms.escalate": ({ alarmId }) => {
+      const alarm = this.alarms.escalate(alarmId, this.me().id, this.now());
+      this.flushLive();
+      return alarm;
+    },
+    "alarms.onCall": ({ scopeId }) => {
+      if (scopeId) this.scope(scopeId);
+      const inScope = this.inScope(scopeId);
+      const siteIds = new Set([...this.world.assets.values()].filter((a) => inScope(a.data.id)).map((a) => a.data.siteId));
+      const sites = [...this.world.sites.values()].filter((s) => siteIds.has(s.site.id)).map((s) => ({ id: s.site.id, name: s.site.name }));
+      return this.alarms.onCall(sites, this.now());
     },
     "alarms.unshelve": ({ alarmId }) => {
       const alarm = this.alarms.unshelve(alarmId, this.me().id, this.now());

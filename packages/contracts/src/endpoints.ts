@@ -16,6 +16,9 @@ import {
   AlarmAnalyticsRequest,
   AlarmListParams,
   AlarmSummary,
+  EscalateAlarmRequest,
+  OnCall,
+  OnCallRequest,
   ShelveAlarmRequest,
   UnshelveAlarmRequest,
 } from "./alarms";
@@ -684,6 +687,20 @@ export const endpoints = {
     description: "Temporarily hide an alarm, with a required reason and expiry",
     input: ShelveAlarmRequest,
     output: Alarm,
+  }),
+  "alarms.escalate": endpoint({
+    method: "POST",
+    path: "/alarms/:alarmId/escalate",
+    description: "Move an unanswered alarm to the next person on call",
+    input: EscalateAlarmRequest,
+    output: Alarm,
+  }),
+  "alarms.onCall": endpoint({
+    method: "GET",
+    path: "/alarms/on-call",
+    description: "Who is on call right now, site by site",
+    input: OnCallRequest,
+    output: OnCall,
   }),
   "alarms.unshelve": endpoint({
     method: "POST",

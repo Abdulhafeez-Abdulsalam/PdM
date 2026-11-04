@@ -24,6 +24,13 @@ describe("who may make which request (the server's check, ADR-0014)", () => {
     expect(changesThings("timeseries.history")).toBe(false); // a long read, sent as POST
   });
 
+  it("lets operators and plant managers escalate an alarm, and nobody else", () => {
+    const input = { alarmId: "AL-1" };
+    expect(mayRequest("control_room_operator", "alarms.escalate", input, lookups())).toBe(true);
+    expect(mayRequest("plant_manager", "alarms.escalate", input, lookups())).toBe(true);
+    expect(mayRequest("field_technician", "alarms.escalate", input, lookups())).toBe(false);
+  });
+
   it("uses the same rules as the buttons: only operators acknowledge alarms", () => {
     const ack = { alarmIds: ["AL-1"] };
     expect(mayRequest("control_room_operator", "alarms.acknowledge", ack, lookups())).toBe(true);

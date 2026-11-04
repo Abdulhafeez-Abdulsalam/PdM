@@ -42,7 +42,6 @@ describe("notifications", () => {
 
   it("keeps read and snooze for each person, and neither goes in the audit log", () => {
     const { backend, advance } = setup("field_technician");
-    const audited = backend.request("admin.audit", { limit: 500 }).total;
     const first = backend.request("notifications.list", LIST).items[0]!;
     const unread = backend.request("notifications.list", LIST).unread;
 
@@ -55,7 +54,8 @@ describe("notifications", () => {
     expect(backend.request("notifications.list", LIST).items.map((n) => n.id)).toContain(second.id);
 
     expect(backend.request("notifications.markRead", {}).unread).toBe(0);
-    expect(backend.request("admin.audit", { limit: 500 }).total).toBe(audited);
+    const audit = backend.request("admin.audit", { limit: 500 }).items;
+    expect(audit.filter((e) => e.action.startsWith("notifications."))).toEqual([]);
   });
 });
 

@@ -52,7 +52,13 @@ export function useAlarmActions() {
     onSettled: refresh,
   });
 
-  return { acknowledge, shelve, unshelve };
+  const escalate = useApiMutation("alarms.escalate", {
+    onSuccess: (alarm) => toast("success", t("alarmActions.escalated", { id: alarm.id, name: alarm.escalation?.toName })),
+    onError: (error) => toast("error", t("alarmActions.failed", { reason: error.message })),
+    onSettled: refresh,
+  });
+
+  return { acknowledge, shelve, unshelve, escalate };
 }
 
 function acknowledgedLocally(a: Alarm): Alarm {

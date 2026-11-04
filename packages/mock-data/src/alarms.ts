@@ -8,12 +8,15 @@
  */
 import {
   AlarmPriority,
+  ESCALATION_CHAIN,
+  ESCALATION_MINUTES,
   type Alarm,
   type AlarmAnalytics,
   type AlarmAnalyticsWindow,
   type AlarmKind,
   type AlarmListParams,
   type AlarmState,
+  type OnCall,
   type TagLimits,
   type AlarmSummary,
   type User,
@@ -36,6 +39,8 @@ const INITIAL_AUTO_ACK_AGE = 45 * MINUTE;
 /** How long a simulated operator takes to deal with a nuisance alarm. */
 const DUTY_DELAY_MIN = 5;
 const DUTY_DELAY_SPREAD = 40;
+/** On-call shifts change every 12 hours. */
+const SHIFT = 12 * HOUR;
 const MAX_SHELVE = 24 * HOUR;
 const RETENTION = 7 * DAY;
 /** How much alarm history the analytics page can look back over. */
@@ -109,6 +114,10 @@ export class AlarmEngine {
   private readonly queued = new WeakSet<AlarmRecord>();
   /** Nuisance alarms waiting for the simulated operator, by the minute they'll be dealt with. */
   private readonly duty = new Map<number, AlarmRecord[]>();
+  /** Urgent alarms to check, by the minute their time at this level of the chain runs out. */
+  private readonly toEscalate = new Map<number, { record: AlarmRecord; level: number }[]>();
+  /** Every step up the on-call chain, for the analytics page. */
+  private readonly escalations: { t: number; assetId: string }[] = [];
   /**
    * Each fault's limit crossings on each tag, with their keys, worked out once and kept until the
    * tag's limits are edited (an edit replaces the limits object). Working them out afresh every
@@ -121,6 +130,7 @@ export class AlarmEngine {
     private readonly chaos: ChaosWindows,
     now: number,
     private readonly onOperatorAction: (alarm: Alarm, title: string, t: number) => void,
+    private readonly onEscalated: (alarm: Alarm, t: number) => void = () => {},
   ) {
     this.bgSeed = hashString(`${world.seed}:alarms`);
     this.operators = world.usersWithRole("control_room_operator");
@@ -148,6 +158,9 @@ export class AlarmEngine {
     this.shelved.clear();
     for (const record of this.records.values()) this.index(record);
     this.processedUntil = now;
+    // The starting conditions set some states directly: time to answer starts from now.
+    this.toEscalate.clear();
+    for (const record of this.records.values()) if (record.alarm.state === "active_unacked") this.scheduleEscalation(record, now);
     this.changed.clear();
   }
 
@@ -168,6 +181,7 @@ export class AlarmEngine {
       this.processFaults(t);
       this.processReturns(t);
       this.processDuty(m, t);
+      this.processEscalations(m, t);
       this.processShelveExpiry(t);
       this.prune(t);
       this.processedUntil = t;
@@ -230,6 +244,7 @@ export class AlarmEngine {
         acknowledgedBy: null,
         returnedToNormalAt: null,
         shelve: null,
+        escalation: null,
         workOrderId: null,
         occurrenceCount: input.occurrenceCount ?? 1,
       },
@@ -244,6 +259,62 @@ export class AlarmEngine {
       if (due) due.push(record);
       else this.duty.set(at, [record]);
     }
+    this.scheduleEscalation(record, input.t);
+  }
+
+  /** If this alarm goes unanswered, when does it move up next? (Only urgent alarms do, by themselves.) */
+  private scheduleEscalation(record: AlarmRecord, from: number): void {
+    const level = record.alarm.escalation?.level ?? 0;
+    const wait = ESCALATION_MINUTES[record.alarm.priority]?.[level];
+    if (wait === undefined) return;
+    const at = Math.floor(from / MINUTE) + wait;
+    const due = this.toEscalate.get(at);
+    if (due) due.push({ record, level });
+    else this.toEscalate.set(at, [{ record, level }]);
+  }
+
+  private processEscalations(m: number, t: number): void {
+    const due = this.toEscalate.get(m);
+    if (!due) return;
+    this.toEscalate.delete(m);
+    for (const { record, level } of due) {
+      // Answered, returned to normal, or already moved up by hand: nothing to do.
+      if (record.alarm.state === "active_unacked" && (record.alarm.escalation?.level ?? 0) === level) this.stepUp(record, t, null);
+    }
+  }
+
+  private stepUp(record: AlarmRecord, t: number, by: string | null): void {
+    const a = record.alarm;
+    const level = (a.escalation?.level ?? 0) + 1;
+    const person = this.onCallAt(this.world.assets.get(a.assetId)?.data.siteId ?? "", level, t);
+    a.escalation = { level, to: person.id, toName: person.name, at: iso(t), by };
+    this.escalations.push({ t, assetId: a.assetId });
+    this.markChanged(record);
+    this.scheduleEscalation(record, t);
+    this.onEscalated(a, t);
+  }
+
+  /** Who holds this place in the chain at this site. Worked out from the time, so a restart can't change it. */
+  private onCallAt(siteId: string, level: number, t: number): User {
+    const role = ESCALATION_CHAIN[level] ?? "executive";
+    const everyone = this.world.usersWithRole(role);
+    const here = everyone.filter((u) => u.siteIds.includes(siteId));
+    const pool = here.length > 0 ? here : everyone;
+    return pool[(Math.floor(t / SHIFT) + hashString(siteId)) % pool.length] as User;
+  }
+
+  onCall(sites: readonly { id: string; name: string }[], now: number): OnCall {
+    return {
+      shiftEndsAt: iso((Math.floor(now / SHIFT) + 1) * SHIFT),
+      sites: sites.map((s) => ({
+        siteId: s.id,
+        siteName: s.name,
+        chain: ESCALATION_CHAIN.map((_, level) => {
+          const person = this.onCallAt(s.id, level, now);
+          return { userId: person.id, name: person.name };
+        }),
+      })),
+    };
   }
 
   /** The simulated operator: acknowledges the nuisance alarms due this minute, if nobody has yet. */
@@ -634,6 +705,7 @@ export class AlarmEngine {
   }): AlarmAnalytics {
     return alarmAnalytics({
       log: this.log,
+      escalations: this.escalations,
       alarms: this.all().filter((a) => this.inScope(a, params.scopeId)),
       sites: params.sites,
       inScope: (assetId) => !params.scopeId || (this.world.assets.get(assetId)?.scopeIds.has(params.scopeId) ?? false),
@@ -666,6 +738,17 @@ export class AlarmEngine {
       this.onOperatorAction(a, `Alarm acknowledged: ${a.message}`, now);
     }
     return records.map((r) => r.alarm);
+  }
+
+  escalate(id: string, userId: string, now: number): Alarm {
+    const record = this.record(id);
+    const a = record.alarm;
+    if (a.state !== "active_unacked" && a.state !== "rtn_unacked")
+      throw new ApiFailure("conflict", "Only an unanswered alarm can be escalated");
+    if ((a.escalation?.level ?? 0) >= ESCALATION_CHAIN.length - 1)
+      throw new ApiFailure("conflict", "This alarm is already at the top of the on-call chain");
+    this.stepUp(record, now, userId);
+    return a;
   }
 
   shelve(id: string, reason: string, until: number, userId: string, now: number): Alarm {

@@ -63,6 +63,28 @@ test("journey 2: an alarm, from hearing it to acting on it", async ({ page }) =>
   await expect(focused(page)).toHaveAttribute("aria-label", name);
 });
 
+test("escalating an alarm from the keyboard is announced, and the alarm says where it went", async ({ page }) => {
+  await open(page, "/alarms?view=list&show=unacked", { role: "control_room_operator" });
+  await page.locator('main tbody tr[tabindex="0"]').first().focus();
+  await page.keyboard.press("e");
+  await expect(
+    live(page)
+      .filter({ hasText: /escalated to / })
+      .first(),
+  ).toBeAttached();
+  await expect(page.getByText(/^escalated to /).first()).toBeVisible();
+});
+
+test("the on-call list opens from the keyboard and names each step", async ({ page }) => {
+  await open(page, "/alarms", { role: "control_room_operator" });
+  const summary = page.locator("summary", { hasText: "On call now" });
+  await summary.focus();
+  await page.keyboard.press("Enter");
+  const table = page.getByRole("table", { name: "On call now" });
+  await expect(table.getByRole("columnheader", { name: "Plant / Asset Manager" })).toBeVisible();
+  expect(await table.getByRole("row").count()).toBeGreaterThan(3);
+});
+
 test("journey 3: a machine's history", async ({ page }) => {
   await open(page, "/assets/PBU-PMP-106/telemetry?range=30d", { role: "reliability_engineer" });
   await expect(page.locator("figure [role=img]").first()).toHaveAccessibleName(/.{30,}/);

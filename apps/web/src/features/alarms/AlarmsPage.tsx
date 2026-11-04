@@ -17,6 +17,7 @@ import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
 import { AlarmTable } from "./AlarmTable";
 import { ALARM_SHOW, STATES_FOR, useAlarmSearch, type AlarmSearch } from "./alarm-search";
 import { EventTimeline } from "./EventTimeline";
+import { OnCallPanel } from "./OnCallPanel";
 
 /** ISA-18.2: more than 10 new alarms in 10 minutes per operator is an alarm flood. */
 const FLOOD_WINDOW_MS = 10 * 60_000;
@@ -60,6 +61,7 @@ export function AlarmsPage() {
       <AlarmsNav />
 
       <AlarmLoad scopeId={scopeId} />
+      <OnCallPanel scopeId={scopeId} />
 
       {search.view === "timeline" ? <EventTimeline /> : <AlarmListView scopeId={scopeId} search={search} onChange={setAlarmSearch} />}
     </div>

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { type HealthState, Id, PageParams, ScopeId, Timestamp } from "./common";
 import { Quantity } from "./quantities";
+import type { RoleId } from "./users";
 
 /** ISA-18.2 priorities. p1 = most urgent. */
 export const AlarmPriority = z.enum(["p1", "p2", "p3", "p4"]);
@@ -37,6 +38,23 @@ export const ShelveInfo = z.object({
   until: Timestamp,
 });
 
+/** Who an unanswered urgent alarm goes to, in turn: the first is who hears it to begin with. */
+export const ESCALATION_CHAIN = ["control_room_operator", "plant_manager", "executive"] as const satisfies readonly RoleId[];
+/** Minutes nobody has answered at each step, before it moves up. Only urgent alarms escalate by themselves. */
+export const ESCALATION_MINUTES: Partial<Record<AlarmPriority, readonly number[]>> = { p1: [5, 10], p2: [15, 30] };
+
+/** How far up the on-call chain an alarm has gone. */
+export const AlarmEscalation = z.object({
+  /** 1 or more: the place in ESCALATION_CHAIN. */
+  level: z.number().int().min(1),
+  to: Id,
+  toName: z.string(),
+  at: Timestamp,
+  /** Who moved it up; null when it moved by itself, because nobody answered in time. */
+  by: Id.nullable(),
+});
+export type AlarmEscalation = z.infer<typeof AlarmEscalation>;
+
 export const Alarm = z.object({
   id: Id,
   assetId: Id,
@@ -56,6 +74,7 @@ export const Alarm = z.object({
   acknowledgedBy: Id.nullable(),
   returnedToNormalAt: Timestamp.nullable(),
   shelve: ShelveInfo.nullable(),
+  escalation: AlarmEscalation.nullable(),
   workOrderId: Id.nullable(),
   /** How many times it has re-triggered in the last hour. > 5 suggests a "chattering" alarm. */
   occurrenceCount: z.number().int().min(1),
@@ -102,6 +121,24 @@ export const ShelveAlarmRequest = z.object({
 });
 
 export const UnshelveAlarmRequest = z.object({ alarmId: Id });
+
+/** Move an unanswered alarm to the next person on call. */
+export const EscalateAlarmRequest = z.object({ alarmId: Id });
+
+export const OnCallRequest = z.object({ scopeId: ScopeId.optional() });
+
+/** Who is on call right now, site by site, in escalation order. */
+export const OnCall = z.object({
+  shiftEndsAt: Timestamp,
+  sites: z.array(
+    z.object({
+      siteId: Id,
+      siteName: z.string(),
+      chain: z.array(z.object({ userId: Id, name: z.string() })),
+    }),
+  ),
+});
+export type OnCall = z.infer<typeof OnCall>;
 
 /** Maps alarm priority to the shared health scale, for colouring. */
 export const ALARM_PRIORITY_HEALTH = {
@@ -191,6 +228,8 @@ export const AlarmAnalytics = z.object({
   /** Sources that sounded CHATTER_COUNT+ times within CHATTER_MINUTES, with how often that happened. */
   chattering: z.array(AlarmSource.extend({ episodes: z.number().int().min(1) })).max(20),
   priorities: z.record(AlarmPriority, z.number().int().min(0)),
+  /** Times an alarm moved up the on-call chain in the window, by itself or by hand. */
+  escalated: z.number().int().min(0),
   /** Right now: alarms active for over 24 hours, shelved, and suppressed. */
   standing: z.number().int().min(0),
   shelved: z.number().int().min(0),

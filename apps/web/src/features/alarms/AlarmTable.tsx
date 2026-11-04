@@ -10,11 +10,11 @@
  * still tells screen readers how many rows there are and where each is (aria-rowcount/rowindex),
  * and ↑/↓ scroll a row into view before focusing it.
  */
-import type { Alarm } from "@pdm/contracts";
+import { ESCALATION_CHAIN, type Alarm } from "@pdm/contracts";
 import { Button, PriorityIcon, cx } from "@pdm/ui";
 import { Link } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Archive, ArchiveRestore, Check, ClipboardPlus, Repeat, Timer } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowUpCircle, Check, ClipboardPlus, Repeat, Timer } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { formatAgo, makeTimeFormatter } from "../../shared/format";
@@ -56,7 +56,7 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
   const tz = usePreferences((p) => p.timeZone);
   const units = usePreferences((p) => p.units);
   const { now } = useSimNow();
-  const { acknowledge, unshelve } = useAlarmActions();
+  const { acknowledge, unshelve, escalate } = useAlarmActions();
   const [shelveTarget, setShelveTarget] = useState<Alarm | null>(null);
   const [woTarget, setWoTarget] = useState<Alarm | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -66,8 +66,10 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
     ack: canDo(role, "alarm.acknowledge"),
     shelve: canDo(role, "alarm.shelve"),
     wo: canDo(role, "alarm.createWorkOrder"),
+    escalate: canDo(role, "alarm.escalate"),
   };
-  const anyAction = may.ack || may.shelve || may.wo;
+  const canEscalate = (a: Alarm) => may.escalate && NEEDS_ACK.has(a.state) && (a.escalation?.level ?? 0) < ESCALATION_CHAIN.length - 1;
+  const anyAction = may.ack || may.shelve || may.wo || may.escalate;
   // Alarms don't carry their site's time zone, so "site local" falls back to UTC here.
   const absolute = useMemo(() => makeTimeFormatter(tz === "site" ? "utc" : tz), [tz]);
 
@@ -172,6 +174,7 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
     else if (key === "a" && may.ack && NEEDS_ACK.has(alarm.state)) ack([alarm.id]);
     else if (key === "s" && may.shelve && alarm.state !== "shelved" && alarm.state !== "cleared") setShelveTarget(alarm);
     else if (key === "w" && may.wo && !alarm.workOrderId) setWoTarget(alarm);
+    else if (key === "e" && canEscalate(alarm)) escalate.mutate({ alarmId: alarm.id });
     else return;
     e.preventDefault();
   };
@@ -326,6 +329,11 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                           {t("alarmTable.chattering", { count: a.occurrenceCount })}
                         </Badge>
                       )}
+                      {a.escalation && (
+                        <Badge icon={<ArrowUpCircle aria-hidden className="size-3" />}>
+                          {t("alarmTable.escalated", { name: a.escalation.toName })}
+                        </Badge>
+                      )}
                       {standing && <Badge icon={<Timer aria-hidden className="size-3" />}>{t("alarmTable.standing")}</Badge>}
                       {a.workOrderId && (
                         <Badge icon={<ClipboardPlus aria-hidden className="size-3" />}>{t("alarmTable.hasWorkOrder")}</Badge>
@@ -371,6 +379,15 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                       {may.shelve && a.state !== "shelved" && a.state !== "cleared" && (
                         <Button size="sm" onClick={() => setShelveTarget(a)} aria-label={t("alarmTable.shelveOne", { id: a.id })}>
                           <Archive aria-hidden className="size-4" />
+                        </Button>
+                      )}
+                      {canEscalate(a) && (
+                        <Button
+                          size="sm"
+                          onClick={() => escalate.mutate({ alarmId: a.id })}
+                          aria-label={t("alarmTable.escalateOne", { id: a.id })}
+                        >
+                          <ArrowUpCircle aria-hidden className="size-4" />
                         </Button>
                       )}
                       {may.wo && !a.workOrderId && (

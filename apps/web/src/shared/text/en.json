@@ -717,6 +717,7 @@
       "flood": "Time in flood (worst control room)",
       "top10": "Share from the top 10 alarms",
       "chattering": "Chattering alarms",
+      "escalated": "Escalated",
       "standing": "Standing alarms (over 24 h)"
     },
     "target": {
@@ -724,6 +725,7 @@
       "flood": "Target < {{max}} % (flood = over {{n}} in 10 min)",
       "top10": "Target ≤ {{max}} %",
       "chattering": "Target 0 (sounding {{count}}+ times in {{minutes}} min)",
+      "escalated": "Moved up the on-call chain",
       "standing": "Target ≤ {{max}}"
     },
     "verdict": {
@@ -1067,12 +1069,19 @@
     "failed": "The work order couldn't be created: {{reason}}"
   },
   "alarmActions": {
+    "escalated": "{{id}} escalated to {{name}}.",
     "acknowledged_one": "Alarm acknowledged.",
     "acknowledged_other": "{{count}} alarms acknowledged.",
     "ackFailed": "Acknowledgement failed — the alarm list has been restored.",
     "shelved": "Shelved: {{message}}",
     "unshelved": "Alarm returned to the active list.",
     "failed": "That didn't work: {{reason}}"
+  },
+  "onCall": {
+    "title": "On call now",
+    "until": "This shift ends {{time}}",
+    "intro": "An urgent alarm nobody answers moves along this chain, from left to right.",
+    "site": "Site"
   },
   "alarmTable": {
     "value": "Value / limit",
@@ -1081,12 +1090,14 @@
     "select": "Select alarm {{id}}",
     "ackSelected_one": "Acknowledge {{count}}",
     "ackSelected_other": "Acknowledge {{count}}",
-    "keyboardHint": "Keyboard: ↑ ↓ to move, A acknowledge, S shelve, W work order.",
+    "keyboardHint": "Keyboard: ↑ ↓ to move, A acknowledge, S shelve, W work order, E escalate.",
     "rowLabel": "{{priority}}: {{message}} on {{asset}}, {{state}}",
     "groupCount_one": "{{count}} alarm",
     "groupCount_other": "{{count}} alarms",
     "chattering": "chattering · {{count}}×/h",
     "standing": "standing > 24 h",
+    "escalated": "escalated to {{name}}",
+    "escalateOne": "Escalate {{id}}",
     "hasWorkOrder": "work order raised",
     "shelvedUntil": "shelved · back {{ago}}",
     "ackOne": "Acknowledge {{id}}",
@@ -1173,6 +1184,7 @@
     "kind": {
       "all": "All",
       "alarm": "Alarms",
+      "escalation": "Escalations",
       "work_order": "Jobs",
       "prediction": "Predictions"
     }
@@ -3038,6 +3050,7 @@
       "action": {
         "alarm_acknowledge": "Acknowledge alarms",
         "alarm_shelve": "Shelve alarms",
+        "alarm_escalate": "Escalate alarms",
         "alarm_createWorkOrder": "Raise work from an alarm",
         "prediction_feedback": "Give feedback on predictions",
         "prediction_triage": "Triage predictions",

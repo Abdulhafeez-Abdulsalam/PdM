@@ -81,6 +81,7 @@ export function canSee(role: RoleId, module: ModuleId): boolean {
 export const ACTIONS = {
   "alarm.acknowledge": ["control_room_operator"],
   "alarm.shelve": ["control_room_operator"],
+  "alarm.escalate": ["control_room_operator", "plant_manager"],
   "alarm.createWorkOrder": ["control_room_operator", "plant_manager", "maintenance_planner", "reliability_engineer"],
   "prediction.feedback": ["reliability_engineer", "condition_analyst", "field_technician"],
   "prediction.triage": ["reliability_engineer", "condition_analyst"],
@@ -296,6 +297,8 @@ const RULES: { [N in EndpointName]: Rule<N> } = {
   "alarms.acknowledge": "alarm.acknowledge",
   "alarms.shelve": "alarm.shelve",
   "alarms.unshelve": "alarm.shelve",
+  "alarms.escalate": "alarm.escalate",
+  "alarms.onCall": null,
   "events.list": null,
   "notifications.list": null,
   "notifications.markRead": null,

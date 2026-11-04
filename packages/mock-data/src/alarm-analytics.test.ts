@@ -16,6 +16,7 @@ const at = (minutesAgo: number, over: Partial<Activation> = {}): Activation => (
 const run = (log: Activation[]) =>
   alarmAnalytics({
     log,
+    escalations: [],
     alarms: [],
     sites: [
       { id: "S1", name: "Site one" },
