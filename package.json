@@ -1,6 +1,7 @@
 {
   "name": "pdm-platform",
   "private": true,
+  "license": "MIT",
   "description": "Predictive Maintenance platform frontend (monorepo root)",
   "type": "module",
   "workspaces": [
