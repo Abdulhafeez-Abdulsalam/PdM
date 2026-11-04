@@ -29,6 +29,10 @@ The project went in phases, each planned with a list of chunks and closed with a
 | 5. A real backend | [Plan](phase-5-plan.md) | [Review](phase-5-review.md) |
 | 6. Finishing the delivery plan | [Plan](phase-6-plan.md) | |
 
+## Showing it
+
+- [Demo walkthrough](demo-walkthrough.md): a 15–20 minute script for stakeholders, one fault from its first warning to a verified repair, with what to click and what to say.
+
 ## Testing by hand
 
 - [Screen-reader test script (NVDA)](testing/nvda-script.md): eight journeys to listen to, about 45 minutes.
@@ -104,3 +108,4 @@ One note per step of the build, in plain language: the idea, how it's used here,
 - [48 · A catalogue of parts (Storybook)](learning/48-a-catalogue-of-parts.md)
 - [49 · Listening to the app (keyboard cursors and a screen-reader script)](learning/49-listening-to-the-app.md)
 - [50 · Writing for visitors (README, contribution guide, licence)](learning/50-writing-for-visitors.md)
+- [51 · Rehearsing the demo with a robot](learning/51-rehearsing-the-demo.md)

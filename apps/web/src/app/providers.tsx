@@ -1,5 +1,5 @@
 /** App-wide wiring: data cache, API, theme, and keeping the backend's demo role in sync. */
-import { ApiProvider, ApiRequestError, HttpTransport, useApiContext, type ApiContextValue } from "@pdm/api-client";
+import { ApiProvider, ApiRequestError, HttpTransport, useApiContext, useSimulationControl, type ApiContextValue } from "@pdm/api-client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect, useState, type ReactNode } from "react";
 import { usePreferences } from "../shared/preferences";
@@ -55,10 +55,11 @@ function ThemeSync() {
 function RoleSync() {
   const role = usePreferences((p) => p.role);
   const { transport } = useApiContext();
+  const control = useSimulationControl(); // also refreshes what was fetched as the previous role
   useEffect(() => {
     if (transport instanceof HttpTransport) return;
-    void transport.control({ type: "set_role", role });
-  }, [transport, role]);
+    void control({ type: "set_role", role });
+  }, [transport, control, role]);
   return null;
 }
 

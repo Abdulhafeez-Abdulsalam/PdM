@@ -18,6 +18,20 @@ It runs **entirely in your browser** on a simulated plant: no server, account or
 
 Eleven roles, from executive to field technician, each with their own home page and only the actions their role allows. Three themes: light, dark, and a low-glare **control room** theme. Every screen works with the keyboard and at phone width.
 
+## See it
+
+**Everything on one time axis.** A gas turbine's compressor efficiency falls through its limits, a water wash brings it back, and the alarms, work orders, predictions and repair line up underneath:
+
+![Compressor efficiency falling and recovering, with the events on the same time axis](docs/screenshots/asset-timeline.png)
+
+| | |
+| --- | --- |
+| ![The Command Center](docs/screenshots/command-center.png) **The Command Center:** health, top risks and the daily briefing | ![A prediction](docs/screenshots/prediction.png) **A prediction:** what's likely, when, and the cost of acting against the cost of failing |
+| ![The maintenance board](docs/screenshots/maintenance.png) **The maintenance board:** work orders from request to verified repair | ![The copilot](docs/screenshots/copilot.png) **The copilot:** answers with their sources |
+| ![The alarm list](docs/screenshots/alarms.png) **Live alarms**, following ISA-18.2 | ![The control room theme](docs/screenshots/control-room.png) **The control room theme:** low glare for dark rooms |
+
+These are taken automatically by the [demo walkthrough](docs/demo-walkthrough.md)'s test.
+
 ## Run it
 
 You need **Node.js 24** (the version the CI tests on) and npm.
@@ -68,6 +82,7 @@ Settings are environment variables, checked at start-up (a wrong one stops the s
 | `npm run check` | Formatting, types, lint, and every package's unit tests (about 590). Run before every commit | ~10 min |
 | `npm run e2e` | The demo app in Chrome: journeys, accessibility (axe) on every screen in every theme, phone width, printing, performance | ~20 min |
 | `npm run e2e:server` | The main journeys against the real server, with a fresh database | ~1 min |
+| `npm run demo:screenshots` | Acts out the [demo walkthrough](docs/demo-walkthrough.md) and retakes the screenshots above | ~3 min |
 | `npm run storybook` | Opens the component catalogue on http://localhost:6006: every shared component in each state and theme | |
 | `npm run test:stories` | Every story in every theme: axe, and a comparison with its saved screenshot | ~5 min |
 
@@ -90,8 +105,9 @@ React and TypeScript, built with Vite; TanStack Router, Query and Virtual; Tailw
 
 ## Read more
 
+- **[The demo walkthrough](docs/demo-walkthrough.md)**: a 15–20 minute script following one fault from its first warning to a verified repair.
 - **[The documentation index](docs/README.md)**: architecture, design system, pages and roles, data contracts, the simulation, decisions, plans and reviews.
-- **[50 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
+- **[51 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
 - **[What changed from the original brief, and why](docs/scope-decisions.md)**.
 
 ## Contributing

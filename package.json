@@ -29,6 +29,7 @@
     "prepare": "husky",
     "e2e": "npm run e2e --workspace @pdm/web",
     "e2e:server": "npm run e2e:server --workspace @pdm/web",
+    "demo:screenshots": "npm run demo:screenshots --workspace @pdm/web",
     "storybook": "npm run storybook -w @pdm/catalogue",
     "test:stories": "npm run test:stories -w @pdm/catalogue"
   },

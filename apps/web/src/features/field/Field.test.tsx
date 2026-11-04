@@ -1,6 +1,6 @@
 import { createMockBackend } from "@pdm/mock-data";
 import type { WorkOrderStatus } from "@pdm/contracts";
-import { screen, waitFor, within } from "@testing-library/react";
+import { act, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it } from "vitest";
 import { usePreferences } from "../../shared/preferences";
@@ -25,6 +25,16 @@ function myJob(status: WorkOrderStatus) {
 }
 
 describe("my jobs", () => {
+  it("follows the demo's role picker without a reload", async () => {
+    const nameOf = (role: "maintenance_planner" | "field_technician") =>
+      createMockBackend({ seed: TEST_SEED, startTime: TEST_START, realNow: () => TEST_START, role }).request("me.get", {}).name;
+    usePreferences.setState({ role: "maintenance_planner" });
+    renderApp("/field");
+    expect(await screen.findByText(new RegExp(`assigned to ${nameOf("maintenance_planner")}$`))).toBeInTheDocument();
+    act(() => usePreferences.setState({ role: "field_technician" }));
+    expect(await screen.findByText(new RegExp(`assigned to ${nameOf("field_technician")}$`))).toBeInTheDocument();
+  });
+
   it("is the Field Technician's home page, grouped by what to do next", async () => {
     const { router } = renderApp("/");
     await waitFor(() => expect(router.state.location.pathname).toBe("/field"));
