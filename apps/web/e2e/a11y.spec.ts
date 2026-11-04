@@ -131,6 +131,18 @@ for (const [name, url, role] of SCREENS) {
   });
 }
 
+test("the notification panel passes axe in every theme", async ({ page }) => {
+  const failures: string[] = [];
+  for (const theme of THEMES) {
+    await open(page, "/command-center", { role: "reliability_engineer", theme });
+    await page.getByRole("button", { name: /^Notifications, / }).click();
+    await expect(page.getByRole("heading", { name: "Notifications" })).toBeVisible();
+    const { violations } = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    for (const v of violations) failures.push(`[${theme}] ${v.id}: ${v.nodes.map((n) => n.target.join(" ")).join(", ")}`);
+  }
+  expect(failures).toEqual([]);
+});
+
 /** The overlays any page can open: the copilot with an answer, the command palette with results, the shortcut sheet. */
 test("copilot, command palette and shortcut sheet pass axe in every theme", async ({ page }) => {
   const failures: string[] = [];

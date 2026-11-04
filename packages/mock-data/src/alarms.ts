@@ -33,6 +33,9 @@ const LEVEL_WORDS = ["high", "high-high", "trip"] as const;
 const BACKGROUND_RATE = 0.12;
 /** Unacknowledged alarms older than this are treated as already handled when the simulation starts. */
 const INITIAL_AUTO_ACK_AGE = 45 * MINUTE;
+/** How long a simulated operator takes to deal with a nuisance alarm. */
+const DUTY_DELAY_MIN = 5;
+const DUTY_DELAY_SPREAD = 40;
 const MAX_SHELVE = 24 * HOUR;
 const RETENTION = 7 * DAY;
 /** How much alarm history the analytics page can look back over. */
@@ -104,6 +107,8 @@ export class AlarmEngine {
   /** Cleared alarms (a final state), in the order they returned to normal, to forget after RETENTION. */
   private readonly clearedQueue: { at: number; record: AlarmRecord }[] = [];
   private readonly queued = new WeakSet<AlarmRecord>();
+  /** Nuisance alarms waiting for the simulated operator, by the minute they'll be dealt with. */
+  private readonly duty = new Map<number, AlarmRecord[]>();
   /**
    * Each fault's limit crossings on each tag, with their keys, worked out once and kept until the
    * tag's limits are edited (an edit replaces the limits object). Working them out afresh every
@@ -162,6 +167,7 @@ export class AlarmEngine {
       this.processBackground(t);
       this.processFaults(t);
       this.processReturns(t);
+      this.processDuty(m, t);
       this.processShelveExpiry(t);
       this.prune(t);
       this.processedUntil = t;
@@ -230,6 +236,31 @@ export class AlarmEngine {
     };
     this.records.set(id, record);
     this.markChanged(record);
+    // Nobody works alarms in the simulation, so someone on shift deals with the low-priority noise.
+    // Alarms from real faults, and urgent ones, stay for people.
+    if (input.faultId === null && (input.priority === "p3" || input.priority === "p4")) {
+      const at = Math.floor(input.t / MINUTE) + DUTY_DELAY_MIN + (hash2(this.bgSeed + 11, seq) % DUTY_DELAY_SPREAD);
+      const due = this.duty.get(at);
+      if (due) due.push(record);
+      else this.duty.set(at, [record]);
+    }
+  }
+
+  /** The simulated operator: acknowledges the nuisance alarms due this minute, if nobody has yet. */
+  private processDuty(m: number, t: number): void {
+    const due = this.duty.get(m);
+    if (!due) return;
+    this.duty.delete(m);
+    for (const record of due) {
+      const a = record.alarm;
+      if (a.state !== "active_unacked" && a.state !== "rtn_unacked") continue;
+      const asset = this.world.assets.get(a.assetId);
+      if (!asset) continue;
+      a.state = a.state === "active_unacked" ? "active_acked" : "cleared";
+      a.acknowledgedAt = iso(t);
+      a.acknowledgedBy = this.operatorFor(asset).id;
+      this.markChanged(record);
+    }
   }
 
   private markChanged(record: AlarmRecord): void {

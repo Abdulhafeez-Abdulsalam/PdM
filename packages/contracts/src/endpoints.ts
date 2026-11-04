@@ -19,6 +19,7 @@ import {
   ShelveAlarmRequest,
   UnshelveAlarmRequest,
 } from "./alarms";
+import { MarkNotificationsReadRequest, NotificationList, NotificationListParams, SnoozeNotificationRequest } from "./notifications";
 import { AddCommentRequest, AssetComment, AssetDocument, RelatedAssets } from "./asset-info";
 import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
@@ -691,6 +692,27 @@ export const endpoints = {
     input: UnshelveAlarmRequest,
     output: Alarm,
   }),
+  "notifications.list": endpoint({
+    method: "GET",
+    path: "/notifications",
+    description: "What needs the attention of the person asking",
+    input: NotificationListParams,
+    output: NotificationList,
+  }),
+  "notifications.markRead": endpoint({
+    method: "POST",
+    path: "/notifications/read",
+    description: "Mark notifications as read",
+    input: MarkNotificationsReadRequest,
+    output: NotificationList,
+  }),
+  "notifications.snooze": endpoint({
+    method: "POST",
+    path: "/notifications/snooze",
+    description: "Hide a notification until later",
+    input: SnoozeNotificationRequest,
+    output: NotificationList,
+  }),
   "events.list": endpoint({
     method: "GET",
     path: "/events",
@@ -784,7 +806,15 @@ export function pathParams(path: string): string[] {
 /** POSTs that only read: they're POSTs because the request can be long (many tags), nothing more. */
 const READS_SENT_AS_POST: ReadonlySet<EndpointName> = new Set<EndpointName>(["timeseries.history", "timeseries.latest"]);
 
-/** Does this request change anything? Those are audited, and kept in the server's command log (ADR-0015). */
+/** Personal housekeeping: kept across restarts, but not a change to the plant, so not audited. */
+const PERSONAL: ReadonlySet<EndpointName> = new Set<EndpointName>(["notifications.markRead", "notifications.snooze"]);
+
+/** Does this change belong in the audit log? */
+export function isAudited(name: EndpointName): boolean {
+  return changesThings(name) && !PERSONAL.has(name);
+}
+
+/** Does this request change anything? Those are kept in the server's command log (ADR-0015). */
 export function changesThings(name: EndpointName): boolean {
   return endpoints[name].method === "POST" && !READS_SENT_AS_POST.has(name);
 }

@@ -112,3 +112,4 @@ One note per step of the build, in plain language: the idea, how it's used here,
 - [51 · Rehearsing the demo with a robot](learning/51-rehearsing-the-demo.md)
 - [52 · Reviewing against the whole brief](learning/52-reviewing-against-the-brief.md)
 - [53 · What a screen reader is given](learning/53-what-a-screen-reader-is-given.md)
+- [54 · Telling people what needs them](learning/54-telling-people-what-needs-them.md)

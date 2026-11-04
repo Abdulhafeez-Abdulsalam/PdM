@@ -9,6 +9,9 @@ import {
   ENTERPRISE_SCOPE,
   aiToolsFor,
   changesThings,
+  isAudited,
+  type NotificationList,
+  type NotificationListParams,
   mayUseTool,
   type AiProvider,
   type AiToolbox,
@@ -55,6 +58,7 @@ import { twinArea } from "./twin";
 import { generatePm, pmCompliance, pmOverview, pmPlan } from "./pm";
 import { InventoryStore } from "./inventory";
 import { HseStore } from "./hse";
+import { NotificationStore } from "./notifications";
 import { esgOverview } from "./esg";
 import { financialsOverview } from "./financials";
 import { dataQuality, dataSources, listTags } from "./data";
@@ -125,6 +129,7 @@ export class MockBackend {
   private readonly log: TimelineEvent[] = [];
   /** Every change made through the API, oldest first. */
   private readonly audit: AuditEntry[] = [];
+  private readonly notifications = new NotificationStore();
   /** Set by a handler that wants to spell out what it changed; read (once) when the change is logged. */
   private auditDetail: string | null = null;
   private readonly hubs = new Set<LiveHub>();
@@ -202,6 +207,16 @@ export class MockBackend {
         return this.request(name, input, user.id);
       },
     };
+  }
+
+  private myNotifications(params: NotificationListParams): NotificationList {
+    const sources = {
+      alarms: this.alarms.all(),
+      workOrders: this.workOrders.all(),
+      predictions: this.snapshot().predictions,
+      siteOf: (assetId: string) => this.world.assets.get(assetId)?.data.siteId,
+    };
+    return this.notifications.list(this.me(), params, sources, this.now());
   }
 
   /** The scripted daily briefing (see ai-provider.ts). */
@@ -299,7 +314,7 @@ export class MockBackend {
       if (!check.success) throw new ApiFailure("internal", `Mock produced invalid ${String(name)} response`, z.treeifyError(check.error));
     }
     if (actor) {
-      this.recordChange(String(name), def.description, actor, parsed.data, output);
+      if (isAudited(name)) this.recordChange(String(name), def.description, actor, parsed.data, output);
       this.emit({ kind: "request", name, input, userId: actor });
     }
     return output;
@@ -825,6 +840,15 @@ export class MockBackend {
       const alarm = this.alarms.unshelve(alarmId, this.me().id, this.now());
       this.flushLive();
       return alarm;
+    },
+    "notifications.list": (p) => this.myNotifications(p),
+    "notifications.markRead": ({ ids }) => {
+      this.notifications.markRead(this.me(), ids, this.now());
+      return this.myNotifications({ unreadOnly: false, limit: 100 });
+    },
+    "notifications.snooze": ({ id, until }) => {
+      this.notifications.snooze(this.me(), id, Date.parse(until));
+      return this.myNotifications({ unreadOnly: false, limit: 100 });
     },
     "events.list": (p) => ({
       items: listEvents(p, {

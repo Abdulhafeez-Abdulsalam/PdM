@@ -1158,6 +1158,25 @@
     "assetEvents": "Events on the same time axis ({{count}})",
     "assetEventsZoomed": "Events, and the charts above, from {{from}} to {{to}}"
   },
+  "notifications": {
+    "title": "Notifications",
+    "open_one": "Notifications, {{count}} unread",
+    "open_other": "Notifications, {{count}} unread",
+    "unread_one": "{{count}} unread notification",
+    "unread_other": "{{count}} unread notifications",
+    "unreadItem": "Unread",
+    "unreadOnly": "Unread only",
+    "markAll": "Mark all as read",
+    "filter": "Show",
+    "snooze": "Snooze 1 hour",
+    "empty": "Nothing needs your attention here.",
+    "kind": {
+      "all": "All",
+      "alarm": "Alarms",
+      "work_order": "Jobs",
+      "prediction": "Predictions"
+    }
+  },
   "console": {
     "intro": "Every prediction in the current scope, ranked by money at risk. Open one to decide what to do.",
     "stat": {

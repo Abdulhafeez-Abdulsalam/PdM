@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canDo, mayMove, mayRequest, requiredAction, type AccessLookups } from "./access";
-import { changesThings, endpoints, type EndpointName } from "./endpoints";
+import { changesThings, endpoints, isAudited, type EndpointName } from "./endpoints";
 import type { WorkOrderStatus } from "./work-orders";
 
 const lookups = (status: WorkOrderStatus | null = null): AccessLookups => ({ workOrderStatus: () => status });
@@ -18,7 +18,9 @@ describe("who may make which request (the server's check, ADR-0014)", () => {
     const unguarded = (Object.keys(endpoints) as EndpointName[]).filter(
       (name) => changesThings(name) && requiredAction(name, sample(name), lookups("approved")) === null,
     );
-    expect(unguarded).toEqual([]);
+    // Only these: they change nothing but the choices of the person asking.
+    expect(unguarded).toEqual(["notifications.markRead", "notifications.snooze"]);
+    expect(unguarded.some(isAudited)).toBe(false);
     expect(changesThings("timeseries.history")).toBe(false); // a long read, sent as POST
   });
 

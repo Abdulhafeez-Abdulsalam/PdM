@@ -124,6 +124,27 @@ test("journey 6: a job in the field, offline", async ({ page, context }) => {
   await context.setOffline(false);
 });
 
+test("the notification bell says how many are unread, and each item leads to its subject", async ({ page }) => {
+  await open(page, "/command-center", { role: "field_technician" });
+  const bell = page.getByRole("button", { name: /^Notifications, [1-9]\d* unread$/ });
+  await expect(
+    live(page)
+      .filter({ hasText: /unread notifications?/ })
+      .first(),
+  ).toBeAttached();
+  await bell.focus();
+  await page.keyboard.press("Enter");
+  const panel = page.getByRole("heading", { name: "Notifications" });
+  await expect(panel).toBeVisible();
+  const before = Number(/(\d+)/.exec((await bell.getAttribute("aria-label")) ?? "")?.[1]);
+  await page
+    .getByRole("link", { name: /^Unread: WO-\d+ assigned to you/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/maintenance\/.+|\/field\/.+/);
+  await expect(page.getByRole("button", { name: `Notifications, ${before - 1} unread` })).toBeVisible();
+});
+
 test("journey 7: asking and searching", async ({ page }) => {
   await open(page, "/command-center", { role: "plant_manager" });
   await page.keyboard.press("Control+k");

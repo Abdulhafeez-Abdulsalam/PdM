@@ -6,6 +6,7 @@ import { Menu, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { THEMES, TIME_ZONE_MODES, UNIT_SYSTEMS, usePreferences } from "../../shared/preferences";
 import { ScopeSelector } from "../../features/hierarchy/ScopeSelector";
+import { NotificationBell } from "../../features/notifications/NotificationBell";
 import { useOverlays } from "../../shared/overlays";
 import { useSession } from "../SessionGate";
 import { TIME_RANGES, useGlobalSearch, useSetGlobalSearch } from "../../shared/time-range";
@@ -31,16 +32,17 @@ export function TopBar({ onOpenMobileNav }: { onOpenMobileNav: () => void }) {
         <Menu aria-hidden className="size-5" />
       </button>
 
-      <Link to="/" className="flex shrink-0 items-center gap-2 font-semibold">
+      <Link to="/" className="hidden shrink-0 items-center gap-2 font-semibold sm:flex">
         <img src="/favicon.svg" alt="" className="size-7" />
-        {/* On a phone the logo alone, to leave room; the name still names the link for screen readers. */}
-        <span className="sr-only sm:not-sr-only">{t("app.name")}</span>
+        {/* Phones have no room for it: the bar needs its controls, and the menu links home. */}
+        <span>{t("app.name")}</span>
       </Link>
 
       <ScopeSelector />
 
       <div className="ml-auto flex shrink-0 items-center gap-2">
         <AssistButtons />
+        <NotificationBell />
         <TimeRangeSelect />
         <span className="hidden sm:inline-flex">
           <WhoAmI />

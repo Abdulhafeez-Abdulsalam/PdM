@@ -10,6 +10,7 @@ It runs **entirely in your browser** on a simulated plant: no server, account or
 
 - **See the whole company at a glance**: health, risks and money at stake on the Command Center, down to any site, area, unit or asset.
 - **Catch failures early**: predictions with their evidence and the remaining useful life, anomalies across the fleet, vibration spectra, waterfalls and orbits.
+- **Be told what needs you**: a notification bell with what matters to your role, from urgent alarms to the jobs assigned to you.
 - **Handle alarms properly**: a live alarm list following ISA-18.2 (acknowledge, shelve, suppress), alarm-flood warnings, and every event on one time axis with the sensor charts.
 - **Turn a warning into a repair**: an alarm becomes an assigned work order in two clicks, through planning, scheduling and a field technician's safety-checked job, which keeps what was typed even when the connection drops.
 - **Learn from failures**: reliability KPIs (MTBF, MTTR), Weibull analysis, a risk matrix, FMEA and root-cause analysis.
@@ -107,7 +108,7 @@ React and TypeScript, built with Vite; TanStack Router, Query and Virtual; Tailw
 
 - **[The demo walkthrough](docs/demo-walkthrough.md)**: a 15–20 minute script following one fault from its first warning to a verified repair.
 - **[The documentation index](docs/README.md)**: architecture, design system, pages and roles, data contracts, the simulation, decisions, plans and reviews.
-- **[53 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
+- **[54 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
 - **[What changed from the original brief, and why](docs/scope-decisions.md)**.
 
 ## Contributing

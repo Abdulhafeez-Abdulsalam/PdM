@@ -94,6 +94,10 @@ test("the demo walkthrough: from the first warning to a verified repair", async 
 
   // Scene 6: a technician in the field: the signal drops, and nothing typed is lost.
   await viewAs(page, "Field Technician");
+  await page.getByRole("button", { name: /^Notifications, [1-9]\d* unread$/ }).click();
+  await expect(page.getByRole("link", { name: /assigned to you/ }).first()).toBeVisible();
+  await shoot("notifications");
+  await page.keyboard.press("Escape");
   await goTo(page, "Field");
   await page
     .getByRole("region", { name: /^In progress/ })

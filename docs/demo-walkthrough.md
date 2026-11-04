@@ -78,8 +78,6 @@ Every step here is also acted out by an automated test (`apps/web/e2e/walkthroug
 
 > Two clicks. From an alarm to a work order, assigned, with the evidence attached.
 
-**If asked** why the alarm counts at the top are so high: nobody is working the other alarms in this simulation, so they pile up as we fast-forward. On a fresh start it's about a hundred active alarms. The alarm page watches for exactly this: it warns of a flood, following the ISA-18.2 alarm management standard.
-
 ## Scene 5: planning the work (2 minutes)
 
 **Do:** set **Viewing as** to **Maintenance Planner**. Open **Maintenance**.
@@ -90,7 +88,11 @@ Every step here is also acted out by an automated test (`apps/web/e2e/walkthroug
 
 ## Scene 6: in the field, out of signal (2 minutes)
 
-**Do:** set **Viewing as** to **Field Technician**. Open **Field**, then the first job under **In progress**.
+**Do:** set **Viewing as** to **Field Technician**. Press the **bell** at the top.
+
+> Nobody has to go looking. Each person is told what needs them: a technician hears about their jobs, a control room operator about urgent alarms, an analyst about likely failures.
+
+**Do:** press Escape. Open **Field**, then the first job under **In progress**.
 
 > This is a technician's phone. Each job has its safety steps and readings, and a hazardous job can't start without its permit.
 
