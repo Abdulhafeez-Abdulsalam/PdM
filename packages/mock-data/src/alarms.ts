@@ -8,6 +8,7 @@
  */
 import {
   AlarmPriority,
+  BURST_MINUTES,
   ESCALATION_CHAIN,
   ESCALATION_MINUTES,
   type Alarm,
@@ -34,6 +35,8 @@ const PRIORITY_BY_LEVEL: readonly AlarmPriority[] = ["p3", "p2", "p1"];
 const LEVEL_WORDS = ["high", "high-high", "trip"] as const;
 /** Chance of a background alarm starting in any given simulated minute, enterprise-wide. */
 const BACKGROUND_RATE = 0.12;
+/** Chance of a cascade starting in any given simulated minute: one trouble setting off several alarms. */
+const CASCADE_RATE = 1 / 240;
 /** Unacknowledged alarms older than this are treated as already handled when the simulation starts. */
 const INITIAL_AUTO_ACK_AGE = 45 * MINUTE;
 /** How long a simulated operator takes to deal with a nuisance alarm. */
@@ -114,6 +117,8 @@ export class AlarmEngine {
   private readonly queued = new WeakSet<AlarmRecord>();
   /** Nuisance alarms waiting for the simulated operator, by the minute they'll be dealt with. */
   private readonly duty = new Map<number, AlarmRecord[]>();
+  /** The latest burst on each asset. */
+  private readonly bursts = new Map<string, { members: AlarmRecord[]; last: number }>();
   /** Urgent alarms to check, by the minute their time at this level of the chain runs out. */
   private readonly toEscalate = new Map<number, { record: AlarmRecord; level: number }[]>();
   /** Every step up the on-call chain, for the analytics page. */
@@ -245,12 +250,15 @@ export class AlarmEngine {
         returnedToNormalAt: null,
         shelve: null,
         escalation: null,
+        firstOut: null,
+        followsAlarmId: null,
         workOrderId: null,
         occurrenceCount: input.occurrenceCount ?? 1,
       },
     };
     this.records.set(id, record);
     this.markChanged(record);
+    this.joinBurst(record);
     // Nobody works alarms in the simulation, so someone on shift deals with the low-priority noise.
     // Alarms from real faults, and urgent ones, stay for people.
     if (input.faultId === null && (input.priority === "p3" || input.priority === "p4")) {
@@ -260,6 +268,25 @@ export class AlarmEngine {
       else this.duty.set(at, [record]);
     }
     this.scheduleEscalation(record, input.t);
+  }
+
+  /** Alarms close together on one asset are one burst: mark the earliest, and who followed it. */
+  private joinBurst(record: AlarmRecord): void {
+    const assetId = record.alarm.assetId;
+    const t = record.raisedAtMs;
+    const burst = this.bursts.get(assetId);
+    if (!burst || Math.abs(t - burst.last) > BURST_MINUTES * MINUTE) {
+      this.bursts.set(assetId, { members: [record], last: t });
+      return;
+    }
+    burst.members.push(record);
+    burst.last = Math.max(burst.last, t);
+    const first = burst.members.reduce((a, b) => (b.raisedAtMs < a.raisedAtMs ? b : a));
+    for (const member of burst.members) {
+      member.alarm.firstOut = member === first ? { followers: burst.members.length - 1 } : null;
+      member.alarm.followsAlarmId = member === first ? null : first.alarm.id;
+      this.markChanged(member);
+    }
   }
 
   /** If this alarm goes unanswered, when does it move up next? (Only urgent alarms do, by themselves.) */
@@ -378,6 +405,7 @@ export class AlarmEngine {
       const t = m * MINUTE;
       if (hashNoise(this.bgSeed, m) < BACKGROUND_RATE) this.raiseBackground(m, t);
       this.chatter(m, t);
+      if (!this.logOnly && hashNoise(this.bgSeed + 20, m) < CASCADE_RATE) this.cascade(m, t);
       if (this.chaos.activeAt(t) && m % 30 === 0 && hashNoise(this.bgSeed + 99, m) < 0.6) this.flood(m, t);
     }
   }
@@ -452,6 +480,19 @@ export class AlarmEngine {
       } else {
         this.raiseOnLimit(tag, 0, "p4", t, t + 2 * MINUTE, count, false);
       }
+    });
+  }
+
+  /** One trouble setting off several alarms on an asset, a minute or so apart: the first is the cause. */
+  private cascade(m: number, t: number): void {
+    const root = this.candidates[hash2(this.bgSeed + 21, m) % this.candidates.length];
+    if (!root) return;
+    const others = this.candidates.filter((c) => c.asset === root.asset && c !== root);
+    if (others.length < 2) return;
+    this.raiseOnLimit(root, 0, "p2", t, t + 45 * MINUTE);
+    others.slice(0, 4).forEach((tag, i) => {
+      const at = t + (i + 1) * (30_000 + hashNoise(this.bgSeed + 22, m + i) * 60_000);
+      this.raiseOnLimit(tag, 0, hashNoise(this.bgSeed + 23, m + i) < 0.4 ? "p3" : "p4", at, at + 30 * MINUTE);
     });
   }
 
@@ -672,6 +713,7 @@ export class AlarmEngine {
       .filter((a) => (params.states ? params.states.includes(a.state) : a.state !== "cleared"))
       .filter((a) => !params.priorities || params.priorities.includes(a.priority))
       .filter((a) => !params.assetId || a.assetId === params.assetId)
+      .filter((a) => !params.hideFollowers || a.followsAlarmId === null)
       .filter((a) => this.inScope(a, params.scopeId))
       .sort((a, b) =>
         params.sort === "priority" && a.priority !== b.priority

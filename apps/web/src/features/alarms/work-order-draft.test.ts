@@ -21,6 +21,8 @@ const alarm: Alarm = {
   workOrderId: null,
   occurrenceCount: 1,
   escalation: null,
+  firstOut: null,
+  followsAlarmId: null,
 };
 
 const NOW = Date.UTC(2026, 9, 10, 9);

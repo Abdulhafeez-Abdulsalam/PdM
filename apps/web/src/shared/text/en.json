@@ -1097,6 +1097,9 @@
     "chattering": "chattering · {{count}}×/h",
     "standing": "standing > 24 h",
     "escalated": "escalated to {{name}}",
+    "firstOut_one": "first out · {{count}} followed",
+    "firstOut_other": "first out · {{count}} followed",
+    "followed": "followed {{id}}",
     "escalateOne": "Escalate {{id}}",
     "hasWorkOrder": "work order raised",
     "shelvedUntil": "shelved · back {{ago}}",
@@ -1106,6 +1109,7 @@
     "woOne": "Create work order from {{id}}"
   },
   "alarmsPage": {
+    "hideFollowers": "Hide follow-on alarms",
     "intro": "Live alarms in the current scope, most urgent first.",
     "views": "View",
     "view": {

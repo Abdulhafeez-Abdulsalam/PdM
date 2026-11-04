@@ -36,7 +36,7 @@ export function listEvents(params: EventListParams, sources: EventSources): Time
       t: a.raisedAt,
       assetId: a.assetId,
       title: a.message,
-      detail: `${a.priority.toUpperCase()} · ${a.state.replace(/_/g, " ")}`,
+      detail: `${a.priority.toUpperCase()} · ${a.state.replace(/_/g, " ")}${a.firstOut ? ` · first out, ${a.firstOut.followers} followed` : ""}`,
       severity: ALARM_PRIORITY_HEALTH[a.priority],
       refId: a.id,
     });

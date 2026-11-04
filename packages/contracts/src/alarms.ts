@@ -41,6 +41,9 @@ export const ShelveInfo = z.object({
 /** Who an unanswered urgent alarm goes to, in turn: the first is who hears it to begin with. */
 export const ESCALATION_CHAIN = ["control_room_operator", "plant_manager", "executive"] as const satisfies readonly RoleId[];
 /** Minutes nobody has answered at each step, before it moves up. Only urgent alarms escalate by themselves. */
+/** Alarms on one asset this close together count as one burst. */
+export const BURST_MINUTES = 10;
+
 export const ESCALATION_MINUTES: Partial<Record<AlarmPriority, readonly number[]>> = { p1: [5, 10], p2: [15, 30] };
 
 /** How far up the on-call chain an alarm has gone. */
@@ -75,6 +78,10 @@ export const Alarm = z.object({
   returnedToNormalAt: Timestamp.nullable(),
   shelve: ShelveInfo.nullable(),
   escalation: AlarmEscalation.nullable(),
+  /** The first of a burst on one asset: the likely cause. How many alarms followed it. */
+  firstOut: z.object({ followers: z.number().int().min(1) }).nullable(),
+  /** Part of a burst, not its first: the alarm it followed. */
+  followsAlarmId: Id.nullable(),
   workOrderId: Id.nullable(),
   /** How many times it has re-triggered in the last hour. > 5 suggests a "chattering" alarm. */
   occurrenceCount: z.number().int().min(1),
@@ -87,6 +94,8 @@ export const AlarmListParams = PageParams.extend({
   states: z.array(AlarmState).optional(),
   priorities: z.array(AlarmPriority).optional(),
   sort: z.enum(["priority", "newest"]).default("priority"),
+  /** Leave out alarms that followed another: each burst shows as its first alarm. */
+  hideFollowers: z.boolean().optional(),
 });
 export type AlarmListParams = z.infer<typeof AlarmListParams>;
 

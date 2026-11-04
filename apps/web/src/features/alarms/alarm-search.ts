@@ -16,6 +16,8 @@ const schema = z.object({
     .transform((v) => (v ?? "").split(",").filter((p): p is AlarmPriority => AlarmPriority.safeParse(p).success))
     .catch([]),
   group: z.enum(["none", "asset"]).catch("none"),
+  /** "on": leave out alarms that followed another. */
+  causes: z.enum(["on"]).optional().catch(undefined),
 });
 export type AlarmSearch = z.output<typeof schema>;
 

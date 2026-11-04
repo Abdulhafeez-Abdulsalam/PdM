@@ -75,6 +75,18 @@ test("escalating an alarm from the keyboard is announced, and the alarm says whe
   await expect(page.getByText(/^escalated to /).first()).toBeVisible();
 });
 
+test("a burst of alarms shows what came first, and shrinks to it", async ({ page }) => {
+  await open(page, "/alarms?view=list&show=all&priority=p2", { role: "control_room_operator" });
+  await expect(page.getByText(/^first out · \d+ followed$/).first()).toBeVisible();
+  await page.getByRole("button", { name: /^P2 High/ }).click();
+  const count = async () =>
+    Number(/^(\d+) alarm/.exec((await page.getByRole("heading", { name: /^\d+ alarms?$/ }).textContent()) ?? "")?.[1]);
+  const all = await count();
+  await page.getByRole("checkbox", { name: "Hide follow-on alarms" }).check();
+  await expect(page).toHaveURL(/causes=on/);
+  await expect.poll(count).toBeLessThan(all);
+});
+
 test("the on-call list opens from the keyboard and names each step", async ({ page }) => {
   await open(page, "/alarms", { role: "control_room_operator" });
   const summary = page.locator("summary", { hasText: "On call now" });

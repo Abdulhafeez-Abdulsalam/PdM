@@ -14,7 +14,7 @@ import { ESCALATION_CHAIN, type Alarm } from "@pdm/contracts";
 import { Button, PriorityIcon, cx } from "@pdm/ui";
 import { Link } from "@tanstack/react-router";
 import { useVirtualizer } from "@tanstack/react-virtual";
-import { Archive, ArchiveRestore, ArrowUpCircle, Check, ClipboardPlus, Repeat, Timer } from "lucide-react";
+import { Archive, ArchiveRestore, ArrowUpCircle, Check, ClipboardPlus, CornerDownRight, Flag, Repeat, Timer } from "lucide-react";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { formatAgo, makeTimeFormatter } from "../../shared/format";
@@ -327,6 +327,16 @@ export function AlarmTable({ alarms, caption, groupByAsset = false, showAsset = 
                       {a.occurrenceCount > CHATTERING_COUNT && (
                         <Badge icon={<Repeat aria-hidden className="size-3" />}>
                           {t("alarmTable.chattering", { count: a.occurrenceCount })}
+                        </Badge>
+                      )}
+                      {a.firstOut && (
+                        <Badge icon={<Flag aria-hidden className="size-3" />}>
+                          {t("alarmTable.firstOut", { count: a.firstOut.followers })}
+                        </Badge>
+                      )}
+                      {a.followsAlarmId && (
+                        <Badge icon={<CornerDownRight aria-hidden className="size-3" />}>
+                          {t("alarmTable.followed", { id: a.followsAlarmId })}
                         </Badge>
                       )}
                       {a.escalation && (

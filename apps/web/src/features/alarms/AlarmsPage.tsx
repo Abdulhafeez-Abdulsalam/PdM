@@ -29,7 +29,7 @@ export function AlarmsPage() {
   const { scopeId } = useGlobalSearch();
   const search = useAlarmSearch();
   const navigate = useNavigate();
-  const setAlarmSearch = (patch: Partial<Record<keyof AlarmSearch, string>>) =>
+  const setAlarmSearch = (patch: Partial<Record<keyof AlarmSearch, string | undefined>>) =>
     void navigate({ to: ".", search: (prev: Record<string, unknown>) => ({ ...prev, ...patch }) });
 
   useEffect(() => {
@@ -123,7 +123,7 @@ function AlarmListView({
 }: {
   scopeId: string;
   search: AlarmSearch;
-  onChange: (patch: Partial<Record<keyof AlarmSearch, string>>) => void;
+  onChange: (patch: Partial<Record<keyof AlarmSearch, string | undefined>>) => void;
 }) {
   const { t } = useTranslation();
   const alarms = useApiQuery(
@@ -132,6 +132,7 @@ function AlarmListView({
       scopeId,
       states: STATES_FOR[search.show],
       priorities: search.priority.length > 0 ? search.priority : undefined,
+      hideFollowers: search.causes === "on" ? true : undefined,
       sort: "priority",
       limit: 500,
     },
@@ -147,6 +148,14 @@ function AlarmListView({
   return (
     <>
       <div className="flex flex-wrap items-center gap-3">
+        <label className="flex items-center gap-1.5 text-sm">
+          <input
+            type="checkbox"
+            checked={search.causes === "on"}
+            onChange={(e) => onChange({ causes: e.target.checked ? "on" : undefined })}
+          />
+          {t("alarmsPage.hideFollowers")}
+        </label>
         <Select
           label={t("alarmsPage.show")}
           value={search.show}
