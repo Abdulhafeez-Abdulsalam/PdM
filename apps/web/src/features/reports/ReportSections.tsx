@@ -9,7 +9,7 @@ import { ENTERPRISE_SCOPE, LABOUR_RATE, type EsgIntensity, type KpiKey } from "@
 import { Skeleton } from "@pdm/ui";
 import { useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
-import { TableExportButton } from "../../shared/export/ExportButton";
+import { ReportExportButton, TableExportButton } from "../../shared/export/ExportButton";
 import { formatCurrency, formatNumber, formatProbability } from "../../shared/format";
 import { formatKpiValue } from "../command-center/KpiStrip";
 import type { SectionId } from "./report-defs";
@@ -463,12 +463,16 @@ export function ReportDocument({
   const { t } = useTranslation();
   const node = useApiQuery("hierarchy.node", { nodeId: scopeId });
   const scopeName = scopeId === ENTERPRISE_SCOPE ? t("reports.wholeEnterprise") : (node.data?.name ?? scopeId);
+  const report = useRef<HTMLElement>(null);
   return (
-    <article aria-labelledby="report-title" className="flex flex-col gap-4">
+    <article ref={report} aria-labelledby="report-title" className="flex flex-col gap-4">
       <header className="border-b border-line pb-2">
-        <h2 id="report-title" className="text-xl font-semibold">
-          {title}
-        </h2>
+        <div className="flex items-start justify-between gap-2">
+          <h2 id="report-title" className="text-xl font-semibold">
+            {title}
+          </h2>
+          {sections.length > 0 && <ReportExportButton what={title} report={report} />}
+        </div>
         <p className="text-sm text-fg-muted">
           {t("reports.coverage", {
             scope: scopeName,

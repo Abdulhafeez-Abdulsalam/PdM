@@ -117,3 +117,4 @@ One note per step of the build, in plain language: the idea, how it's used here,
 - [55 · Nobody answered: escalation](learning/55-nobody-answered.md)
 - [56 · What came first](learning/56-what-came-first.md)
 - [57 · Getting data out safely](learning/57-getting-data-out-safely.md)
+- [58 · A spreadsheet is not a table of text](learning/58-a-spreadsheet-is-not-text.md)

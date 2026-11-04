@@ -1,4 +1,6 @@
 /** Whole user journeys in a real browser, on the production build. */
+import type { Download } from "@playwright/test";
+import { strFromU8, unzipSync } from "fflate";
 import { readFileSync } from "node:fs";
 import { expect, open, settle, test, type Role } from "./helpers";
 
@@ -129,6 +131,33 @@ test("exporting gives every row, not just the page, and is audited", async ({ pa
     .split("\r\n");
   expect(lines).toHaveLength(total + 1); // the heading row, and every asset
   await expect(page.getByText(/rows exported\.$/)).toBeVisible();
+});
+
+test("Excel exports hold real numbers and dates, and a report becomes one sheet per section", async ({ page }) => {
+  const unzip = async (file: Download) => {
+    const parts = unzipSync(readFileSync(await file.path()));
+    return (name: string) => strFromU8(parts[name] ?? new Uint8Array());
+  };
+  await open(page, "/alarms?view=list&show=all", { role: "control_room_operator" });
+  let saving = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export Alarms to Excel" }).click();
+  let file = await saving;
+  expect(file.suggestedFilename()).toMatch(/^alarms-.*\.xlsx$/);
+  const sheet = (await unzip(file))("xl/worksheets/sheet1.xml");
+  // Value and raised time are stored as numbers: no t="s" (text) on those cells.
+  expect(sheet).toMatch(/<c r="F2"[^>]*><v>[\d.]+<\/v>/);
+  expect(sheet).toMatch(/<c r="I2" s="\d+"[^>]*><v>\d+\.\d+<\/v>/);
+
+  await page.goto("/reports/management-summary");
+  await settle(page);
+  saving = page.waitForEvent("download");
+  await page
+    .getByRole("button", { name: /to Excel$/ })
+    .first()
+    .click();
+  file = await saving;
+  const workbook = (await unzip(file))("xl/workbook.xml");
+  expect(workbook.match(/<sheet /g)).toHaveLength(5);
 });
 
 test("the plant manager approves work by dragging the card with the mouse", async ({ page }) => {
