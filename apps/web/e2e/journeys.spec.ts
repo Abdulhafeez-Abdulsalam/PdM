@@ -55,7 +55,7 @@ test("criterion D: typed work survives the browser going offline, and a reload",
 
 test("a long alarm list draws only the rows in view, and the keyboard still walks all of it", async ({ page }) => {
   await open(page, "/alarms?view=list&show=all", { role: "control_room_operator" });
-  const table = page.locator("main table");
+  const table = page.locator("main table[aria-rowcount]");
   const total = Number(await table.getAttribute("aria-rowcount")) - 1; // less the header row
   test.skip(total <= 100, `only ${total} alarms right now: too few to need virtualising`);
   const drawn = page.locator('main tbody tr[tabindex="0"]');

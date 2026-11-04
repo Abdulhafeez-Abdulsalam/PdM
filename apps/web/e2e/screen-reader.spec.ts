@@ -29,7 +29,7 @@ test("journey 1: finding your way around", async ({ page }) => {
 
 test("journey 2: an alarm, from hearing it to acting on it", async ({ page }) => {
   await open(page, "/alarms?view=list&show=all", { role: "control_room_operator" });
-  const table = page.locator("main table");
+  const table = page.locator("main table[aria-rowcount]");
   const total = Number(await table.getAttribute("aria-rowcount"));
   expect(total).toBeGreaterThan(1);
   const row = page.locator('main tbody tr[tabindex="0"]').first();

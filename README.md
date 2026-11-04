@@ -80,7 +80,7 @@ Settings are environment variables, checked at start-up (a wrong one stops the s
 
 | Command | What it checks | Time |
 | --- | --- | --- |
-| `npm run check` | Formatting, types, lint, and every package's unit tests (about 590). Run before every commit | ~10 min |
+| `npm run check` | Formatting, types, lint, and every package's unit tests (about 600). Run before every commit | ~10 min |
 | `npm run e2e` | The demo app in Chrome: journeys, accessibility (axe) on every screen in every theme, phone width, printing, performance | ~20 min |
 | `npm run e2e:server` | The main journeys against the real server, with a fresh database | ~1 min |
 | `npm run demo:screenshots` | Acts out the [demo walkthrough](docs/demo-walkthrough.md) and retakes the screenshots above | ~3 min |

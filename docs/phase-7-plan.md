@@ -10,7 +10,7 @@ Chosen on 2026-11-04 from the "Open" column of the [Phase 6 review](phase-6-revi
 | 2 ✅ | **Notification centre** | A bell in the top bar with an unread count; a list of what matters to your role (urgent alarms, jobs assigned to you, new predictions), with filters, mark as read and snooze; each links to the thing itself; live, in both demo and server mode | Spec §7 and §5. In-app only: email, SMS and Teams need outside services |
 | 3 ✅ | **Escalation and on-call** | A simple on-call roster per site; an urgent alarm nobody acknowledges escalates up a chain after set times, or by hand, and each step notifies the next person and is shown on the alarm and in the audit log; alarm KPIs gain "escalated" | Spec §6.5. Needs chunk 2 to notify anyone |
 | 4 ✅ | **First-out** | When a burst of alarms hits one asset, the one that came first is marked "first out", so the operator sees the likely cause and not the pile of consequences; a filter and a badge in the list and on the timeline | Spec §6.5, an ISA-18.2 idea. Changes the alarm contract and engine |
-| 5 | **Review** | Criteria and suites re-run, including the new journeys; the demo walkthrough updated | |
+| 5 ✅ | **[Review](phase-7-review.md)** | Criteria and suites re-run, including the new journeys; the demo walkthrough updated | |
 
 ## Things to keep in mind
 
