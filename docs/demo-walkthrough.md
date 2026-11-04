@@ -135,7 +135,6 @@ Every step here is also acted out by an automated test (`apps/web/e2e/walkthroug
 | You reloaded the page | The story restarts: press **Start demo storyline** and fast-forward to where you were (about 2 minutes) |
 | You went past a stage at 3600× | Carry on: the app simply shows the later stage. If nobody made a work order, one is made for you at *Work order created* |
 | The search shows "Ask the copilot" first | Wait a moment for the asset to appear, then choose the line starting CBC-GT-101 |
-| The time range went back to 24 hours | Set it after opening the asset: moving through the search box doesn't keep it |
 | A chart looks empty on Telemetry | Check the time range is **Last 7 days** |
 
 ## Questions you may be asked

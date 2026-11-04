@@ -66,6 +66,18 @@ describe("command palette and shortcuts", () => {
     await waitFor(() => expect(router.state.location.pathname).toBe("/reliability/weibull"));
   });
 
+  it("keeps the time range and scope when it opens a page", async () => {
+    const { router } = renderApp("/command-center?range=7d&show=all");
+    await screen.findByRole("heading", { level: 1 });
+    await userEvent.keyboard("{Control>}k{/Control}");
+    const box = await screen.findByRole("combobox", { name: "Search pages, assets and actions" });
+    await userEvent.type(box, "weibull");
+    await screen.findByRole("option", { name: /Reliability › Weibull analysis/, selected: true });
+    await userEvent.keyboard("{Enter}");
+    await waitFor(() => expect(router.state.location.pathname).toBe("/reliability/weibull"));
+    expect(router.state.location.search).toEqual({ range: "7d" });
+  });
+
   it("finds assets, and only offers pages the role can open", async () => {
     usePreferences.setState({ role: "executive" });
     renderApp("/command-center");

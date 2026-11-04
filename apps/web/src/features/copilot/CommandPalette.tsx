@@ -76,7 +76,11 @@ function PaletteBody() {
   const items = useMemo<Item[]>(() => {
     const go = (path: string) => () => {
       close();
-      void navigate({ to: path as "/" });
+      // Keep the app-wide time range and scope, as the menu does; a page's own filters stay behind.
+      void navigate({
+        to: path as "/",
+        search: (prev: { range?: unknown; scope?: unknown }) => ({ range: prev.range, scope: prev.scope }) as never,
+      });
     };
     const pages = [
       ...MODULES.map((m) => ({ path: m.path as string, label: t(`modules.${m.id}.name`) })),
