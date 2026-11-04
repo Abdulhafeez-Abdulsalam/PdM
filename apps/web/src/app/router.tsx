@@ -49,6 +49,7 @@ const FinancialsPage = lazyRouteComponent(() => import("../features/financials/F
 const ReportsPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportsPage");
 const ReportPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportPage");
 const ReportBuilderPage = lazyRouteComponent(() => import("../features/reports/ReportsPages"), "ReportBuilderPage");
+const SchedulesPage = lazyRouteComponent(() => import("../features/reports/SchedulesPage"), "SchedulesPage");
 const HandoverPage = lazyRouteComponent(() => import("../features/reports/HandoverPage"), "HandoverPage");
 const DataPage = lazyRouteComponent(() => import("../features/data/DataPages"), "DataPage");
 const TagsPage = lazyRouteComponent(() => import("../features/data/DataPages"), "TagsPage");
@@ -267,6 +268,7 @@ const mocRoute = createRoute({ getParentRoute: () => rootRoute, path: "/hse/moc"
 /** Reports: shift handover, the builder (?sections=…) and one ready-made report. Fixed paths before $reportId. */
 const handoverRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/handover", component: HandoverPage });
 const reportBuilderRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/build", component: ReportBuilderPage });
+const schedulesRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/schedules", component: SchedulesPage });
 const reportRoute = createRoute({ getParentRoute: () => rootRoute, path: "/reports/$reportId", component: ReportPage });
 
 /** Data and integrations: the tag browser (?issue=…). */
@@ -329,6 +331,7 @@ const routeTree = rootRoute.addChildren([
   incidentsRoute,
   mocRoute,
   handoverRoute,
+  schedulesRoute,
   reportBuilderRoute,
   reportRoute,
   tagsRoute,

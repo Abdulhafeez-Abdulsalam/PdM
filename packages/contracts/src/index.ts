@@ -30,6 +30,7 @@ export * from "./copilot";
 export * from "./alarms";
 export * from "./events";
 export * from "./notifications";
+export * from "./report-schedules";
 export * from "./iso14224";
 export * from "./work-orders";
 export * from "./kpis";

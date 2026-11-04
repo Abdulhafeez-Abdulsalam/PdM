@@ -29,6 +29,13 @@ import {
   NotificationListParams,
   SnoozeNotificationRequest,
 } from "./notifications";
+import {
+  CreateScheduleRequest,
+  DeleteScheduleRequest,
+  ScheduledReport,
+  ScheduledReportList,
+  SetScheduleActiveRequest,
+} from "./report-schedules";
 import { AddCommentRequest, AssetComment, AssetDocument, RelatedAssets } from "./asset-info";
 import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
@@ -714,6 +721,34 @@ export const endpoints = {
     description: "Return a shelved alarm to the active list",
     input: UnshelveAlarmRequest,
     output: Alarm,
+  }),
+  "reportSchedules.list": endpoint({
+    method: "GET",
+    path: "/report-schedules",
+    description: "The reports this person has scheduled",
+    input: z.object({}),
+    output: ScheduledReportList,
+  }),
+  "reportSchedules.create": endpoint({
+    method: "POST",
+    path: "/report-schedules",
+    description: "Schedule a report",
+    input: CreateScheduleRequest,
+    output: ScheduledReport,
+  }),
+  "reportSchedules.setActive": endpoint({
+    method: "POST",
+    path: "/report-schedules/:scheduleId/active",
+    description: "Pause or resume a scheduled report",
+    input: SetScheduleActiveRequest,
+    output: ScheduledReport,
+  }),
+  "reportSchedules.delete": endpoint({
+    method: "POST",
+    path: "/report-schedules/:scheduleId/delete",
+    description: "Delete a scheduled report",
+    input: DeleteScheduleRequest,
+    output: z.object({ deleted: z.boolean() }),
   }),
   "exports.record": endpoint({
     method: "POST",

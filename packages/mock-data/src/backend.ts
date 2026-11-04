@@ -60,6 +60,7 @@ import { generatePm, pmCompliance, pmOverview, pmPlan } from "./pm";
 import { InventoryStore } from "./inventory";
 import { HseStore } from "./hse";
 import { NotificationStore } from "./notifications";
+import { ReportSchedules } from "./report-schedules";
 import { esgOverview } from "./esg";
 import { financialsOverview } from "./financials";
 import { dataQuality, dataSources, listTags } from "./data";
@@ -131,6 +132,7 @@ export class MockBackend {
   /** Every change made through the API, oldest first. */
   private readonly audit: AuditEntry[] = [];
   private readonly notifications = new NotificationStore();
+  private readonly reportSchedules = new ReportSchedules();
   /** Set by a handler that wants to spell out what it changed; read (once) when the change is logged. */
   private auditDetail: string | null = null;
   private readonly hubs = new Set<LiveHub>();
@@ -244,6 +246,7 @@ export class MockBackend {
       alarms: this.alarms.all(),
       workOrders: this.workOrders.all(),
       predictions: this.snapshot().predictions,
+      schedules: this.reportSchedules.mine(this.me().id),
       siteOf: (assetId: string) => this.world.assets.get(assetId)?.data.siteId,
     };
     return this.notifications.list(this.me(), params, sources, this.now());
@@ -883,6 +886,16 @@ export class MockBackend {
       this.flushLive();
       return alarm;
     },
+    "reportSchedules.list": () => ({ items: this.reportSchedules.mine(this.me().id) }),
+    "reportSchedules.create": (input) => {
+      this.scope(input.scopeId); // 404 for an unknown scope
+      return this.reportSchedules.create(this.me().id, input, this.now());
+    },
+    "reportSchedules.setActive": ({ scheduleId, active }) => this.reportSchedules.setActive(scheduleId, this.me().id, active, this.now()),
+    "reportSchedules.delete": ({ scheduleId }) => {
+      this.reportSchedules.remove(scheduleId, this.me().id);
+      return { deleted: true };
+    },
     "exports.record": ({ what, rows, format }) => {
       this.auditDetail = `${what}: ${rows} rows as ${format}`;
       return { recorded: true };
@@ -1004,6 +1017,7 @@ export class MockBackend {
     this.lastTickAt = now;
     this.storyline.tick(now);
     this.alarms.tick(now);
+    this.reportSchedules.tick(now);
     this.invalidate();
     // Drained once and shared, so every open connection (several on the server) sees every change.
     const changed = this.alarms.drainChanges();

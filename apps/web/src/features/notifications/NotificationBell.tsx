@@ -8,14 +8,14 @@ import { NotificationKind, type Notification } from "@pdm/contracts";
 import { Button, HealthBadge, Popover, cx } from "@pdm/ui";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
-import { ArrowUpCircle, Bell, BrainCircuit, ClipboardList, Siren } from "lucide-react";
+import { ArrowUpCircle, Bell, BrainCircuit, ClipboardList, FileText, Siren } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { makeTimeFormatter } from "../../shared/format";
 import { usePreferences } from "../../shared/preferences";
 import { useSimNow } from "../../shared/sim-time";
 
-const ICON = { alarm: Siren, escalation: ArrowUpCircle, work_order: ClipboardList, prediction: BrainCircuit } as const;
+const ICON = { alarm: Siren, escalation: ArrowUpCircle, work_order: ClipboardList, prediction: BrainCircuit, report: FileText } as const;
 const SNOOZE_MS = 3_600_000;
 const LIST = { unreadOnly: false, limit: 100 };
 
@@ -140,10 +140,20 @@ function Item({
     <li className={cx("flex items-start gap-2 border-b border-line px-3 py-2 last:border-0", !n.read && "bg-sunken")}>
       <Icon aria-hidden className="mt-0.5 size-4 shrink-0 text-fg-muted" />
       <div className="min-w-0 flex-1">
-        {n.kind === "alarm" || n.kind === "escalation" ? (
+        {n.kind === "report" ? (
+          <Link
+            to="/reports/$reportId"
+            params={{ reportId: n.refId }}
+            search={(prev) => ({ ...prev, scope: n.scopeId ?? undefined })}
+            onClick={open}
+            className={link}
+          >
+            {title}
+          </Link>
+        ) : n.kind === "alarm" || n.kind === "escalation" ? (
           <Link
             to="/assets/$assetId/$tab"
-            params={{ assetId: n.assetId, tab: "alarms" }}
+            params={{ assetId: n.assetId ?? "", tab: "alarms" }}
             search={(prev) => prev}
             onClick={open}
             className={link}

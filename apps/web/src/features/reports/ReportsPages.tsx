@@ -24,6 +24,7 @@ export function ReportsNav() {
           { to: "/reports", label: t("reports.nav.library") },
           { to: "/reports/handover", label: t("reports.nav.handover") },
           { to: "/reports/build", label: t("reports.nav.build") },
+          { to: "/reports/schedules", label: t("reports.nav.schedules") },
         ]}
       />
     </div>

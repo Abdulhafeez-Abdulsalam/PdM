@@ -1241,6 +1241,7 @@
       "all": "All",
       "alarm": "Alarms",
       "escalation": "Escalations",
+      "report": "Reports",
       "work_order": "Jobs",
       "prediction": "Predictions"
     }
@@ -2778,6 +2779,37 @@
     }
   },
   "reports": {
+    "schedule": {
+      "intro": "Have a report produced on a schedule. When it's ready, your bell tells you, with a link. The report shows the figures as they are when you open it.",
+      "new": "Schedule a report",
+      "report": "Report",
+      "frequency": "How often",
+      "add": "Schedule it",
+      "scope": "For {{scope}}, the scope chosen at the top of the page.",
+      "yours": "Your scheduled reports",
+      "none": "Nothing scheduled yet",
+      "noneHint": "Pick a report and how often above, and your bell will tell you when it's ready.",
+      "next": "Next run",
+      "last": "Last run",
+      "runs": "Runs",
+      "actions": "Actions",
+      "paused": "Paused",
+      "pause": "Pause",
+      "resume": "Resume",
+      "delete": "Delete",
+      "pauseOne": "Pause {{title}}",
+      "resumeOne": "Resume {{title}}",
+      "deleteOne": "Delete {{title}}",
+      "confirmTitle": "Delete this schedule?",
+      "confirm": "{{title}} will stop being produced. Reports already run stay available in the library.",
+      "created": "Report scheduled.",
+      "failed": "That didn't work: {{reason}}",
+      "every": {
+        "daily": "Every day",
+        "weekly": "Every week",
+        "monthly": "Every 30 days"
+      }
+    },
     "intro": "Ready-made reports, a shift handover and a builder for your own. Every report prints, or saves as a PDF from the print dialog.",
     "reportIntro": "Print it, or choose \"Save as PDF\" in the print dialog. The report covers the scope chosen at the top of the page.",
     "buildIntro": "Pick the sections you need. The report below updates as you go, and the page's address remembers your choice, so you can bookmark it or send it as a link.",
@@ -2785,7 +2817,8 @@
       "label": "Reports pages",
       "library": "Library",
       "handover": "Shift handover",
-      "build": "Build a report"
+      "build": "Build a report",
+      "schedules": "Scheduled"
     },
     "print": "Print or save as PDF",
     "contains": "Contains: {{sections}}",
@@ -3127,7 +3160,8 @@
         "threshold_edit": "Edit alarm limits",
         "model_approve": "Approve models",
         "admin_manage": "Manage users and roles",
-        "data_export": "Export data"
+        "data_export": "Export data",
+        "report_schedule": "Schedule reports"
       }
     },
     "hierarchy": {

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { HealthState, Id, Timestamp } from "./common";
 
 /** What a notification is about. */
-export const NotificationKind = z.enum(["alarm", "escalation", "work_order", "prediction"]);
+export const NotificationKind = z.enum(["alarm", "escalation", "work_order", "prediction", "report"]);
 export type NotificationKind = z.infer<typeof NotificationKind>;
 
 /** One thing that needs attention. Worked out from the plant: only read and snooze are kept. */
@@ -13,9 +13,12 @@ export const Notification = z.object({
   title: z.string().min(1),
   detail: z.string().nullable(),
   severity: HealthState.nullable(),
-  assetId: Id,
-  /** The alarm, work order or prediction it is about. */
+  /** null when it isn't about one asset (a report). */
+  assetId: Id.nullable(),
+  /** The alarm, work order, prediction or report it is about. */
   refId: Id,
+  /** For a report: the scope it covers. */
+  scopeId: Id.nullable(),
   read: z.boolean(),
 });
 export type Notification = z.infer<typeof Notification>;

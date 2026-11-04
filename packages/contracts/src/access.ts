@@ -130,6 +130,20 @@ export const ACTIONS = {
   "threshold.edit": ["reliability_engineer", "condition_analyst", "system_admin"],
   "model.approve": ["reliability_engineer", "condition_analyst", "system_admin"],
   "admin.manage": ["system_admin"],
+  /** Have a report produced on a schedule. */
+  "report.schedule": [
+    "executive",
+    "plant_manager",
+    "reliability_engineer",
+    "condition_analyst",
+    "control_room_operator",
+    "maintenance_planner",
+    "field_technician",
+    "hse_officer",
+    "procurement",
+    "esg_lead",
+    "system_admin",
+  ],
   /** Export what you can already see. */
   "data.export": [
     "executive",
@@ -315,6 +329,10 @@ const RULES: { [N in EndpointName]: Rule<N> } = {
   "alarms.onCall": null,
   "events.list": null,
   "exports.record": "data.export",
+  "reportSchedules.list": null,
+  "reportSchedules.create": "report.schedule",
+  "reportSchedules.setActive": "report.schedule",
+  "reportSchedules.delete": "report.schedule",
   "notifications.list": null,
   "notifications.markRead": null,
   "notifications.snooze": null,

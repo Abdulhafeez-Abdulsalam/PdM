@@ -14,7 +14,7 @@ It runs **entirely in your browser** on a simulated plant: no server, account or
 - **Handle alarms properly**: a live alarm list following ISA-18.2 (acknowledge, shelve, suppress), alarm-flood warnings, first-out marking of what started a burst, on-call rosters with automatic escalation, and every event on one time axis with the sensor charts.
 - **Turn a warning into a repair**: an alarm becomes an assigned work order in two clicks, through planning, scheduling and a field technician's safety-checked job, which keeps what was typed even when the connection drops.
 - **Learn from failures**: reliability KPIs (MTBF, MTTR), Weibull analysis, a risk matrix, FMEA and root-cause analysis.
-- **Run the rest of maintenance**: PM programmes, spare parts, permits and incidents, emissions, costs, reports and shift handovers, data quality, and administration, with tables you can export to CSV or Excel.
+- **Run the rest of maintenance**: PM programmes, spare parts, permits and incidents, emissions, costs, reports and shift handovers, data quality, and administration, with tables you can export to CSV or Excel, and reports on a schedule.
 - **Ask**: a copilot answers questions about the plant from its own data, citing where each answer came from, within what your role may see.
 
 Eleven roles, from executive to field technician, each with their own home page and only the actions their role allows. Three themes: light, dark, and a low-glare **control room** theme. Every screen works with the keyboard and at phone width.
@@ -108,7 +108,7 @@ React and TypeScript, built with Vite; TanStack Router, Query and Virtual; Tailw
 
 - **[The demo walkthrough](docs/demo-walkthrough.md)**: a 15–20 minute script following one fault from its first warning to a verified repair.
 - **[The documentation index](docs/README.md)**: architecture, design system, pages and roles, data contracts, the simulation, decisions, plans and reviews.
-- **[58 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
+- **[59 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
 - **[What changed from the original brief, and why](docs/scope-decisions.md)**.
 
 ## Contributing

@@ -11,14 +11,17 @@ import {
   type NotificationListParams,
   type Prediction,
   type RoleId,
+  type ScheduledReport,
   type User,
   type WorkOrder,
   type WorkOrderStatus,
 } from "@pdm/contracts";
 import { DAY } from "./clock";
+import { REPORT_TITLES } from "./report-schedules";
 
 const ALARM_WINDOW = DAY;
 const PREDICTION_WINDOW = 30 * DAY;
+const REPORT_WINDOW = 7 * DAY;
 const LIKELY = 0.7;
 const DONE: readonly WorkOrderStatus[] = ["completed", "verified", "closed", "cancelled"];
 
@@ -39,6 +42,8 @@ interface Sources {
   alarms: readonly Alarm[];
   workOrders: readonly WorkOrder[];
   predictions: readonly Prediction[];
+  /** This person's own schedules. */
+  schedules: readonly ScheduledReport[];
   siteOf: (assetId: string) => string | undefined;
 }
 
@@ -78,7 +83,7 @@ export class NotificationStore {
     this.choices(user.id).snoozed.set(id, until);
   }
 
-  private forUser(user: User, { alarms, workOrders, predictions, siteOf }: Sources, now: number): Notification[] {
+  private forUser(user: User, { alarms, workOrders, predictions, schedules, siteOf }: Sources, now: number): Notification[] {
     const here = (assetId: string) => user.siteIds.length === 0 || user.siteIds.includes(siteOf(assetId) ?? "");
     const out: Notification[] = [];
 
@@ -94,6 +99,7 @@ export class NotificationStore {
         severity: ALARM_PRIORITY_HEALTH[a.priority],
         assetId: a.assetId,
         refId: a.id,
+        scopeId: null,
         // Someone has dealt with it, so it no longer needs attention.
         read: a.state !== "active_unacked" && a.state !== "rtn_unacked",
       });
@@ -109,6 +115,7 @@ export class NotificationStore {
         severity: ALARM_PRIORITY_HEALTH[a.priority],
         assetId: a.assetId,
         refId: a.id,
+        scopeId: null,
         read: a.state !== "active_unacked" && a.state !== "rtn_unacked",
       });
     }
@@ -124,6 +131,7 @@ export class NotificationStore {
         severity: null,
         assetId: wo.assetId,
         refId: wo.id,
+        scopeId: null,
         read: false,
       });
     }
@@ -140,6 +148,24 @@ export class NotificationStore {
           severity: "warning",
           assetId: p.assetId,
           refId: p.id,
+          scopeId: null,
+          read: false,
+        });
+      }
+    }
+    for (const s of schedules) {
+      for (const run of s.runs) {
+        if (now - Date.parse(run.t) > REPORT_WINDOW) continue;
+        out.push({
+          id: `ntf-${s.id}-${run.n}`,
+          kind: "report",
+          t: run.t,
+          title: `${REPORT_TITLES[s.reportId]} is ready`,
+          detail: s.frequency === "daily" ? "Your daily report" : s.frequency === "weekly" ? "Your weekly report" : "Your monthly report",
+          severity: null,
+          assetId: null,
+          refId: s.reportId,
+          scopeId: s.scopeId,
           read: false,
         });
       }

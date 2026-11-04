@@ -160,6 +160,24 @@ test("Excel exports hold real numbers and dates, and a report becomes one sheet 
   expect(workbook.match(/<sheet /g)).toHaveLength(5);
 });
 
+test("a scheduled report comes due, and the bell leads to it", async ({ page }) => {
+  await open(page, "/reports/schedules", { role: "plant_manager" });
+  await page.getByLabel("How often").selectOption({ label: "Every day" });
+  await page.getByRole("button", { name: "Schedule it" }).click();
+  await expect(page.getByRole("button", { name: "Pause Weekly reliability report" })).toBeVisible();
+  await page.getByLabel("Speed").selectOption("3600");
+  const row = page.getByRole("table", { name: "Your scheduled reports" }).getByRole("row").nth(1);
+  await expect(row.getByRole("cell").nth(3)).toHaveText(/^[1-9]/, { timeout: 60_000 });
+  await page.getByLabel("Speed").selectOption("1");
+  await page.getByRole("button", { name: /^Notifications, / }).click();
+  await page
+    .getByRole("link", { name: /Weekly reliability report is ready/ })
+    .first()
+    .click();
+  await expect(page).toHaveURL(/\/reports\/weekly-reliability/);
+  await expect(page.getByRole("heading", { name: "Weekly reliability report", level: 2 })).toBeVisible();
+});
+
 test("the plant manager approves work by dragging the card with the mouse", async ({ page }) => {
   await open(page, "/maintenance", { role: "plant_manager" });
   const scheduled = page.getByRole("region", { name: /^Scheduled, \d+ work orders$/ });

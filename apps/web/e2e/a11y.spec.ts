@@ -99,6 +99,7 @@ const SCREENS: [name: string, url: (ids: Ids) => string, role: Role][] = [
   ["Management summary report", () => "/reports/management-summary", "plant_manager"],
   ["Report builder", () => "/reports/build?sections=risks,reliability,pm,alarms,inventory", "reliability_engineer"],
   ["Shift handover", () => "/reports/handover", "control_room_operator"],
+  ["Scheduled reports", () => "/reports/schedules", "plant_manager"],
   ["Data sources and quality", () => "/data", "condition_analyst"],
   ["Tag browser", () => "/data/tags?issue=no_data", "condition_analyst"],
   ["Administration", () => "/admin", "system_admin"],
