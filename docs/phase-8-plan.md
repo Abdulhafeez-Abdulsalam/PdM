@@ -9,7 +9,7 @@ Chosen on 2026-11-04 from the "Open" column of the [Phase 7 review](phase-7-revi
 | 1 ✅ | **CSV export** | An **Export** button on the main tables (alarms, assets, work orders, tags, audit log, and each table in a report), giving every matching row, not just the page on screen, with units in the headings. Each export goes in the audit log | Spec §6.13: "with row limits and audit logging". Opens cleanly in Excel, including non-English characters. Protected against formula injection |
 | 2 ✅ | **Excel export** | The same tables as `.xlsx`, with real numbers and dates so they sort and add up; a whole report as a workbook with one sheet per section | Uses `write-excel-file` 4.1.1 (MIT, one small dependency, loaded only when someone exports, so the app stays as fast) |
 | 3 ✅ | **Scheduled reports** | Choose a report, how often (daily, weekly, monthly), and the scope; see, pause and delete your schedules; when one comes due, your bell says it's ready, with a history of runs. Works in both modes and survives a restart | Runs on simulated time, so a week can be demonstrated in a minute |
-| 4 | **Review** | Full suites, criteria, screenshots and the demo script | |
+| 4 ✅ | **[Review](phase-8-review.md)** | Full suites, criteria, screenshots and the demo script | |
 
 ## Decisions
 

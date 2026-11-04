@@ -29,7 +29,7 @@ The project went in phases, each planned with a list of chunks and closed with a
 | 5. A real backend | [Plan](phase-5-plan.md) | [Review](phase-5-review.md) |
 | 6. Finishing the delivery plan | [Plan](phase-6-plan.md) | [Review](phase-6-review.md) |
 | 7. What an operator would miss | [Plan](phase-7-plan.md) | [Review](phase-7-review.md) |
-| 8. Getting data out | [Plan](phase-8-plan.md) | |
+| 8. Getting data out | [Plan](phase-8-plan.md) | [Review](phase-8-review.md) |
 
 ## Showing it
 

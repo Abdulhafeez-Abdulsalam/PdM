@@ -25,7 +25,7 @@ Every step here is also acted out by an automated test (`apps/web/e2e/walkthroug
 | 5. Planning the work | Planner | | 2 |
 | 6. In the field, out of signal | Technician | | 2 |
 | 7. Fixed, and proven | Reliability engineer | Recovery verified | 3 |
-| 8. What it was worth | Executive | | 2 |
+| 8. What it was worth | Executive | | 3 |
 
 ## Scene 1: the company at a glance (2 minutes)
 
@@ -129,6 +129,14 @@ Every step here is also acted out by an automated test (`apps/web/e2e/walkthroug
 **Do:** press **Ask** at the top, or the **.** key. Choose a suggested question, such as *Which pumps are likely to fail in the next 30 days?*
 
 > You can just ask. Each answer says where its numbers came from, and it can only use what your role may see. This copilot is scripted for the demo; it sits behind an interface a real AI model can plug into.
+
+**Do:** press Escape. Open **Reports**, then **Management summary**, and press **Excel** at the top.
+
+> Everything here can leave the app: a whole report becomes a workbook, one sheet per section, with real numbers. Each export is recorded in the audit log.
+
+**Do:** open **Scheduled**, choose **Management summary**, and press **Schedule it**.
+
+> And it can come to you. When it's due, your bell says it's ready. Email would be the next step, once there's a mail service to send through.
 
 **Close:**
 

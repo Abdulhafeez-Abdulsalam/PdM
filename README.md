@@ -29,6 +29,7 @@ Eleven roles, from executive to field technician, each with their own home page 
 | --- | --- |
 | ![The Command Center](docs/screenshots/command-center.png) **The Command Center:** health, top risks and the daily briefing | ![A prediction](docs/screenshots/prediction.png) **A prediction:** what's likely, when, and the cost of acting against the cost of failing |
 | ![The maintenance board](docs/screenshots/maintenance.png) **The maintenance board:** work orders from request to verified repair | ![The copilot](docs/screenshots/copilot.png) **The copilot:** answers with their sources |
+| ![Notifications](docs/screenshots/notifications.png) **Notifications:** what needs you, by role | ![Scheduled reports](docs/screenshots/scheduled-reports.png) **Scheduled reports:** your bell says when one is ready |
 | ![The alarm list](docs/screenshots/alarms.png) **Live alarms**, following ISA-18.2 | ![The control room theme](docs/screenshots/control-room.png) **The control room theme:** low glare for dark rooms |
 
 These are taken automatically by the [demo walkthrough](docs/demo-walkthrough.md)'s test.
@@ -80,7 +81,7 @@ Settings are environment variables, checked at start-up (a wrong one stops the s
 
 | Command | What it checks | Time |
 | --- | --- | --- |
-| `npm run check` | Formatting, types, lint, and every package's unit tests (about 600). Run before every commit | ~10 min |
+| `npm run check` | Formatting, types, lint, and every package's unit tests (about 620). Run before every commit | ~10 min |
 | `npm run e2e` | The demo app in Chrome: journeys, accessibility (axe) on every screen in every theme, phone width, printing, performance | ~20 min |
 | `npm run e2e:server` | The main journeys against the real server, with a fresh database | ~1 min |
 | `npm run demo:screenshots` | Acts out the [demo walkthrough](docs/demo-walkthrough.md) and retakes the screenshots above | ~3 min |

@@ -138,6 +138,24 @@ test("the demo walkthrough: from the first warning to a verified repair", async 
   await page.getByRole("button", { name: "Which pumps are likely to fail in the next 30 days?" }).click();
   await expect(page.getByText(/^Read as: /)).toBeVisible();
   await shoot("copilot");
+  await page.keyboard.press("Escape");
+
+  // The closing point: the figures can leave the app, and come by themselves.
+  await goTo(page, "Reports");
+  await page
+    .getByRole("link", { name: /Management summary/ })
+    .first()
+    .click();
+  await settle(page);
+  const saving = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export Management summary to Excel" }).click();
+  expect((await saving).suggestedFilename()).toMatch(/^management-summary-.*\.xlsx$/);
+  await page.getByRole("link", { name: "Scheduled" }).click();
+  await settle(page);
+  await page.getByLabel("Report", { exact: true }).selectOption({ label: "Management summary" });
+  await page.getByRole("button", { name: "Schedule it" }).click();
+  await expect(page.getByRole("button", { name: "Pause Management summary" })).toBeVisible();
+  await shoot("scheduled-reports");
 });
 
 test("the control room theme (a README screenshot)", async ({ page }) => {
