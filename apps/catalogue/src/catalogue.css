@@ -1,0 +1,21 @@
+@import "tailwindcss";
+@import "../../../packages/ui/src/tokens.css";
+@import "../../../packages/ui/src/theme.css";
+
+/* Tailwind only generates classes it finds in these files. */
+@source "../../../packages/ui/src";
+@source "../../../packages/charts/src";
+@source "./stories";
+
+/* Each story sits on the app's page background, in the current theme, with the app's base text
+   (the same as apps/web/src/index.css). */
+@layer base {
+  body {
+    background: var(--pdm-bg-canvas);
+    color: var(--pdm-text-primary);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    font-variant-numeric: tabular-nums;
+  }
+}

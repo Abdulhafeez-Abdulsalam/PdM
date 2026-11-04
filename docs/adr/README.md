@@ -26,5 +26,6 @@ Rules:
 | [0016](0016-ai-provider-and-role-filtered-tools.md) | The AI provider on the server, and tools filtered by role | Accepted |
 | [0017](0017-running-the-server.md) | Running the server properly | Accepted |
 | [0018](0018-ci-on-github-actions.md) | Continuous integration on GitHub Actions | Accepted |
+| [0019](0019-component-catalogue.md) | A component catalogue with Storybook, checked in every theme | Accepted |
 
 Template for new ADRs: [template.md](template.md).

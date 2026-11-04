@@ -1,6 +1,6 @@
 # Checks every push and pull request (Phase 6 chunk 1, ADR-0018): the same `npm run check` as
-# before every commit on the laptop, and the browser tests against the real server. Two jobs on
-# two machines, side by side. Free for public repositories on GitHub's standard runners.
+# before every commit on the laptop, the browser tests against the real server, and the component
+# catalogue's accessibility checks (Phase 6 chunk 4). Three jobs on three machines, side by side. Free for public repositories on GitHub's standard runners.
 #
 # Actions are pinned to an exact commit (the version is in the comment): a tag can be moved to
 # other code, a commit can't.
@@ -53,4 +53,26 @@ jobs:
         with:
           name: server-e2e-results
           path: apps/web/test-results/
+          retention-days: 14
+
+  stories:
+    name: Component catalogue (accessibility in every theme)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      # Builds Storybook and checks every story in every theme with axe. The screenshot comparison
+      # is skipped here: the saved screenshots are Windows', and Linux draws fonts slightly differently.
+      - run: npm run test:stories
+      - name: Keep what a failing test saw for 14 days
+        if: failure()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: stories-results
+          path: apps/catalogue/test-results/
           retention-days: 14
