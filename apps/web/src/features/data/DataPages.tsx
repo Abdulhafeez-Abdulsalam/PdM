@@ -4,7 +4,7 @@
  * the worst tags); the tag browser lists every measured signal with its limits, latest value and
  * any quality issue. URL: /data/tags?issue=flatline opens the browser on one kind of issue.
  */
-import { useApiQuery } from "@pdm/api-client";
+import { useApiContext, useApiQuery } from "@pdm/api-client";
 import {
   DATA_QUALITY_HOURS,
   ENTERPRISE_SCOPE,
@@ -21,12 +21,13 @@ import type { TFunction } from "i18next";
 import { AlertTriangle, CheckCircle2, ChevronLeft, ChevronRight, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ExportButton, type ExportColumn } from "../../shared/export/ExportButton";
 import { formatAgo, formatNumber } from "../../shared/format";
 import { usePreferences, type UnitSystem } from "../../shared/preferences";
 import { canDo } from "../../shared/roles/roles";
 import { useSimNow } from "../../shared/sim-time";
 import { globalSearchSchema, useGlobalSearch } from "../../shared/time-range";
-import { formatMeasurement, toDisplay } from "../../shared/units";
+import { conversionFor, formatMeasurement, toDisplay } from "../../shared/units";
 import { SubNav } from "../../shared/widgets/SubNav";
 import { EditLimitsDialog } from "./EditLimitsDialog";
 
@@ -314,17 +315,21 @@ export function TagsPage() {
   const [paging, setPaging] = useState({ filterKey, page: 0 });
   const page = paging.filterKey === filterKey ? paging.page : 0;
 
-  const tags = useApiQuery(
-    "data.tags",
+  const filters = { scopeId: scopeId === ENTERPRISE_SCOPE ? undefined : scopeId, search: search || undefined, issue: issueParam };
+  const tags = useApiQuery("data.tags", { ...filters, offset: page * PAGE_SIZE, limit: PAGE_SIZE }, { placeholderData: keepPreviousData });
+  const { api } = useApiContext();
+  const exportColumns: ExportColumn<TagRow>[] = [
+    { header: t("export.col.tag"), value: (r) => r.name },
+    { header: t("export.col.name"), value: (r) => r.description },
+    { header: t("export.col.asset"), value: (r) => r.assetId },
+    { header: t("export.col.site"), value: (r) => r.siteId },
     {
-      scopeId: scopeId === ENTERPRISE_SCOPE ? undefined : scopeId,
-      search: search || undefined,
-      issue: issueParam,
-      offset: page * PAGE_SIZE,
-      limit: PAGE_SIZE,
+      header: t("export.col.value"),
+      value: (r) => (r.latest ? Number(conversionFor(r.quantity, units).convert(r.latest.value).toPrecision(6)) : null),
     },
-    { placeholderData: keepPreviousData },
-  );
+    { header: t("export.col.unit"), value: (r) => t(`unitSymbol.${conversionFor(r.quantity, units).unit}`) },
+    { header: t("export.col.issue"), value: (r) => (r.issue ? t(`data.issue.${r.issue}`) : null) },
+  ];
   const total = tags.data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
   return (
@@ -360,6 +365,7 @@ export function TagsPage() {
         <p aria-live="polite" className="text-sm text-fg-muted">
           {tags.data ? t("data.found", { count: total, formatted: formatNumber(total) }) : ""}
         </p>
+        <ExportButton what={t("export.what.tags")} columns={exportColumns} load={(p) => api.request("data.tags", { ...filters, ...p })} />
       </div>
 
       <section

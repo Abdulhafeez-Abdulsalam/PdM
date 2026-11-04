@@ -1,4 +1,5 @@
 /** Whole user journeys in a real browser, on the production build. */
+import { readFileSync } from "node:fs";
 import { expect, open, settle, test, type Role } from "./helpers";
 
 test("criterion C: an alarm becomes an assigned work order in two clicks", async ({ page }) => {
@@ -105,6 +106,29 @@ test("zooming the alarm page's event lanes narrows the list to the part in view"
   await expect(page.getByRole("heading", { name: /^\d+ events? from .+ to .+$/ })).toBeVisible();
   await page.keyboard.press("0");
   await expect(page.getByRole("heading", { name: /^\d+ events?$/ })).toBeVisible();
+});
+
+test("exporting gives every row, not just the page, and is audited", async ({ page }) => {
+  await open(page, "/assets", { role: "system_admin" });
+  const total = Number(
+    /([\d,]+)/
+      .exec(
+        (await page
+          .getByRole("heading", { name: /^[\d,]+ assets?$/ })
+          .first()
+          .textContent()) ?? "",
+      )?.[1]
+      ?.replaceAll(",", ""),
+  );
+  const saving = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Export Assets as CSV" }).click();
+  const file = await saving;
+  expect(file.suggestedFilename()).toMatch(/^assets-\d{4}-\d{2}-\d{2}\.csv$/);
+  const lines = readFileSync(await file.path(), "utf8")
+    .trim()
+    .split("\r\n");
+  expect(lines).toHaveLength(total + 1); // the heading row, and every asset
+  await expect(page.getByText(/rows exported\.$/)).toBeVisible();
 });
 
 test("the plant manager approves work by dragging the card with the mouse", async ({ page }) => {

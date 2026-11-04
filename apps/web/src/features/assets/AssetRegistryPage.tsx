@@ -2,8 +2,8 @@
  * Asset registry (spec §6.2): every asset in the current scope, searchable and filterable,
  * sorted by risk. Server-side paging — the browser never holds all ~1,900 at once.
  */
-import { useApiQuery } from "@pdm/api-client";
-import { HealthState, type AssetListParams } from "@pdm/contracts";
+import { useApiContext, useApiQuery } from "@pdm/api-client";
+import { HealthState, type Asset, type AssetListParams } from "@pdm/contracts";
 import { Button, HealthBadge, Select, Skeleton } from "@pdm/ui";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
@@ -11,6 +11,7 @@ import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 import { useEffect, useId, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AssetsNav } from "./AssetsNav";
+import { ExportButton, type ExportColumn } from "../../shared/export/ExportButton";
 import { formatNumber } from "../../shared/format";
 import { useGlobalSearch } from "../../shared/time-range";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
@@ -49,6 +50,18 @@ export function AssetRegistryPage() {
     limit: PAGE_SIZE,
   };
   const assets = useApiQuery("assets.list", params, { placeholderData: keepPreviousData });
+  const { api } = useApiContext();
+  const exportColumns: ExportColumn<Asset>[] = [
+    { header: t("export.col.asset"), value: (a) => a.id },
+    { header: t("export.col.name"), value: (a) => a.name },
+    { header: t("export.col.class"), value: (a) => t(`assetClass.${a.assetClass}`) },
+    { header: t("export.col.site"), value: (a) => a.siteId },
+    { header: t("export.col.health"), value: (a) => t(`health.${a.health.state}`) },
+    { header: t("export.col.score"), value: (a) => a.health.score },
+    { header: t("export.col.status"), value: (a) => t(`operatingStatus.${a.operatingStatus}`) },
+    { header: t("export.col.criticality"), value: (a) => a.criticality },
+    { header: t("export.col.rul"), value: (a) => (a.rul ? Math.round(a.rul.p50Days) : null) },
+  ];
   const total = assets.data?.total ?? 0;
   const pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
@@ -100,6 +113,13 @@ export function AssetRegistryPage() {
       <DashboardWidget
         title={t("assets.count", { count: total })}
         query={assets}
+        actions={
+          <ExportButton
+            what={t("export.what.assets")}
+            columns={exportColumns}
+            load={(page) => api.request("assets.list", { ...params, ...page })}
+          />
+        }
         isEmpty={assets.data?.items.length === 0}
         emptyText={t("assets.noMatches")}
         skeleton={

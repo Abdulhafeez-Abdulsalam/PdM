@@ -74,6 +74,16 @@ describe("notifications across a restart", () => {
   });
 });
 
+describe("exports", () => {
+  it("go in the audit log, saying what, how much and who", () => {
+    const { backend } = setup("system_admin");
+    const me = backend.request("me.get", {});
+    backend.request("exports.record", { what: "Assets", rows: 1200, format: "csv" });
+    const [entry] = backend.request("admin.audit", { limit: 500 }).items.filter((e) => e.action === "exports.record");
+    expect(entry).toMatchObject({ userId: me.id, detail: "Assets: 1200 rows as csv" });
+  });
+});
+
 describe("the simulated operator", () => {
   it("keeps the alarm list from piling up, and leaves urgent alarms and real faults for people", () => {
     const { backend, advance } = setup("control_room_operator");

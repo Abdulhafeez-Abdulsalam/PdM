@@ -883,6 +883,10 @@ export class MockBackend {
       this.flushLive();
       return alarm;
     },
+    "exports.record": ({ what, rows, format }) => {
+      this.auditDetail = `${what}: ${rows} rows as ${format}`;
+      return { recorded: true };
+    },
     "notifications.list": (p) => this.myNotifications(p),
     "notifications.markRead": ({ ids }) => {
       this.notifications.markRead(this.me(), ids, this.now());

@@ -1173,6 +1173,57 @@
     "assetEvents": "Events on the same time axis ({{count}})",
     "assetEventsZoomed": "Events, and the charts above, from {{from}} to {{to}}"
   },
+  "export": {
+    "csv": "Export CSV",
+    "working": "Exporting…",
+    "named": "Export {{what}} as CSV",
+    "done_one": "{{count}} row exported.",
+    "done_other": "{{count}} rows exported.",
+    "capped": "The first {{rows}} of {{total}} rows exported: narrow the filters for the rest.",
+    "failed": "The export failed. Nothing was saved.",
+    "yes": "Yes",
+    "what": {
+      "alarms": "Alarms",
+      "assets": "Assets",
+      "workOrders": "Work orders",
+      "tags": "Tags",
+      "audit": "Audit log"
+    },
+    "col": {
+      "id": "ID",
+      "priority": "Priority",
+      "asset": "Asset",
+      "alarm": "Alarm",
+      "state": "State",
+      "value": "Value",
+      "limit": "Limit",
+      "unit": "Unit",
+      "raised": "Raised (UTC)",
+      "acknowledged": "Acknowledged (UTC)",
+      "firstOut": "First out",
+      "followed": "Followed",
+      "escalatedTo": "Escalated to",
+      "name": "Name",
+      "class": "Class",
+      "site": "Site",
+      "health": "Health",
+      "score": "Health score",
+      "status": "Status",
+      "criticality": "Criticality",
+      "rul": "Remaining life (days)",
+      "number": "Number",
+      "title": "Title",
+      "assignee": "Assigned to",
+      "due": "Due (UTC)",
+      "tag": "Tag",
+      "issue": "Issue",
+      "when": "When (UTC)",
+      "person": "Person",
+      "action": "Action",
+      "target": "Item",
+      "detail": "Detail"
+    }
+  },
   "notifications": {
     "title": "Notifications",
     "open_one": "Notifications, {{count}} unread",
@@ -3074,7 +3125,8 @@
         "handover_note": "Leave handover notes",
         "threshold_edit": "Edit alarm limits",
         "model_approve": "Approve models",
-        "admin_manage": "Manage users and roles"
+        "admin_manage": "Manage users and roles",
+        "data_export": "Export data"
       }
     },
     "hierarchy": {

@@ -2,7 +2,7 @@
  * Alarms & Events (spec §6.5). Live alarm list with ISA-18.2 actions, alarm-load indicators
  * (a flood warning when operators are overwhelmed), and the event timeline.
  */
-import { useApiQuery } from "@pdm/api-client";
+import { useApiContext, useApiQuery } from "@pdm/api-client";
 import { AlarmPriority } from "@pdm/contracts";
 import { Banner, PriorityIcon, Select, Skeleton, cx } from "@pdm/ui";
 import { keepPreviousData } from "@tanstack/react-query";
@@ -11,9 +11,12 @@ import { Waves } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { AlarmsNav } from "./AlarmsNav";
+import { ExportButton } from "../../shared/export/ExportButton";
+import { usePreferences } from "../../shared/preferences";
 import { useSimNow } from "../../shared/sim-time";
 import { useGlobalSearch } from "../../shared/time-range";
 import { DashboardWidget } from "../../shared/widgets/DashboardWidget";
+import { alarmColumns } from "./alarm-export";
 import { AlarmTable } from "./AlarmTable";
 import { ALARM_SHOW, STATES_FOR, useAlarmSearch, type AlarmSearch } from "./alarm-search";
 import { EventTimeline } from "./EventTimeline";
@@ -126,18 +129,16 @@ function AlarmListView({
   onChange: (patch: Partial<Record<keyof AlarmSearch, string | undefined>>) => void;
 }) {
   const { t } = useTranslation();
-  const alarms = useApiQuery(
-    "alarms.list",
-    {
-      scopeId,
-      states: STATES_FOR[search.show],
-      priorities: search.priority.length > 0 ? search.priority : undefined,
-      hideFollowers: search.causes === "on" ? true : undefined,
-      sort: "priority",
-      limit: 500,
-    },
-    { refetchInterval: 15_000, placeholderData: keepPreviousData },
-  );
+  const { api } = useApiContext();
+  const units = usePreferences((p) => p.units);
+  const filters = {
+    scopeId,
+    states: STATES_FOR[search.show],
+    priorities: search.priority.length > 0 ? search.priority : undefined,
+    hideFollowers: search.causes === "on" ? true : undefined,
+    sort: "priority" as const,
+  };
+  const alarms = useApiQuery("alarms.list", { ...filters, limit: 500 }, { refetchInterval: 15_000, placeholderData: keepPreviousData });
   const items = alarms.data?.items ?? [];
 
   const togglePriority = (p: AlarmPriority) => {
@@ -193,6 +194,13 @@ function AlarmListView({
       <DashboardWidget
         title={t("alarmsPage.listTitle", { count: alarms.data?.total ?? 0 })}
         query={alarms}
+        actions={
+          <ExportButton
+            what={t("export.what.alarms")}
+            columns={alarmColumns(t, units)}
+            load={(page) => api.request("alarms.list", { ...filters, ...page })}
+          />
+        }
         isEmpty={items.length === 0}
         emptyText={t("alarmsPage.empty")}
         skeleton={

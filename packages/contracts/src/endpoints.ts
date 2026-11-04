@@ -22,7 +22,13 @@ import {
   ShelveAlarmRequest,
   UnshelveAlarmRequest,
 } from "./alarms";
-import { MarkNotificationsReadRequest, NotificationList, NotificationListParams, SnoozeNotificationRequest } from "./notifications";
+import {
+  ExportRecordRequest,
+  MarkNotificationsReadRequest,
+  NotificationList,
+  NotificationListParams,
+  SnoozeNotificationRequest,
+} from "./notifications";
 import { AddCommentRequest, AssetComment, AssetDocument, RelatedAssets } from "./asset-info";
 import { Asset, AssetListParams } from "./assets";
 import { FleetCompareRequest, FleetCompareResponse } from "./comparison";
@@ -708,6 +714,13 @@ export const endpoints = {
     description: "Return a shelved alarm to the active list",
     input: UnshelveAlarmRequest,
     output: Alarm,
+  }),
+  "exports.record": endpoint({
+    method: "POST",
+    path: "/exports",
+    description: "Exported data",
+    input: ExportRecordRequest,
+    output: z.object({ recorded: z.boolean() }),
   }),
   "notifications.list": endpoint({
     method: "GET",

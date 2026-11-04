@@ -7,8 +7,9 @@
 import { useApiQuery } from "@pdm/api-client";
 import { ENTERPRISE_SCOPE, LABOUR_RATE, type EsgIntensity, type KpiKey } from "@pdm/contracts";
 import { Skeleton } from "@pdm/ui";
-import type { ReactNode } from "react";
+import { useRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
+import { TableExportButton } from "../../shared/export/ExportButton";
 import { formatCurrency, formatNumber, formatProbability } from "../../shared/format";
 import { formatKpiValue } from "../command-center/KpiStrip";
 import type { SectionId } from "./report-defs";
@@ -82,9 +83,13 @@ function Section({
 /** A plain table; the first column labels each row. */
 function Table({ caption, columns, rows, numeric = [] }: { caption: string; columns: string[]; rows: ReactNode[][]; numeric?: boolean[] }) {
   const align = (i: number) => (numeric[i] ? "text-right tabular-nums" : "text-left");
+  const table = useRef<HTMLTableElement>(null);
   return (
     <div className="relative -mx-4 overflow-x-auto print:mx-0 print:overflow-visible">
-      <table className="w-full min-w-[560px] text-sm print:min-w-0">
+      <div className="flex justify-end px-4 pb-1 print:hidden">
+        <TableExportButton what={caption} table={table} />
+      </div>
+      <table ref={table} className="w-full min-w-[560px] text-sm print:min-w-0">
         <caption className="sr-only">{caption}</caption>
         <thead>
           <tr className="border-b border-line text-xs text-fg-muted">

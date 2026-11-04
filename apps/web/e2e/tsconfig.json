@@ -2,7 +2,7 @@
   "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["ES2023", "DOM", "DOM.Iterable"],
-    "types": []
+    "types": ["node"]
   },
   "include": [".", "../playwright.config.ts", "../e2e-server", "../playwright.server.config.ts", "../playwright.walkthrough.config.ts"]
 }

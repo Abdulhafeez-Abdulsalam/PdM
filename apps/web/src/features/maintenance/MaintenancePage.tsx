@@ -3,8 +3,8 @@
  * also shows closed and cancelled work, or a month calendar of planned starts. The schedule
  * board (who does what, when) has its own page. Follows the scope from the top bar.
  */
-import { useApiQuery } from "@pdm/api-client";
-import { type WorkOrderStatus } from "@pdm/contracts";
+import { useApiContext, useApiQuery } from "@pdm/api-client";
+import { type WorkOrder, type WorkOrderStatus } from "@pdm/contracts";
 import { Select, Skeleton, cx } from "@pdm/ui";
 import { keepPreviousData } from "@tanstack/react-query";
 import { Link, useNavigate, useSearch } from "@tanstack/react-router";
@@ -12,6 +12,7 @@ import { GanttChart, Repeat } from "lucide-react";
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { z } from "zod";
+import { ExportButton, type ExportColumn } from "../../shared/export/ExportButton";
 import { formatDate } from "../../shared/format";
 import { useGlobalSearch } from "../../shared/time-range";
 import { useUsers } from "../../shared/users";
@@ -148,11 +149,18 @@ function ListView({
 }) {
   const { t } = useTranslation();
   const { byId } = useUsers();
-  const orders = useApiQuery(
-    "workOrders.list",
-    { scopeId, assigneeId, status: STATUSES[show], sort: show === "open" ? "priority" : "newest", limit: 300 },
-    { placeholderData: keepPreviousData },
-  );
+  const { api } = useApiContext();
+  const filters = { scopeId, assigneeId, status: STATUSES[show], sort: show === "open" ? ("priority" as const) : ("newest" as const) };
+  const orders = useApiQuery("workOrders.list", { ...filters, limit: 300 }, { placeholderData: keepPreviousData });
+  const exportColumns: ExportColumn<WorkOrder>[] = [
+    { header: t("export.col.number"), value: (w) => w.number },
+    { header: t("export.col.title"), value: (w) => w.title },
+    { header: t("export.col.asset"), value: (w) => w.assetId },
+    { header: t("export.col.priority"), value: (w) => w.priority },
+    { header: t("export.col.state"), value: (w) => t(`workOrders.statuses.${w.status}`) },
+    { header: t("export.col.assignee"), value: (w) => (w.assigneeId ? (byId.get(w.assigneeId)?.name ?? w.assigneeId) : null) },
+    { header: t("export.col.due"), value: (w) => w.dueAt },
+  ];
   const items = orders.data?.items ?? [];
 
   return (
@@ -166,6 +174,13 @@ function ListView({
       <DashboardWidget
         title={t("maintenance.count", { count: orders.data?.total ?? 0 })}
         query={orders}
+        actions={
+          <ExportButton
+            what={t("export.what.workOrders")}
+            columns={exportColumns}
+            load={(page) => api.request("workOrders.list", { ...filters, ...page })}
+          />
+        }
         isEmpty={items.length === 0}
         emptyText={t("assets.noWorkOrders")}
       >

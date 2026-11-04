@@ -38,6 +38,14 @@ export type NotificationList = z.infer<typeof NotificationList>;
 export const MarkNotificationsReadRequest = z.object({ ids: z.array(Id).min(1).optional() });
 export type MarkNotificationsReadRequest = z.infer<typeof MarkNotificationsReadRequest>;
 
+/** Someone took data out of the app: recorded in the audit log. */
+export const ExportRecordRequest = z.object({
+  what: z.string().min(1).max(100),
+  rows: z.number().int().min(0),
+  format: z.enum(["csv", "xlsx"]),
+});
+export type ExportRecordRequest = z.infer<typeof ExportRecordRequest>;
+
 /** Hide a notification until this time. */
 export const SnoozeNotificationRequest = z.object({ id: Id, until: Timestamp });
 export type SnoozeNotificationRequest = z.infer<typeof SnoozeNotificationRequest>;

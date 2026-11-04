@@ -4,7 +4,7 @@
  * hierarchy, and the audit log of every change made through the API. Limits are edited where
  * they're shown, in Data → Tags (for anyone with `threshold.edit`).
  */
-import { useApiMutation, useApiQuery } from "@pdm/api-client";
+import { useApiContext, useApiMutation, useApiQuery } from "@pdm/api-client";
 import { ENTERPRISE_SCOPE, RoleId, type AuditEntry, type HierarchyNode } from "@pdm/contracts";
 import { Button, HealthBadge, KpiCard, Select, Skeleton, cx } from "@pdm/ui";
 import { keepPreviousData, useQueryClient } from "@tanstack/react-query";
@@ -12,6 +12,7 @@ import { Link, useSearch } from "@tanstack/react-router";
 import { ChevronDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ExportButton, type ExportColumn } from "../../shared/export/ExportButton";
 import { formatNumber } from "../../shared/format";
 import { MODULES } from "../../shared/modules";
 import { ACTIONS, accessFor } from "../../shared/roles/roles";
@@ -401,16 +402,20 @@ export function AuditPage() {
   const filterKey = `${userId}|${area}`;
   const [paging, setPaging] = useState({ filterKey, page: 0 });
   const page = paging.filterKey === filterKey ? paging.page : 0;
+  const filters = { userId: userId === "all" ? undefined : userId, action: area === "all" ? undefined : area };
   const audit = useApiQuery(
     "admin.audit",
-    {
-      userId: userId === "all" ? undefined : userId,
-      action: area === "all" ? undefined : area,
-      offset: page * PAGE_SIZE,
-      limit: PAGE_SIZE,
-    },
+    { ...filters, offset: page * PAGE_SIZE, limit: PAGE_SIZE },
     { refetchInterval: 15_000, placeholderData: keepPreviousData },
   );
+  const { api } = useApiContext();
+  const exportColumns: ExportColumn<AuditEntry>[] = [
+    { header: t("export.col.when"), value: (e) => e.at },
+    { header: t("export.col.person"), value: (e) => users.byId.get(e.userId)?.name ?? e.userId },
+    { header: t("export.col.action"), value: (e) => e.description },
+    { header: t("export.col.target"), value: (e) => e.targetId },
+    { header: t("export.col.detail"), value: (e) => e.detail },
+  ];
   const pages = Math.max(1, Math.ceil((audit.data?.total ?? 0) / PAGE_SIZE));
   const people = [...users.byId.values()].sort((a, b) => a.name.localeCompare(b.name));
   return (
@@ -434,6 +439,11 @@ export function AuditPage() {
             ...AREAS.map((a) => ({ value: a, label: t(`admin.audit.areas.${a.slice(0, -1)}`) })),
           ]}
           onChange={setArea}
+        />
+        <ExportButton
+          what={t("export.what.audit")}
+          columns={exportColumns}
+          load={(p) => api.request("admin.audit", { ...filters, ...p })}
         />
       </div>
       <section
