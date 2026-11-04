@@ -209,23 +209,24 @@ export function ColumnChart({ columns, label, summary, format, valueName, lineNa
               </>
             )}
           </svg>
-          {current && active !== null && (
-            <div
-              role="status"
-              className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
-              style={{ left: Math.min(width - 180, Math.max(0, cx(active) - 60)) }}
-            >
-              <span className="block font-semibold">{current.name}</span>
-              <span className="block tabular-nums">
-                {valueName}: {format(current.value)}
-              </span>
-              {current.line !== undefined && (
+          <div role="status">
+            {current && active !== null && (
+              <div
+                className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
+                style={{ left: Math.min(width - 180, Math.max(0, cx(active) - 60)) }}
+              >
+                <span className="block font-semibold">{current.name}</span>
                 <span className="block tabular-nums">
-                  {lineName}: {format(current.line)}
+                  {valueName}: {format(current.value)}
                 </span>
-              )}
-            </div>
-          )}
+                {current.line !== undefined && (
+                  <span className="block tabular-nums">
+                    {lineName}: {format(current.line)}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

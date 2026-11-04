@@ -6,6 +6,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
 import { cx } from "./cx";
+import { useDialogFocus } from "./dialog-focus";
 
 export interface ModalProps {
   open: boolean;
@@ -18,11 +19,13 @@ export interface ModalProps {
 }
 
 export function Modal({ open, onOpenChange, title, description, closeLabel, children, className }: ModalProps) {
+  const focus = useDialogFocus();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-scrim" />
         <Dialog.Content
+          {...focus}
           className={cx(
             "fixed top-1/2 left-1/2 z-50 flex max-h-[90vh] w-[calc(100vw-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border border-line bg-surface text-fg shadow-2 outline-none",
             className,

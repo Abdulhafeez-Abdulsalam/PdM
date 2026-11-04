@@ -1,6 +1,6 @@
 # Screen-reader test script (NVDA)
 
-Automated checks (axe, in the unit tests, the browser tests and the component catalogue) find only part of what makes a page hard to use with a screen reader. Whether the page *makes sense when listened to* takes a person. This script walks through the main journeys with **NVDA**, a free screen reader for Windows, in about 45 minutes. Write down what you hear where it differs from "you should hear", and the problems get fixed.
+Automated checks (axe in the unit tests, browser tests and component catalogue, and `e2e/screen-reader.spec.ts`, which follows these same journeys checking names, focus and announcements) find only part of what makes a page hard to use with a screen reader. Whether the page *makes sense when listened to* takes a person. This script walks through the main journeys with **NVDA**, a free screen reader for Windows, in about 45 minutes. Write down what you hear where it differs from "you should hear", and the problems get fixed.
 
 You don't need to know NVDA already; section 1 is all you need.
 
@@ -70,10 +70,10 @@ Pick the role with the **Viewing as** box at the top of the page (Tab to it, the
 
 1. Open http://localhost:5173/assets/GCM-CMP-105/vibration.
 2. Press **H** to "What the spectrum shows". **Check** the findings read as a list, each saying what's wrong and why.
-3. **Tab** to the spectrum chart. **You should hear** its name and a one-sentence summary. Press **NVDA+Space** if NVDA didn't switch to focus mode, then **→** a few times. **Check** each press reads the frequency and the level.
+3. **Tab** to the spectrum chart. **You should hear** its name and a one-sentence summary. Press **→** a few times. **Check** each press reads the frequency and the level.
 4. **Tab** to the waterfall. **You should hear** its summary, then the keys. Press **→** and **↑**. **Check** each press reads the week, frequency and level (like "14 Oct: 150 Hz, 0.917 mm/s").
 5. **Tab** to the orbit. Press **Page Down**, then **→**. **Check** it reads "Turn 2 of 4, … after the once-per-turn mark: X … µm, Y … µm".
-6. **Note for each of these three charts** whether NVDA switched to focus mode by itself, or whether you had to press NVDA+Space. (We expect you may have to; if so, they'll be changed to switch by themselves, like the event chart.)
+6. **Note for each of these three charts** whether NVDA switched to focus mode by itself (the low click). It should: they now say they handle their own keys, as the event chart does. If you had to press NVDA+Space, that's a finding.
 
 ### Journey 5: planning work without a mouse (Maintenance Planner, Maintenance)
 

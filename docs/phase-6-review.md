@@ -100,7 +100,7 @@ The plan's promise held: the app changed only for the timeline and the keyboard 
 | **Alarms pile up as time runs in demo mode** | About 33 an hour with nobody working them, so about 3,300 active alarms after four simulated days. Realistic for an unattended system, and the demo script covers it, but simulated operators clearing some would look better |
 | **"Not in the last 30 days" beside a score of 0.50 at a 0.50 threshold** | The prediction page shows the score rounded. True, but it reads oddly |
 | **The storyline runs once** per page load | Reload to start again |
-| **NVDA results pending** | The vibration charts may need NVDA+Space to reach their arrow keys; the script asks. To fix when results come in |
+| **NVDA results pending** | A person still has to listen. The checkable half now runs as `e2e/screen-reader.spec.ts`; see the [Phase 7 plan](phase-7-plan.md) |
 
 ## What we learned in Phase 6
 

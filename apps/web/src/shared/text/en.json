@@ -2148,6 +2148,7 @@
       "y": "Y (µm)"
     },
     "cursor": {
+      "spectrumKeys": "Arrow keys move a cursor along the frequencies (Shift for ten lines, Home and End for the ends).",
       "waterfallKeys": "Arrow keys move a cursor: left and right along the frequencies (Shift for ten lines, Home and End for the ends), up for an older week, down for a newer one.",
       "waterfall": "{{date}}: {{hz}} Hz, {{amp}}",
       "orbitKeys": "Arrow keys move a cursor along the shaft's path (Shift for ten points), Page Up and Page Down a whole turn, Home and End to the start and end.",
@@ -3248,6 +3249,8 @@
     "label": "Search pages, assets and actions",
     "placeholder": "Type a page, an asset id or a question…",
     "results": "Results",
+    "count_one": "{{count}} result",
+    "count_other": "{{count}} results",
     "page": "Page",
     "asset": "Asset",
     "copilot": "Copilot",

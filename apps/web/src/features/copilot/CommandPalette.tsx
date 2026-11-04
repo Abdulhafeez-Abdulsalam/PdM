@@ -142,6 +142,7 @@ function PaletteBody() {
   return (
     <>
       <input
+        data-autofocus
         role="combobox"
         aria-expanded
         aria-controls="palette-results"
@@ -154,6 +155,9 @@ function PaletteBody() {
         placeholder={t("palette.placeholder")}
         className="mb-2 h-10 w-full rounded-md border border-line bg-surface px-3 text-sm"
       />
+      <p role="status" className="sr-only">
+        {t("palette.count", { count: items.length })}
+      </p>
       <ul id="palette-results" role="listbox" aria-label={t("palette.results")} className="flex max-h-80 flex-col overflow-y-auto">
         {items.map((item, i) => (
           // Keyboard users stay in the text box, which handles the arrows and Enter for every option

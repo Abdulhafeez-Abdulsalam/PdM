@@ -28,6 +28,7 @@ The project went in phases, each planned with a list of chunks and closed with a
 | 4. Every remaining module, and the copilot | [Plan](phase-4-plan.md) | [Review](phase-4-review.md) |
 | 5. A real backend | [Plan](phase-5-plan.md) | [Review](phase-5-review.md) |
 | 6. Finishing the delivery plan | [Plan](phase-6-plan.md) | [Review](phase-6-review.md) |
+| 7. What an operator would miss | [Plan](phase-7-plan.md) | |
 
 ## Showing it
 
@@ -110,3 +111,4 @@ One note per step of the build, in plain language: the idea, how it's used here,
 - [50 · Writing for visitors (README, contribution guide, licence)](learning/50-writing-for-visitors.md)
 - [51 · Rehearsing the demo with a robot](learning/51-rehearsing-the-demo.md)
 - [52 · Reviewing against the whole brief](learning/52-reviewing-against-the-brief.md)
+- [53 · What a screen reader is given](learning/53-what-a-screen-reader-is-given.md)

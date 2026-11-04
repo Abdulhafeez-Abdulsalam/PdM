@@ -17,7 +17,7 @@ describe("Asset 360 vibration tab", () => {
     const findings = await screen.findByRole("region", { name: "What the spectrum shows" });
     expect(within(findings).getByText(/: Rolling bearing, (outer|inner)-race defect$/)).toBeInTheDocument();
     expect(screen.getByText("Rolling bearing 6309, 8 balls")).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /^Vibration spectrum of BRG1_VIB/ })).toBeInTheDocument();
+    expect(screen.getByRole("application", { name: /^Vibration spectrum of BRG1_VIB/ })).toBeInTheDocument();
     // Rolling bearings have no proximity probes, so no orbit.
     expect(screen.getByText(/^No orbit for this machine/)).toBeInTheDocument();
 
@@ -31,7 +31,7 @@ describe("Asset 360 vibration tab", () => {
     const user = setup();
     renderApp("/assets/PBU-PMP-106/vibration");
     const waterfall = await screen.findByRole("region", { name: "Waterfall: the last 12 weeks" });
-    expect(within(waterfall).getByRole("img", { name: /13 measurements, newest in front/ })).toBeInTheDocument();
+    expect(within(waterfall).getByRole("application", { name: /13 measurements, newest in front/ })).toBeInTheDocument();
     await user.click(within(waterfall).getByRole("button", { name: "Show as table" }));
     const table = within(waterfall).getByRole("table");
     expect(within(table).getAllByRole("row")).toHaveLength(14);
@@ -45,7 +45,7 @@ describe("Asset 360 vibration tab", () => {
 
   it("draws the orbit of a journal-bearing compressor and opens on its worse bearing", async () => {
     renderApp("/assets/GCM-CMP-105/vibration");
-    expect(await screen.findByRole("img", { name: /^Shaft orbit at BRG2_VIB/ })).toBeInTheDocument();
+    expect(await screen.findByRole("application", { name: /^Shaft orbit at BRG2_VIB/ })).toBeInTheDocument();
     expect(screen.getByLabelText("Measurement point")).toHaveValue("BRG2_VIB");
     expect(screen.getByText(/: Flow instability$/)).toBeInTheDocument();
   });
@@ -53,7 +53,7 @@ describe("Asset 360 vibration tab", () => {
   it("moves a cursor over the orbit and the waterfall from the keyboard, and says where it is", async () => {
     const user = setup();
     renderApp("/assets/GCM-CMP-105/vibration");
-    const orbit = await screen.findByRole("img", { name: /^Shaft orbit at BRG2_VIB/ });
+    const orbit = await screen.findByRole("application", { name: /^Shaft orbit at BRG2_VIB/ });
     orbit.focus();
     await user.keyboard("{PageDown}{ArrowRight}"); // a whole turn on, then one point
     const orbitSection = screen.getByRole("region", { name: "Orbit" });
@@ -62,7 +62,7 @@ describe("Asset 360 vibration tab", () => {
     );
 
     const waterfall = screen.getByRole("region", { name: "Waterfall: the last 12 weeks" });
-    within(waterfall).getByRole("img").focus();
+    within(waterfall).getByRole("application").focus();
     await user.keyboard("{Home}");
     const status = within(waterfall).getByRole("status");
     expect(status).toHaveTextContent(/^.+: \d+(\.\d)? Hz, .+$/);

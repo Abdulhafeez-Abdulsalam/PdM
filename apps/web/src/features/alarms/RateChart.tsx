@@ -154,16 +154,17 @@ export function RateChart({ points, bucketMinutes, label }: { points: readonly R
               />
             ))}
           </svg>
-          {active !== null && points[active] && (
-            <div
-              role="status"
-              className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
-              style={{ left: Math.min(width - 160, Math.max(0, PAD.left + active * slot - 60)) }}
-            >
-              <span className="block text-fg-muted">{range(active)}</span>
-              <span className="font-semibold tabular-nums">{t("analytics.alarmsCount", { count: points[active].count })}</span>
-            </div>
-          )}
+          <div role="status">
+            {active !== null && points[active] && (
+              <div
+                className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
+                style={{ left: Math.min(width - 160, Math.max(0, PAD.left + active * slot - 60)) }}
+              >
+                <span className="block text-fg-muted">{range(active)}</span>
+                <span className="font-semibold tabular-nums">{t("analytics.alarmsCount", { count: points[active].count })}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

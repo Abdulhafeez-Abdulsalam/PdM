@@ -168,16 +168,15 @@ export function DuvalTriangle({
             );
           })}
       </svg>
-      {current && (
-        <div
-          role="status"
-          className="pointer-events-none absolute top-0 left-0 rounded-md border border-line bg-raised px-2 py-1 text-xs shadow-2"
-        >
-          <span className="block font-semibold">{current.label}</span>
-          <span className="block">{t("dga.tooltipMix", { ch4: current.ch4Pct, c2h4: current.c2h4Pct, c2h2: current.c2h2Pct })}</span>
-          <span className="block">{t(`dga.zone.${current.zone}`)}</span>
-        </div>
-      )}
+      <div role="status">
+        {current && (
+          <div className="pointer-events-none absolute top-0 left-0 rounded-md border border-line bg-raised px-2 py-1 text-xs shadow-2">
+            <span className="block font-semibold">{current.label}</span>
+            <span className="block">{t("dga.tooltipMix", { ch4: current.ch4Pct, c2h4: current.c2h4Pct, c2h2: current.c2h2Pct })}</span>
+            <span className="block">{t(`dga.zone.${current.zone}`)}</span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

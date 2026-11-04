@@ -7,6 +7,7 @@ import * as Dialog from "@radix-ui/react-dialog";
 import { X } from "lucide-react";
 import type { ReactNode } from "react";
 import { cx } from "./cx";
+import { useDialogFocus } from "./dialog-focus";
 
 export interface SheetProps {
   open: boolean;
@@ -20,11 +21,13 @@ export interface SheetProps {
 }
 
 export function Sheet({ open, onOpenChange, title, description, closeLabel, children, className }: SheetProps) {
+  const focus = useDialogFocus();
   return (
     <Dialog.Root open={open} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-scrim" />
         <Dialog.Content
+          {...focus}
           className={cx(
             "fixed inset-y-0 right-0 z-50 flex w-full max-w-2xl flex-col border-l border-line bg-surface text-fg shadow-2 outline-none",
             className,

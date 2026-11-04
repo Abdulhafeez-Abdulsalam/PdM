@@ -316,14 +316,13 @@ function WeibullPlot({ r }: { r: WeibullAnalysis }) {
               />
             ))}
           </svg>
-          {current && (
-            <div
-              role="status"
-              className="pointer-events-none absolute top-0 right-0 rounded-md border border-line bg-raised px-2 py-1 text-xs shadow-2"
-            >
-              {t("weibull.pointTip", { days: formatNumber(current.days), pct: current.unreliabilityPct.toFixed(1) })}
-            </div>
-          )}
+          <div role="status">
+            {current && (
+              <div className="pointer-events-none absolute top-0 right-0 rounded-md border border-line bg-raised px-2 py-1 text-xs shadow-2">
+                {t("weibull.pointTip", { days: formatNumber(current.days), pct: current.unreliabilityPct.toFixed(1) })}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

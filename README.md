@@ -107,7 +107,7 @@ React and TypeScript, built with Vite; TanStack Router, Query and Virtual; Tailw
 
 - **[The demo walkthrough](docs/demo-walkthrough.md)**: a 15–20 minute script following one fault from its first warning to a verified repair.
 - **[The documentation index](docs/README.md)**: architecture, design system, pages and roles, data contracts, the simulation, decisions, plans and reviews.
-- **[52 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
+- **[53 learning notes](docs/README.md#learning-notes)**: the ideas behind each part, in plain language, with exercises. This project was built step by step as a way to learn full-stack development.
 - **[What changed from the original brief, and why](docs/scope-decisions.md)**.
 
 ## Contributing

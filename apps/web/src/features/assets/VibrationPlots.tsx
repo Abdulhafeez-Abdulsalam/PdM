@@ -183,7 +183,7 @@ export function Waterfall({ rows, columns, selected, df, label, summary, format,
       ) : (
         <div ref={box}>
           <svg
-            role="img"
+            role="application"
             aria-label={`${label}. ${summary}`}
             aria-describedby={hintId}
             tabIndex={0}
@@ -315,7 +315,7 @@ export function OrbitPlot({ orbit, label, summary }: OrbitProps) {
   return (
     <div>
       <svg
-        role="img"
+        role="application"
         aria-label={`${label}. ${summary}`}
         aria-describedby={hintId}
         tabIndex={0}

@@ -300,24 +300,25 @@ export function LineChart({
               </g>
             )}
           </svg>
-          {active !== null && times[active] !== undefined && (
-            <div
-              role="status"
-              className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
-              style={{ left: Math.min(width - 200, Math.max(0, x(active) + 12)) }}
-            >
-              <span className="block text-fg-muted">{formatTime(times[active])}</span>
-              {series.map((s) => {
-                const v = s.values[active];
-                return (
-                  <span key={s.id} className="block">
-                    {multi && `${s.label}: `}
-                    <span className="font-semibold tabular-nums">{v === null || v === undefined ? "—" : format(v)}</span>
-                  </span>
-                );
-              })}
-            </div>
-          )}
+          <div role="status">
+            {active !== null && times[active] !== undefined && (
+              <div
+                className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
+                style={{ left: Math.min(width - 200, Math.max(0, x(active) + 12)) }}
+              >
+                <span className="block text-fg-muted">{formatTime(times[active])}</span>
+                {series.map((s) => {
+                  const v = s.values[active];
+                  return (
+                    <span key={s.id} className="block">
+                      {multi && `${s.label}: `}
+                      <span className="font-semibold tabular-nums">{v === null || v === undefined ? "—" : format(v)}</span>
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

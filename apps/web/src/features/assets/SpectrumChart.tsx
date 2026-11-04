@@ -5,7 +5,7 @@
  * "Show as table" lists every marker and the largest peaks.
  */
 import { Button } from "@pdm/ui";
-import { useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import { useTranslation } from "react-i18next";
 
 export interface SpectrumMarker {
@@ -57,6 +57,7 @@ export function SpectrumChart({ amps, df, runningHz, markers, label, summary, fo
   const [width, setWidth] = useState(800);
   const [active, setActive] = useState<number | null>(null);
   const [asTable, setAsTable] = useState(false);
+  const hintId = useId();
 
   useEffect(() => {
     const el = box.current;
@@ -166,8 +167,9 @@ export function SpectrumChart({ amps, df, runningHz, markers, label, summary, fo
       ) : (
         <div ref={box} className="relative">
           <svg
-            role="img"
+            role="application"
             aria-label={`${label}. ${summary}`}
+            aria-describedby={hintId}
             tabIndex={0}
             width={width}
             height={height}
@@ -225,18 +227,22 @@ export function SpectrumChart({ amps, df, runningHz, markers, label, summary, fo
               </g>
             )}
           </svg>
-          {active !== null && (
-            <div
-              role="status"
-              className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
-              style={{ left: Math.min(width - 200, Math.max(0, xOf(active) + 12)) }}
-            >
-              <span className="block text-fg-muted">
-                {hzText((active + 1) * df)} {t("unitSymbol.Hz")} · {orderText(((active + 1) * df) / runningHz)}
-              </span>
-              <span className="block font-semibold tabular-nums">{format(amps[active]!)}</span>
-            </div>
-          )}
+          <p id={hintId} className="sr-only">
+            {t("vibration.cursor.spectrumKeys")}
+          </p>
+          <div role="status">
+            {active !== null && (
+              <div
+                className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
+                style={{ left: Math.min(width - 200, Math.max(0, xOf(active) + 12)) }}
+              >
+                <span className="block text-fg-muted">
+                  {hzText((active + 1) * df)} {t("unitSymbol.Hz")} · {orderText(((active + 1) * df) / runningHz)}
+                </span>
+                <span className="block font-semibold tabular-nums">{format(amps[active]!)}</span>
+              </div>
+            )}
+          </div>
         </div>
       )}
     </div>

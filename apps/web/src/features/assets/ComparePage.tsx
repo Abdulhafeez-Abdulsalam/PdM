@@ -364,19 +364,20 @@ function RankChart({
           );
         })}
       </svg>
-      {current && active !== null && (
-        <div
-          role="status"
-          className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
-          style={{ left: Math.min(width - 200, Math.max(0, x(active) - 80)) }}
-        >
-          <span className="block font-semibold">
-            {t("compare.tooltipRank", { rank: active + 1, count: valued.length })} · {current.assetName}
-          </span>
-          <span className="tabular-nums">{format(current.value)}</span>
-          {current.outlier && <span className="ml-2">{t(`compare.outlier.${current.outlier}`)}</span>}
-        </div>
-      )}
+      <div role="status">
+        {current && active !== null && (
+          <div
+            className="pointer-events-none absolute top-0 rounded-md border border-line bg-raised px-2 py-1 text-xs whitespace-nowrap shadow-2"
+            style={{ left: Math.min(width - 200, Math.max(0, x(active) - 80)) }}
+          >
+            <span className="block font-semibold">
+              {t("compare.tooltipRank", { rank: active + 1, count: valued.length })} · {current.assetName}
+            </span>
+            <span className="tabular-nums">{format(current.value)}</span>
+            {current.outlier && <span className="ml-2">{t(`compare.outlier.${current.outlier}`)}</span>}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
