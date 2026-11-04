@@ -50,6 +50,28 @@ describe("Asset 360 vibration tab", () => {
     expect(screen.getByText(/: Flow instability$/)).toBeInTheDocument();
   });
 
+  it("moves a cursor over the orbit and the waterfall from the keyboard, and says where it is", async () => {
+    const user = setup();
+    renderApp("/assets/GCM-CMP-105/vibration");
+    const orbit = await screen.findByRole("img", { name: /^Shaft orbit at BRG2_VIB/ });
+    orbit.focus();
+    await user.keyboard("{PageDown}{ArrowRight}"); // a whole turn on, then one point
+    const orbitSection = screen.getByRole("region", { name: "Orbit" });
+    expect(within(orbitSection).getByRole("status")).toHaveTextContent(
+      /^Turn 2 of \d+, \d+° after the once-per-turn mark: X -?\d+\.\d µm, Y -?\d+\.\d µm$/,
+    );
+
+    const waterfall = screen.getByRole("region", { name: "Waterfall: the last 12 weeks" });
+    within(waterfall).getByRole("img").focus();
+    await user.keyboard("{Home}");
+    const status = within(waterfall).getByRole("status");
+    expect(status).toHaveTextContent(/^.+: \d+(\.\d)? Hz, .+$/);
+    const newest = status.textContent;
+    await user.keyboard("{ArrowUp}"); // an older week: another date, same frequency
+    expect(status.textContent).not.toBe(newest);
+    expect(status.textContent?.split(": ")[1]?.split(",")[0]).toBe(newest?.split(": ")[1]?.split(",")[0]);
+  });
+
   it("only appears for rotating machines", async () => {
     renderApp("/assets/ANP-TX-104/overview");
     const tabs = await screen.findByRole("navigation", { name: "Asset sections" });

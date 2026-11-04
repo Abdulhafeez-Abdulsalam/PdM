@@ -2147,6 +2147,12 @@
       "x": "X (µm)",
       "y": "Y (µm)"
     },
+    "cursor": {
+      "waterfallKeys": "Arrow keys move a cursor: left and right along the frequencies (Shift for ten lines, Home and End for the ends), up for an older week, down for a newer one.",
+      "waterfall": "{{date}}: {{hz}} Hz, {{amp}}",
+      "orbitKeys": "Arrow keys move a cursor along the shaft's path (Shift for ten points), Page Up and Page Down a whole turn, Home and End to the start and end.",
+      "orbit": "Turn {{turn}} of {{turns}}, {{deg}}° after the once-per-turn mark: X {{x}} µm, Y {{y}} µm"
+    },
     "pkPkX": "Peak to peak, X",
     "pkPkY": "Peak to peak, Y",
     "um": "{{value}} µm",
