@@ -30,6 +30,7 @@ The project went in phases, each planned with a list of chunks and closed with a
 | 6. Finishing the delivery plan | [Plan](phase-6-plan.md) | [Review](phase-6-review.md) |
 | 7. What an operator would miss | [Plan](phase-7-plan.md) | [Review](phase-7-review.md) |
 | 8. Getting data out | [Plan](phase-8-plan.md) | [Review](phase-8-review.md) |
+| 9. A real AI model behind the copilot | [Plan](phase-9-plan.md) | |
 
 ## Showing it
 
