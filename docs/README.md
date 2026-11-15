@@ -38,6 +38,7 @@ The project went in phases, each planned with a list of chunks and closed with a
 
 ## Testing by hand
 
+- [Feedback session guide](testing/feedback-session.md): tasks to give someone from maintenance or a control room, and a sheet for noting what confuses them. About 45 minutes.
 - [Screen-reader test script (NVDA)](testing/nvda-script.md): eight journeys to listen to, about 45 minutes.
 
 ## Learning notes
